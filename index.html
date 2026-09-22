@@ -1,1 +1,235 @@
+<!DOCTYPE html>
+<html lang="om">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QUEEN FAMILY STORE POS</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#222}
+.screen{min-height:100vh}.login{display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:white;border-radius:18px;box-shadow:0 8px 30px #00000018;padding:28px;width:min(420px,100%)}
+.logo{width:72px;height:72px;border-radius:18px;background:#111;color:#fff;display:grid;place-items:center;font-size:24px;font-weight:700;margin:0 auto 15px}
+h1,h2,h3{margin-top:0}.center{text-align:center}.muted{color:#777}
+input,button{width:100%;padding:13px;border-radius:10px;border:1px solid #ddd;font-size:15px}
+input{margin:7px 0 12px}button{border:0;background:#111;color:white;cursor:pointer;font-weight:600}
+button:hover{opacity:.9}.error{color:#c00;min-height:20px;font-size:14px}
+.app{display:none;min-height:100vh}.top{height:64px;background:#111;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:5}
+.brand{font-weight:700}.logout{width:auto;padding:9px 14px;background:#333}
+.layout{display:flex;min-height:calc(100vh - 64px)}.side{width:230px;background:#fff;border-right:1px solid #e5e5e5;padding:15px}
+.nav{display:block;background:#fff;color:#333;text-align:left;margin:5px 0;border:0;padding:12px}
+.nav.active{background:#111;color:#fff}.main{flex:1;padding:22px}.page{display:none}.page.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.stat{background:#fff;padding:18px;border-radius:15px;box-shadow:0 3px 15px #0000000b}
+.stat .value{font-size:24px;font-weight:700;margin-top:8px}.panel{background:#fff;border-radius:15px;padding:18px;margin-top:18px;box-shadow:0 3px 15px #0000000b}
+table{width:100%;border-collapse:collapse}th,td{padding:11px;border-bottom:1px solid #eee;text-align:left}th{font-size:13px;color:#777}
+.badge{padding:5px 8px;border-radius:8px;background:#eee;font-size:12px}.low{background:#fff0d8;color:#9a6200}.out{background:#ffe0e0;color:#a00}
+.row{display:flex;gap:10px}.row>*{flex:1}.smallbtn{width:auto;padding:9px 13px}
+@media(max-width:800px){.side{width:70px;padding:8px}.nav{font-size:0;text-align:center}.nav::first-letter{font-size:20px}.main{padding:14px}.grid{grid-template-columns:repeat(2,1fr)}.brand{font-size:14px}}
+@media(max-width:500px){.grid{grid-template-columns:1fr 1fr}.stat{padding:13px}.stat .value{font-size:19px}table{font-size:13px}.side{width:58px}.main{padding:10px}}
+</style>
+</head>
+<body>
 
+<div id="loginScreen" class="screen login">
+  <div class="card">
+    <div class="logo">QF</div>
+    <h2 class="center">QUEEN FAMILY STORE</h2>
+    <p class="center muted">POS & Inventory</p>
+    <label>Username</label>
+    <input id="username" value="Admin">
+    <label>Password</label>
+    <input id="password" type="password" placeholder="Password">
+    <div id="loginError" class="error"></div>
+    <button onclick="login()">LOGIN</button>
+    <p class="center muted" style="font-size:12px;margin-bottom:0">Prototype 1.0</p>
+  </div>
+</div>
+
+<div id="app" class="app">
+  <div class="top">
+    <div class="brand">QUEEN FAMILY STORE POS</div>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+  <div class="layout">
+    <aside class="side">
+      <button class="nav active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
+      <button class="nav" onclick="showPage('products',this)">📦 Products</button>
+      <button class="nav" onclick="showPage('pos',this)">🛒 POS</button>
+      <button class="nav" onclick="showPage('sales',this)">🧾 Sales</button>
+      <button class="nav" onclick="showPage('expenses',this)">💰 Expenses</button>
+      <button class="nav" onclick="showPage('reports',this)">📈 Reports</button>
+      <button class="nav" onclick="showPage('settings',this)">⚙️ Settings</button>
+    </aside>
+
+    <main class="main">
+      <section id="dashboard" class="page active">
+        <h2>Dashboard</h2>
+        <div class="grid">
+          <div class="stat"><div class="muted">Total Sales</div><div id="dSales" class="value">ETB 0</div></div>
+          <div class="stat"><div class="muted">Expenses</div><div id="dExpenses" class="value">ETB 0</div></div>
+          <div class="stat"><div class="muted">Net Profit</div><div id="dProfit" class="value">ETB 0</div></div>
+          <div class="stat"><div class="muted">Stock Items</div><div id="dStock" class="value">0</div></div>
+        </div>
+        <div class="panel"><h3>Recent Sales</h3><div id="recentSales">No sales yet.</div></div>
+      </section>
+
+      <section id="products" class="page">
+        <h2>Products / Stock</h2>
+        <div class="panel">
+          <div class="row">
+            <input id="pName" placeholder="Product name">
+            <input id="pQty" type="number" placeholder="Qty">
+            <input id="pCost" type="number" placeholder="Cost">
+            <input id="pPrice" type="number" placeholder="Selling price">
+            <button class="smallbtn" onclick="addProduct()">Add</button>
+          </div>
+        </div>
+        <div class="panel"><div id="productTable"></div></div>
+      </section>
+
+      <section id="pos" class="page">
+        <h2>Point of Sale</h2>
+        <div class="panel">
+          <div class="row">
+            <select id="posProduct" style="padding:13px;border:1px solid #ddd;border-radius:10px"></select>
+            <input id="posQty" type="number" value="1" min="1">
+            <button class="smallbtn" onclick="addToCart()">Add to Cart</button>
+          </div>
+          <div id="cart" style="margin-top:18px"></div>
+          <button onclick="checkout()" style="margin-top:15px">Complete Sale</button>
+        </div>
+      </section>
+
+      <section id="sales" class="page">
+        <h2>Sales History</h2>
+        <div class="panel"><div id="salesTable"></div></div>
+      </section>
+
+      <section id="expenses" class="page">
+        <h2>Expenses</h2>
+        <div class="panel">
+          <div class="row">
+            <input id="eName" placeholder="Expense name">
+            <input id="eAmount" type="number" placeholder="Amount">
+            <button class="smallbtn" onclick="addExpense()">Add Expense</button>
+          </div>
+        </div>
+        <div class="panel"><div id="expenseTable"></div></div>
+      </section>
+
+      <section id="reports" class="page">
+        <h2>Reports</h2>
+        <div class="panel" id="reportBox"></div>
+      </section>
+
+      <section id="settings" class="page">
+        <h2>Settings</h2>
+        <div class="panel">
+          <p><b>Business:</b> QUEEN FAMILY STORE</p>
+          <p><b>App:</b> QUEEN FAMILY STORE POS</p>
+          <p class="muted">Kun version jalqabaa (prototype) dha. Cloud sync, user management fi backup itti aansee dabalamu.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+const KEY='qfs_pos_v1';
+let data=JSON.parse(localStorage.getItem(KEY)||'{"products":[],"sales":[],"expenses":[]}');
+let cart=[];
+
+function save(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
+function login(){
+  const u=document.getElementById('username').value.trim();
+  const p=document.getElementById('password').value;
+  if(u==='Admin' && p==='1234'){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    renderAll();
+  }else document.getElementById('loginError').textContent='Username ykn password sirrii miti. Prototype: Admin / 1234';
+}
+function logout(){location.reload()}
+function showPage(id,btn){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+ btn.classList.add('active');
+ renderAll();
+}
+function money(n){return 'ETB '+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+function addProduct(){
+ const name=document.getElementById('pName').value.trim(), qty=Number(document.getElementById('pQty').value), cost=Number(document.getElementById('pCost').value), price=Number(document.getElementById('pPrice').value);
+ if(!name||qty<=0||cost<0||price<0)return alert('Odeeffannoo product guuti.');
+ const existing=data.products.find(p=>p.name.toLowerCase()===name.toLowerCase());
+ if(existing){existing.qty+=qty;existing.cost=cost;existing.price=price}else data.products.push({id:Date.now(),name,qty,cost,price});
+ ['pName','pQty','pCost','pPrice'].forEach(id=>document.getElementById(id).value='');
+ save();
+}
+function addToCart(){
+ const id=Number(document.getElementById('posProduct').value), qty=Number(document.getElementById('posQty').value);
+ const p=data.products.find(x=>x.id===id);
+ if(!p||qty<=0)return;
+ const already=cart.find(x=>x.id===id), totalQty=(already?already.qty:0)+qty;
+ if(totalQty>p.qty)return alert('Stock gahaa miti.');
+ if(already)already.qty+=qty; else cart.push({id:p.id,name:p.name,qty,price:p.price,cost:p.cost});
+ renderCart();
+}
+function renderCart(){
+ if(!cart.length){document.getElementById('cart').innerHTML='<p class="muted">Cart is empty.</p>';return}
+ let total=0;
+ let h='<table><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>';
+ cart.forEach(x=>{let t=x.qty*x.price;total+=t;h+=`<tr><td>${x.name}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(t)}</td></tr>`});
+ h+=`</table><h3 style="text-align:right">Total: ${money(total)}</h3>`;
+ document.getElementById('cart').innerHTML=h;
+}
+function checkout(){
+ if(!cart.length)return alert('Cart keessa item hin jiru.');
+ const invoice='INV-'+String(data.sales.length+1).padStart(4,'0');
+ let total=0,cost=0;
+ cart.forEach(x=>{
+   const p=data.products.find(p=>p.id===x.id); p.qty-=x.qty;
+   total+=x.qty*x.price; cost+=x.qty*x.cost;
+ });
+ data.sales.unshift({invoice,date:new Date().toLocaleString(),items:cart.map(x=>({...x})),total,cost,profit:total-cost});
+ cart=[];save();alert(invoice+' milkaa’e!');showPageById('sales');
+}
+function showPageById(id){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+ [...document.querySelectorAll('.nav')].find(x=>x.textContent.includes('Sales'))?.classList.add('active');
+ renderAll();
+}
+function addExpense(){
+ const name=document.getElementById('eName').value.trim(), amount=Number(document.getElementById('eAmount').value);
+ if(!name||amount<=0)return;
+ data.expenses.unshift({name,amount,date:new Date().toLocaleString()});
+ document.getElementById('eName').value='';document.getElementById('eAmount').value='';
+ save();
+}
+function renderProducts(){
+ let h='<table><tr><th>Product</th><th>Stock</th><th>Cost</th><th>Selling</th><th>Status</th></tr>';
+ data.products.forEach(p=>{let s=p.qty<=0?'<span class="badge out">OUT</span>':p.qty<=10?'<span class="badge low">LOW</span>':'<span class="badge">OK</span>';h+=`<tr><td>${p.name}</td><td>${p.qty}</td><td>${money(p.cost)}</td><td>${money(p.price)}</td><td>${s}</td></tr>`});
+ h+='</table>';document.getElementById('productTable').innerHTML=h;
+ const sel=document.getElementById('posProduct');sel.innerHTML=data.products.map(p=>`<option value="${p.id}">${p.name} — ${p.qty} available</option>`).join('');
+}
+function renderSales(){
+ let h='<table><tr><th>Invoice</th><th>Date</th><th>Total</th><th>Profit</th></tr>';
+ data.sales.forEach(s=>h+=`<tr><td>${s.invoice}</td><td>${s.date}</td><td>${money(s.total)}</td><td>${money(s.profit)}</td></tr>`);
+ h+='</table>';document.getElementById('salesTable').innerHTML=data.sales.length?h:'No sales yet.';
+ document.getElementById('recentSales').innerHTML=data.sales.slice(0,5).map(s=>`${s.invoice} — ${money(s.total)} — Profit ${money(s.profit)}`).join('<br>')||'No sales yet.';
+}
+function renderExpenses(){
+ let h='<table><tr><th>Expense</th><th>Date</th><th>Amount</th></tr>';
+ data.expenses.forEach(e=>h+=`<tr><td>${e.name}</td><td>${e.date}</td><td>${money(e.amount)}</td></tr>`);
+ h+='</table>';document.getElementById('expenseTable').innerHTML=data.expenses.length?h:'No expenses yet.';
+}
+function renderDashboard(){
+ const sales=data.sales.reduce((a,s)=>a+s.total,0), cogs=data.sales.reduce((a,s)=>a+s.cost,0), exp=data.expenses.reduce((a,e)=>a+e.amount,0);
+ document.getElementById('dSales').textContent=money(sales);document.getElementById('dExpenses').textContent=money(exp);document.getElementById('dProfit').textContent=money(sales-cogs-exp);document.getElementById('dStock').textContent=data.products.reduce((a,p)=>a+(p.qty>0?1:0),0);
+ document.getElementById('reportBox').innerHTML=`<p>Total Sales: <b>${money(sales)}</b></p><p>Cost of Goods Sold: <b>${money(cogs)}</b></p><p>Expenses: <b>${money(exp)}</b></p><p>Net Profit: <b>${money(sales-cogs-exp)}</b></p>`;
+}
+function renderAll(){renderProducts();renderSales();renderExpenses();renderDashboard();renderCart()}
+</script>
+</body>
+</html>
