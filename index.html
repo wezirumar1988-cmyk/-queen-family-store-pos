@@ -1,51 +1,2794 @@
-<div id="signInBox">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>QUEEN FAMILY STORE POS</title>
 
-<label>Language / Afaan</label>
-<select id="loginLanguage" onchange="changeLanguage(this.value)">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:#f4f6f8;
+color:#222
+}
+
+button,input,select{font:inherit}
+
+button{
+cursor:pointer;
+border:0;
+background:#111;
+color:#fff;
+padding:12px 16px;
+border-radius:10px;
+font-weight:bold
+}
+
+button:hover{opacity:.9}
+
+.btn-secondary{background:#666}
+.btn-danger{background:#b00020}
+.btn-success{background:#08752a}
+.small-btn{padding:8px 12px;width:auto}
+
+.login{
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px
+}
+
+.login-card{
+background:#fff;
+width:min(430px,100%);
+padding:30px;
+border-radius:20px;
+box-shadow:0 10px 35px #0002
+}
+
+.logo{
+width:75px;
+height:75px;
+border-radius:20px;
+background:#111;
+color:#fff;
+display:grid;
+place-items:center;
+margin:auto auto 15px;
+font-size:25px;
+font-weight:bold
+}
+
+.center{text-align:center}
+.muted{color:#777}
+
+label{
+display:block;
+font-weight:bold;
+margin:12px 0 6px
+}
+
+input,select{
+width:100%;
+padding:12px;
+border:1px solid #ddd;
+border-radius:10px;
+background:#fff
+}
+
+.hidden{display:none!important}
+
+.error{
+color:#b00020;
+font-size:14px
+}
+
+.success{
+color:#08752a;
+font-size:14px
+}
+
+.auth-switch{
+background:none;
+color:#111;
+padding:5px;
+text-decoration:underline
+}
+
+.topbar{
+background:#111;
+color:#fff;
+padding:14px 20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+flex-wrap:wrap
+}
+
+.brand{
+font-size:20px;
+font-weight:bold
+}
+
+.container{
+max-width:1300px;
+margin:auto;
+padding:20px
+}
+
+.nav{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+margin-bottom:20px
+}
+
+.nav button{
+background:#fff;
+color:#111;
+border:1px solid #ddd
+}
+
+.nav button.active{
+background:#111;
+color:#fff
+}
+
+.card{
+background:#fff;
+border-radius:16px;
+padding:20px;
+margin-bottom:20px;
+box-shadow:0 3px 15px #0001
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:15px
+}
+
+.stat{
+background:#fff;
+padding:20px;
+border-radius:16px;
+box-shadow:0 3px 15px #0001
+}
+
+.stat h3{
+margin:0 0 8px;
+font-size:14px;
+color:#777
+}
+
+.stat strong{
+font-size:25px
+}
+
+table{
+width:100%;
+border-collapse:collapse
+}
+
+th,td{
+padding:10px;
+border-bottom:1px solid #eee;
+text-align:left
+}
+
+th{
+background:#f5f5f5
+}
+
+.table-wrap{
+overflow:auto
+}
+
+.badge{
+padding:5px 9px;
+border-radius:20px;
+font-size:12px;
+font-weight:bold
+}
+
+.badge-green{
+background:#d9f7e3;
+color:#08752a
+}
+
+.badge-red{
+background:#ffe0e0;
+color:#b00020
+}
+
+.badge-yellow{
+background:#fff2c2;
+color:#806000
+}
+
+.form-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:12px
+}
+
+.row{
+display:flex;
+gap:10px;
+align-items:center;
+flex-wrap:wrap
+}
+
+.right{
+text-align:right
+}
+
+.modal{
+position:fixed;
+inset:0;
+background:#0008;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+z-index:1000
+}
+
+.modal-box{
+background:#fff;
+width:min(600px,100%);
+max-height:90vh;
+overflow:auto;
+padding:25px;
+border-radius:18px
+}
+
+.invoice{
+background:#fff;
+padding:30px;
+max-width:800px;
+margin:auto
+}
+
+@media print{
+.no-print{display:none!important}
+body{background:#fff}
+.invoice{box-shadow:none}
+}
+</style>
+</head>
+
+<body>
+
+<div id="loginScreen" class="login">
+<div class="login-card">
+
+<div class="logo">QF</div>
+
+<h2 id="loginBusinessTitle" class="center">
+QUEEN FAMILY STORE
+</h2>
+
+<p class="center muted">POS & Inventory</p>
+
+<div class="row" style="margin-bottom:15px">
+<div style="flex:1">
+<label>Language</label>
+<select id="languageSelect" onchange="changeLanguage()">
 <option value="en">English</option>
 <option value="om">Afaan Oromoo</option>
 </select>
+</div>
+</div>
+
+<div id="signInBox">
 
 <label>Email</label>
-<input
-id="loginEmail"
+<input id="loginEmail"
 type="email"
-placeholder="example@email.com"
->
+placeholder="example@email.com">
 
 <label>Password</label>
-<input
-id="loginPassword"
+<input id="loginPassword"
 type="password"
-placeholder="Password"
->
+placeholder="Password">
 
 <p id="loginError" class="error"></p>
 
-<button
-onclick="signIn()"
-style="width:100%"
->
+<button onclick="signIn()" style="width:100%">
 SIGN IN
 </button>
 
 <p class="center">
-New user?
-<button
-class="auth-switch"
-onclick="showSignUp()"
->
-Create Account
-</button>
-</p>
-
-<p class="center">
-<button
-class="auth-switch"
-onclick="forgotPassword()"
->
+<button class="auth-switch"
+onclick="forgotPassword()">
 Forgot Password?
 </button>
 </p>
 
+<p class="center">
+New user?
+<button class="auth-switch"
+onclick="showSignUp()">
+Create Account
+</button>
+</p>
+
 </div>
+
+
+<div id="signUpBox" class="hidden">
+
+<label>Business Name</label>
+<input id="signupBusinessName"
+type="text"
+placeholder="Your business name">
+
+<label>Full Name</label>
+<input id="signupFullName"
+type="text"
+placeholder="Full name">
+
+<label>Phone Number</label>
+<input id="signupPhone"
+type="tel"
+placeholder="Phone number">
+
+<label>Email</label>
+<input id="signupEmail"
+type="email"
+placeholder="example@email.com">
+
+<label>Password</label>
+<input id="signupPassword"
+type="password"
+placeholder="At least 6 characters">
+
+<label>Confirm Password</label>
+<input id="signupPassword2"
+type="password"
+placeholder="Repeat password">
+
+<p id="signupError" class="error"></p>
+<p id="signupSuccess" class="success"></p>
+
+<button onclick="signUp()" style="width:100%">
+CREATE ACCOUNT
+</button>
+
+<p class="center">
+Already have account?
+<button class="auth-switch"
+onclick="showSignIn()">
+Sign In
+</button>
+</p>
+
+</div>
+
+</div>
+</div>
+
+
+<div id="app" class="hidden">
+
+<div class="topbar">
+<div class="brand">QUEEN FAMILY STORE</div>
+
+<div class="row">
+<span id="userEmail"></span>
+<button class="small-btn"
+onclick="openProfile()">
+Profile
+</button>
+<button class="small-btn"
+onclick="signOut()">
+Logout
+</button>
+</div>
+</div>
+
+<div class="container">
+
+<div class="nav">
+
+<button onclick="showPage('dashboard')"
+id="navDashboard">
+Dashboard
+</button>
+
+<button onclick="showPage('products')"
+id="navProducts">
+Stock
+</button>
+
+<button onclick="showPage('purchases')"
+id="navPurchases">
+Purchases
+</button>
+
+<button onclick="showPage('sales')"
+id="navSales">
+Sales
+</button>
+
+<button onclick="showPage('pos')"
+id="navPOS">
+POS
+</button>
+
+<button onclick="showPage('expenses')"
+id="navExpenses">
+Expenses
+</button>
+
+<button onclick="showPage('reports')"
+id="navReports">
+Reports
+</button>
+
+<button onclick="showPage('settings')"
+id="navSettings">
+Settings
+</button>
+
+</div>
+
+
+<div id="dashboardPage">
+
+<div class="grid">
+
+<div class="stat">
+<h3>Total Sales</h3>
+<strong id="dashSales">ETB 0.00</strong>
+</div>
+
+<div class="stat">
+<h3>Total Purchase</h3>
+<strong id="dashPurchase">ETB 0.00</strong>
+</div>
+
+<div class="stat">
+<h3>Total Expenses</h3>
+<strong id="dashExpenses">ETB 0.00</strong>
+</div>
+
+<div class="stat">
+<h3>Net Profit</h3>
+<strong id="dashProfit">ETB 0.00</strong>
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>Stock Summary</h2>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+<tr>
+<th>Item</th>
+<th>Stock</th>
+<th>Average Cost</th>
+<th>Selling Price</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody id="dashboardStock"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="productsPage" class="hidden">
+
+<div class="card">
+
+<h2>Stock / Products</h2>
+
+<div class="row">
+
+<button onclick="openProductModal()">
++ Add Product
+</button>
+
+<button onclick="loadProducts()">
+Refresh
+</button>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+<tr>
+<th>SKU</th>
+<th>Product</th>
+<th>Unit</th>
+<th>Stock</th>
+<th>Average Cost</th>
+<th>Selling Price</th>
+<th>Profit</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody id="productsTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="purchasesPage" class="hidden">
+
+<div class="card">
+
+<h2>Purchases</h2>
+
+<button onclick="openPurchaseModal()">
++ New Purchase
+</button>
+
+</div>
+
+<div class="card">
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+<tr>
+<th>Date</th>
+<th>Product</th>
+<th>Quantity</th>
+<th>Cost</th>
+<th>Transport</th>
+<th>Loading</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody id="purchasesTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="salesPage" class="hidden">
+
+<div class="card">
+
+<h2>Sales</h2>
+
+<button onclick="loadSales()">
+Refresh
+</button>
+
+</div>
+
+<div class="card">
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+<tr>
+<th>Date</th>
+<th>Invoice</th>
+<th>Product</th>
+<th>Qty</th>
+<th>Price</th>
+<th>Total</th>
+<th>Profit</th>
+</tr>
+</thead>
+
+<tbody id="salesTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="posPage" class="hidden">
+
+<div class="card">
+
+<div class="row"
+style="justify-content:space-between">
+
+<h2>Point of Sale</h2>
+
+<div>
+Invoice No:
+<strong id="invoiceNo"></strong>
+</div>
+
+</div>
+
+<div class="form-grid">
+
+<div>
+<label>Product</label>
+<select id="posProduct"
+onchange="updatePOSPrice()"></select>
+</div>
+
+<div>
+<label>Quantity</label>
+<input id="posQty"
+type="number"
+min="0"
+value="1">
+</div>
+
+<div>
+<label>Selling Price</label>
+<input id="posPrice"
+type="number"
+step="0.01">
+</div>
+
+</div>
+
+<br>
+
+<button onclick="addPOSItem()">
+Add Item
+</button>
+
+</div>
+
+
+<div class="card">
+
+<h3>Invoice Items</h3>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+<tr>
+<th>Product</th>
+<th>Qty</th>
+<th>Price</th>
+<th>Total</th>
+<th></th>
+</tr>
+</thead>
+
+<tbody id="posItems"></tbody>
+
+</table>
+
+</div>
+
+<hr>
+
+<div class="right">
+
+<h3>
+Total:
+<span id="posTotal">ETB 0.00</span>
+</h3>
+
+<h3>
+Profit:
+<span id="posProfit">ETB 0.00</span>
+</h3>
+
+<button class="btn-success"
+onclick="completeSale()">
+COMPLETE SALE
+</button>
+
+<button onclick="printInvoice()">
+PRINT
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="expensesPage" class="hidden">
+
+<div class="card">
+
+<h2>Expenses</h2>
+
+<button onclick="openExpenseModal()">
++ Add Expense
+</button>
+
+</div>
+
+<div class="card">
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+<tr>
+<th>Date</th>
+<th>Description</th>
+<th>Amount</th>
+</tr>
+</thead>
+
+<tbody id="expensesTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="reportsPage" class="hidden">
+
+<div class="card">
+
+<h2>Reports</h2>
+
+<div class="grid">
+
+<div class="stat">
+<h3>Sales</h3>
+<strong id="reportSales">0</strong>
+</div>
+
+<div class="stat">
+<h3>Purchases</h3>
+<strong id="reportPurchases">0</strong>
+</div>
+
+<div class="stat">
+<h3>Expenses</h3>
+<strong id="reportExpenses">0</strong>
+</div>
+
+<div class="stat">
+<h3>Profit</h3>
+<strong id="reportProfit">0</strong>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="settingsPage" class="hidden">
+
+<div class="card">
+
+<h2>Settings</h2>
+
+<button onclick="openProfile()">
+Profile
+</button>
+
+<button onclick="changePassword()">
+Change Password
+</button>
+
+<button onclick="forgotPassword()">
+Forgot Password
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>Cloud Account</h3>
+
+<p id="settingsEmail"></p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="modalContainer"></div>
+
+
+<script>
+
+const SUPABASE_URL =
+"https://qoxhhdxcezmwqeehqtvy.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_YbbcWEzxx2uqEYMZnR1XEg_CLApqkip";
+
+const supabaseClient =
+supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+
+let currentUser=null;
+let products=[];
+let purchases=[];
+let sales=[];
+let expenses=[];
+let posItems=[];
+let currentInvoice="INV-0001";
+
+
+function money(value){
+return "ETB "+
+Number(value||0).toLocaleString(
+"en-US",
+{
+minimumFractionDigits:2,
+maximumFractionDigits:2
+}
+);
+}
+
+
+function showSignUp(){
+
+document.getElementById("signInBox")
+.classList.add("hidden");
+
+document.getElementById("signUpBox")
+.classList.remove("hidden");
+
+}
+
+
+function showSignIn(){
+
+document.getElementById("signUpBox")
+.classList.add("hidden");
+
+document.getElementById("signInBox")
+.classList.remove("hidden");
+
+}
+
+
+async function signUp(){
+
+const business=
+document.getElementById(
+"signupBusinessName"
+).value.trim();
+
+const fullName=
+document.getElementById(
+"signupFullName"
+).value.trim();
+
+const phone=
+document.getElementById(
+"signupPhone"
+).value.trim();
+
+const email=
+document.getElementById(
+"signupEmail"
+).value.trim();
+
+const password=
+document.getElementById(
+"signupPassword"
+).value;
+
+const password2=
+document.getElementById(
+"signupPassword2"
+).value;
+
+const error=
+document.getElementById("signupError");
+
+const success=
+document.getElementById("signupSuccess");
+
+error.textContent="";
+success.textContent="";
+
+if(!business ||
+!fullName ||
+!phone ||
+!email ||
+!password){
+
+error.textContent=
+"Please fill all fields.";
+
+return;
+}
+
+if(password.length<6){
+
+error.textContent=
+"Password must be at least 6 characters.";
+
+return;
+}
+
+if(password!==password2){
+
+error.textContent=
+"Passwords do not match.";
+
+return;
+}
+
+
+const {data,error:authError}=
+await supabaseClient.auth.signUp({
+
+email:email,
+
+password:password,
+
+options:{
+data:{
+business_name:business,
+full_name:fullName,
+phone:phone
+}
+}
+
+});
+
+
+if(authError){
+
+error.textContent=
+authError.message;
+
+return;
+}
+
+
+success.textContent=
+"Account created successfully.";
+
+setTimeout(
+showSignIn,
+1000
+);
+
+}
+
+
+async function signIn(){
+
+const email=
+document.getElementById(
+"loginEmail"
+).value.trim();
+
+const password=
+document.getElementById(
+"loginPassword"
+).value;
+
+const error=
+document.getElementById(
+"loginError"
+);
+
+error.textContent="";
+
+
+if(!email || !password){
+
+error.textContent=
+"Please enter email and password.";
+
+return;
+}
+
+
+const {data,error:authError}=
+await supabaseClient.auth.signInWithPassword({
+
+email:email,
+password:password
+
+});
+
+
+if(authError){
+
+error.textContent=
+authError.message;
+
+return;
+}
+
+
+currentUser=data.user;
+
+await startApp();
+
+}
+
+
+async function signOut(){
+
+await supabaseClient.auth.signOut();
+
+location.reload();
+
+}
+
+
+async function forgotPassword(){
+
+const email=
+document.getElementById(
+"loginEmail"
+).value.trim();
+
+if(!email){
+
+alert(
+"Please enter your email first."
+);
+
+return;
+}
+
+
+const {error}=
+await supabaseClient.auth
+.resetPasswordForEmail(
+email,
+{
+redirectTo:
+window.location.origin+
+window.location.pathname
+}
+);
+
+
+if(error){
+
+alert(error.message);
+
+}else{
+
+alert(
+"Password reset link has been sent to your email."
+);
+
+}
+
+}
+
+
+async function changePassword(){
+
+const newPassword=
+prompt(
+"Enter your new password:"
+);
+
+if(!newPassword)
+return;
+
+if(newPassword.length<6){
+
+alert(
+"Password must be at least 6 characters."
+);
+
+return;
+}
+
+
+const {error}=
+await supabaseClient.auth
+.updateUser({
+password:newPassword
+});
+
+
+if(error){
+
+alert(error.message);
+
+}else{
+
+alert(
+"Password changed successfully."
+);
+
+}
+
+}
+
+
+function changeLanguage(){
+
+const lang=
+document.getElementById(
+"languageSelect"
+).value;
+
+localStorage.setItem(
+"qfs_language",
+lang
+);
+
+}
+
+
+function showPage(page){
+
+const pages=[
+"dashboard",
+"products",
+"purchases",
+"sales",
+"pos",
+"expenses",
+"reports",
+"settings"
+];
+
+
+pages.forEach(p=>{
+
+const el=
+document.getElementById(
+p+"Page"
+);
+
+if(el)
+el.classList.add("hidden");
+
+});
+
+
+const target=
+document.getElementById(
+page+"Page"
+);
+
+if(target)
+target.classList.remove("hidden");
+
+
+document.querySelectorAll(
+".nav button"
+).forEach(
+b=>b.classList.remove("active")
+);
+
+
+const nav=
+document.getElementById(
+"nav"+
+page.charAt(0).toUpperCase()+
+page.slice(1)
+);
+
+if(nav)
+nav.classList.add("active");
+
+
+if(page==="dashboard")
+loadDashboard();
+
+if(page==="products")
+loadProducts();
+
+if(page==="purchases")
+loadPurchases();
+
+if(page==="sales")
+loadSales();
+
+if(page==="pos")
+loadPOS();
+
+if(page==="expenses")
+loadExpenses();
+
+if(page==="reports")
+loadReports();
+
+}
+
+
+async function startApp(){
+
+document.getElementById(
+"loginScreen"
+).classList.add("hidden");
+
+document.getElementById(
+"app"
+).classList.remove("hidden");
+
+document.getElementById(
+"userEmail"
+).textContent=
+currentUser.email;
+
+document.getElementById(
+"settingsEmail"
+).textContent=
+currentUser.email;
+
+await loadAll();
+
+showPage("dashboard");
+
+}
+
+
+async function loadAll(){
+
+await Promise.all([
+loadProducts(),
+loadPurchases(),
+loadSales(),
+loadExpenses()
+]);
+
+}
+
+
+async function loadProducts(){
+
+const {data,error}=
+await supabaseClient
+.from("products")
+.select("*")
+.order("name");
+
+
+if(error){
+
+console.error(error);
+return;
+
+}
+
+products=data||[];
+
+renderProducts();
+renderDashboardStock();
+populatePOSProducts();
+
+}
+
+
+function renderProducts(){
+
+const tbody=
+document.getElementById(
+"productsTable"
+);
+
+if(!tbody)
+return;
+
+tbody.innerHTML="";
+
+
+products.forEach(p=>{
+
+const stock=
+Number(p.stock_qty||0);
+
+const cost=
+Number(p.average_cost||0);
+
+const price=
+Number(p.selling_price||0);
+
+const profit=
+price-cost;
+
+let status=
+'<span class="badge badge-green">IN STOCK</span>';
+
+if(stock<=0){
+
+status=
+'<span class="badge badge-red">OUT OF STOCK</span>';
+
+}else if(stock<=10){
+
+status=
+'<span class="badge badge-yellow">LOW STOCK</span>';
+
+}
+
+
+tbody.innerHTML+=`
+
+<tr>
+
+<td>${p.sku||""}</td>
+
+<td>${p.name||""}</td>
+
+<td>${p.unit||"kg"}</td>
+
+<td>${stock}</td>
+
+<td>${money(cost)}</td>
+
+<td>${money(price)}</td>
+
+<td>${money(profit)}</td>
+
+<td>${status}</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+
+function renderDashboardStock(){
+
+const tbody=
+document.getElementById(
+"dashboardStock"
+);
+
+if(!tbody)
+return;
+
+tbody.innerHTML="";
+
+products.forEach(p=>{
+
+const stock=
+Number(p.stock_qty||0);
+
+let status=
+'<span class="badge badge-green">IN STOCK</span>';
+
+if(stock<=0){
+
+status=
+'<span class="badge badge-red">OUT</span>';
+
+}else if(stock<=10){
+
+status=
+'<span class="badge badge-yellow">LOW</span>';
+
+}
+
+
+tbody.innerHTML+=`
+
+<tr>
+<td>${p.name||""}</td>
+<td>${stock}</td>
+<td>${money(p.average_cost)}</td>
+<td>${money(p.selling_price)}</td>
+<td>${status}</td>
+</tr>
+
+`;
+
+});
+
+}
+
+
+function populatePOSProducts(){
+
+const select=
+document.getElementById(
+"posProduct"
+);
+
+if(!select)
+return;
+
+select.innerHTML=
+'<option value="">Select product</option>';
+
+products.forEach(p=>{
+
+if(Number(p.stock_qty||0)>0){
+
+select.innerHTML+=`
+
+<option value="${p.id}">
+${p.name} — Stock:
+${p.stock_qty}
+</option>
+
+`;
+
+}
+
+});
+
+}
+
+
+function updatePOSPrice(){
+
+const id=
+document.getElementById(
+"posProduct"
+).value;
+
+const p=
+products.find(
+x=>String(x.id)===String(id)
+);
+
+if(p){
+
+document.getElementById(
+"posPrice"
+).value=
+Number(p.selling_price||0);
+
+}
+
+}
+
+
+async function loadPurchases(){
+
+const {data,error}=
+await supabaseClient
+.from("purchases")
+.select("*")
+.order("created_at",{ascending:false});
+
+if(error){
+
+console.error(error);
+return;
+
+}
+
+purchases=data||[];
+
+const tbody=
+document.getElementById(
+"purchasesTable"
+);
+
+if(!tbody)
+return;
+
+tbody.innerHTML="";
+
+purchases.forEach(p=>{
+
+tbody.innerHTML+=`
+
+<tr>
+
+<td>${new Date(p.created_at)
+.toLocaleDateString()}</td>
+
+<td>${p.product_name||""}</td>
+
+<td>${p.quantity||0}</td>
+
+<td>${money(p.cost_per_unit)}</td>
+
+<td>${money(p.transport_cost)}</td>
+
+<td>${money(p.loading_cost)}</td>
+
+<td>${money(p.total_cost)}</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+
+async function loadSales(){
+
+const {data,error}=
+await supabaseClient
+.from("sales")
+.select("*")
+.order("created_at",{ascending:false});
+
+if(error){
+
+console.error(error);
+return;
+
+}
+
+sales=data||[];
+
+const tbody=
+document.getElementById(
+"salesTable"
+);
+
+if(!tbody)
+return;
+
+tbody.innerHTML="";
+
+sales.forEach(s=>{
+
+tbody.innerHTML+=`
+
+<tr>
+
+<td>${new Date(s.created_at)
+.toLocaleDateString()}</td>
+
+<td>${s.invoice_no||""}</td>
+
+<td>${s.product_name||""}</td>
+
+<td>${s.quantity||0}</td>
+
+<td>${money(s.selling_price)}</td>
+
+<td>${money(s.total_sale)}</td>
+
+<td>${money(s.profit)}</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+
+async function loadExpenses(){
+
+const {data,error}=
+await supabaseClient
+.from("expenses")
+.select("*")
+.order("created_at",{ascending:false});
+
+if(error){
+
+console.error(error);
+return;
+
+}
+
+expenses=data||[];
+
+const tbody=
+document.getElementById(
+"expensesTable"
+);
+
+if(!tbody)
+return;
+
+tbody.innerHTML="";
+
+expenses.forEach(e=>{
+
+tbody.innerHTML+=`
+
+<tr>
+
+<td>${new Date(e.created_at)
+.toLocaleDateString()}</td>
+
+<td>${e.description||""}</td>
+
+<td>${money(e.amount)}</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+
+async function loadDashboard(){
+
+await loadAll();
+
+const totalSales=
+sales.reduce(
+(a,b)=>a+Number(b.total_sale||0),
+0
+);
+
+const totalPurchase=
+purchases.reduce(
+(a,b)=>a+Number(b.total_cost||0),
+0
+);
+
+const totalExpenses=
+expenses.reduce(
+(a,b)=>a+Number(b.amount||0),
+0
+);
+
+const totalProfit=
+sales.reduce(
+(a,b)=>a+Number(b.profit||0),
+0
+)-totalExpenses;
+
+
+document.getElementById(
+"dashSales"
+).textContent=
+money(totalSales);
+
+document.getElementById(
+"dashPurchase"
+).textContent=
+money(totalPurchase);
+
+document.getElementById(
+"dashExpenses"
+).textContent=
+money(totalExpenses);
+
+document.getElementById(
+"dashProfit"
+).textContent=
+money(totalProfit);
+
+}
+
+
+async function loadReports(){
+
+await loadAll();
+
+const totalSales=
+sales.reduce(
+(a,b)=>a+Number(b.total_sale||0),
+0
+);
+
+const totalPurchase=
+purchases.reduce(
+(a,b)=>a+Number(b.total_cost||0),
+0
+);
+
+const totalExpenses=
+expenses.reduce(
+(a,b)=>a+Number(b.amount||0),
+0
+);
+
+const totalProfit=
+sales.reduce(
+(a,b)=>a+Number(b.profit||0),
+0
+)-totalExpenses;
+
+
+document.getElementById(
+"reportSales"
+).textContent=
+money(totalSales);
+
+document.getElementById(
+"reportPurchases"
+).textContent=
+money(totalPurchase);
+
+document.getElementById(
+"reportExpenses"
+).textContent=
+money(totalExpenses);
+
+document.getElementById(
+"reportProfit"
+).textContent=
+money(totalProfit);
+
+}
+
+
+function openProductModal(){
+
+document.getElementById(
+"modalContainer"
+).innerHTML=`
+
+<div class="modal">
+
+<div class="modal-box">
+
+<h2>Add Product</h2>
+
+<label>Product Name</label>
+<input id="mProductName">
+
+<label>SKU</label>
+<input id="mProductSKU"
+placeholder="PUR-0001">
+
+<label>Unit</label>
+<select id="mProductUnit">
+<option value="kg">kg</option>
+<option value="pcs">pcs</option>
+<option value="box">box</option>
+<option value="liter">liter</option>
+</select>
+
+<div class="row" style="margin-top:20px">
+
+<button onclick="saveProduct()">
+Save
+</button>
+
+<button class="btn-secondary"
+onclick="closeModal()">
+Cancel
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+
+async function saveProduct(){
+
+const name=
+document.getElementById(
+"mProductName"
+).value.trim();
+
+const sku=
+document.getElementById(
+"mProductSKU"
+).value.trim();
+
+const unit=
+document.getElementById(
+"mProductUnit"
+).value;
+
+if(!name){
+
+alert("Enter product name.");
+return;
+
+}
+
+
+const {error}=
+await supabaseClient
+.from("products")
+.insert({
+
+user_id:currentUser.id,
+
+name:name,
+
+sku:sku||null,
+
+unit:unit,
+
+stock_qty:0,
+
+average_cost:0,
+
+selling_price:0
+
+});
+
+
+if(error){
+
+alert(error.message);
+return;
+
+}
+
+closeModal();
+
+await loadProducts();
+
+}
+
+
+function openPurchaseModal(){
+
+document.getElementById(
+"modalContainer"
+).innerHTML=`
+
+<div class="modal">
+
+<div class="modal-box">
+
+<h2>New Purchase</h2>
+
+<label>Product</label>
+
+<select id="purchaseProduct">
+
+<option value="">
+Select product
+</option>
+
+${products.map(p=>`
+
+<option value="${p.id}">
+${p.name}
+</option>
+
+`).join("")}
+
+</select>
+
+<label>Quantity</label>
+<input id="purchaseQty"
+type="number"
+min="0">
+
+<label>Cost per Unit</label>
+<input id="purchaseCost"
+type="number"
+step="0.01">
+
+<label>Transport Cost</label>
+<input id="purchaseTransport"
+type="number"
+value="0"
+step="0.01">
+
+<label>Loading Cost</label>
+<input id="purchaseLoading"
+type="number"
+value="0"
+step="0.01">
+
+<label>Desired Profit %</label>
+<input id="purchaseProfit"
+type="number"
+value="10"
+step="0.01">
+
+<div class="row"
+style="margin-top:20px">
+
+<button onclick="savePurchase()">
+Save Purchase
+</button>
+
+<button class="btn-secondary"
+onclick="closeModal()">
+Cancel
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+
+async function savePurchase(){
+
+const productId=
+document.getElementById(
+"purchaseProduct"
+).value;
+
+const qty=
+Number(
+document.getElementById(
+"purchaseQty"
+).value
+);
+
+const cost=
+Number(
+document.getElementById(
+"purchaseCost"
+).value
+);
+
+const transport=
+Number(
+document.getElementById(
+"purchaseTransport"
+).value
+)||0;
+
+const loading=
+Number(
+document.getElementById(
+"purchaseLoading"
+).value
+)||0;
+
+const profitPercent=
+Number(
+document.getElementById(
+"purchaseProfit"
+).value
+)||0;
+
+
+const product=
+products.find(
+p=>String(p.id)===String(productId)
+);
+
+
+if(!product){
+
+alert("Select product.");
+return;
+
+}
+
+if(qty<=0){
+
+alert("Enter quantity.");
+return;
+
+}
+
+if(cost<0){
+
+alert("Enter valid cost.");
+return;
+
+}
+
+
+const extraPerUnit=
+(transport+loading)/qty;
+
+const landedCost=
+cost+extraPerUnit;
+
+const sellingPrice=
+landedCost*
+(1+profitPercent/100);
+
+const totalCost=
+qty*cost+
+transport+
+loading;
+
+
+const oldStock=
+Number(product.stock_qty||0);
+
+const oldAvg=
+Number(product.average_cost||0);
+
+const newStock=
+oldStock+qty;
+
+const newAvg=
+newStock>0
+?
+(
+oldStock*oldAvg+
+qty*landedCost
+)/
+newStock
+:
+landedCost;
+
+
+const {error:pError}=
+await supabaseClient
+.from("purchases")
+.insert({
+
+user_id:currentUser.id,
+
+product_id:product.id,
+
+product_name:product.name,
+
+quantity:qty,
+
+cost_per_unit:cost,
+
+transport_cost:transport,
+
+loading_cost:loading,
+
+total_cost:totalCost
+
+});
+
+
+if(pError){
+
+alert(pError.message);
+return;
+
+}
+
+
+const {error:uError}=
+await supabaseClient
+.from("products")
+.update({
+
+stock_qty:newStock,
+
+average_cost:newAvg,
+
+selling_price:sellingPrice
+
+})
+.eq("id",product.id)
+.eq("user_id",currentUser.id);
+
+
+if(uError){
+
+alert(uError.message);
+return;
+
+}
+
+
+closeModal();
+
+await loadProducts();
+await loadPurchases();
+
+alert(
+"Purchase saved successfully."
+);
+
+}
+
+
+function addPOSItem(){
+
+const productId=
+document.getElementById(
+"posProduct"
+).value;
+
+const qty=
+Number(
+document.getElementById(
+"posQty"
+).value
+);
+
+const price=
+Number(
+document.getElementById(
+"posPrice"
+).value
+);
+
+
+const product=
+products.find(
+p=>String(p.id)===String(productId)
+);
+
+
+if(!product){
+
+alert("Select product.");
+return;
+
+}
+
+if(qty<=0){
+
+alert("Enter quantity.");
+return;
+
+}
+
+if(qty>Number(product.stock_qty||0)){
+
+alert("Not enough stock.");
+return;
+
+}
+
+if(price<=0){
+
+alert("Enter selling price.");
+return;
+
+}
+
+
+const existing=
+posItems.find(
+x=>String(x.product_id)===
+String(product.id)
+);
+
+
+if(existing){
+
+existing.quantity+=qty;
+
+}else{
+
+posItems.push({
+
+product_id:product.id,
+
+product_name:product.name,
+
+quantity:qty,
+
+selling_price:price,
+
+average_cost:
+Number(product.average_cost||0)
+
+});
+
+}
+
+
+renderPOSItems();
+
+}
+
+
+function renderPOSItems(){
+
+const tbody=
+document.getElementById(
+"posItems"
+);
+
+tbody.innerHTML="";
+
+let total=0;
+let profit=0;
+
+
+posItems.forEach(
+(item,index)=>{
+
+const lineTotal=
+item.quantity*
+item.selling_price;
+
+const lineProfit=
+item.quantity*
+(
+item.selling_price-
+item.average_cost
+);
+
+total+=lineTotal;
+profit+=lineProfit;
+
+
+tbody.innerHTML+=`
+
+<tr>
+
+<td>${item.product_name}</td>
+
+<td>${item.quantity}</td>
+
+<td>${money(item.selling_price)}</td>
+
+<td>${money(lineTotal)}</td>
+
+<td>
+<button class="btn-danger small-btn"
+onclick="removePOSItem(${index})">
+X
+</button>
+</td>
+
+</tr>
+
+`;
+
+});
+
+
+document.getElementById(
+"posTotal"
+).textContent=
+money(total);
+
+document.getElementById(
+"posProfit"
+).textContent=
+money(profit);
+
+}
+
+
+function removePOSItem(index){
+
+posItems.splice(index,1);
+
+renderPOSItems();
+
+}
+
+
+async function completeSale(){
+
+if(posItems.length===0){
+
+alert("Invoice is empty.");
+return;
+
+}
+
+
+let total=0;
+let profit=0;
+
+
+for(const item of posItems){
+
+const product=
+products.find(
+p=>String(p.id)===
+String(item.product_id)
+);
+
+if(!product){
+
+alert(
+"Product not found."
+);
+
+return;
+
+}
+
+if(
+item.quantity>
+Number(product.stock_qty||0)
+){
+
+alert(
+"Not enough stock for "+
+item.product_name
+);
+
+return;
+
+}
+
+}
+
+
+for(const item of posItems){
+
+const product=
+products.find(
+p=>String(p.id)===
+String(item.product_id)
+);
+
+
+const lineTotal=
+item.quantity*
+item.selling_price;
+
+const lineProfit=
+item.quantity*
+(
+item.selling_price-
+Number(product.average_cost||0)
+);
+
+
+const newStock=
+Number(product.stock_qty||0)-
+item.quantity;
+
+
+const {error:sError}=
+await supabaseClient
+.from("sales")
+.insert({
+
+user_id:currentUser.id,
+
+invoice_no:currentInvoice,
+
+product_id:product.id,
+
+product_name:product.name,
+
+quantity:item.quantity,
+
+selling_price:item.selling_price,
+
+total_sale:lineTotal,
+
+profit:lineProfit
+
+});
+
+
+if(sError){
+
+alert(sError.message);
+return;
+
+}
+
+
+const {error:uError}=
+await supabaseClient
+.from("products")
+.update({
+
+stock_qty:newStock
+
+})
+.eq("id",product.id)
+.eq("user_id",currentUser.id);
+
+
+if(uError){
+
+alert(uError.message);
+return;
+
+}
+
+
+total+=lineTotal;
+profit+=lineProfit;
+
+}
+
+
+alert(
+"Sale completed.\n"+
+"Invoice: "+currentInvoice+
+"\nTotal: "+money(total)+
+"\nProfit: "+money(profit)
+);
+
+
+posItems=[];
+
+nextInvoice();
+
+await loadProducts();
+await loadSales();
+await loadDashboard();
+
+renderPOSItems();
+
+}
+
+
+function nextInvoice(){
+
+const n=
+Number(
+localStorage.getItem(
+"qfs_invoice_no"
+)||1
+);
+
+const next=n+1;
+
+localStorage.setItem(
+"qfs_invoice_no",
+next
+);
+
+currentInvoice=
+"INV-"+String(n).padStart(4,"0");
+
+const el=
+document.getElementById(
+"invoiceNo"
+);
+
+if(el)
+el.textContent=
+currentInvoice;
+
+}
+
+
+function loadPOS(){
+
+posItems=[];
+
+nextInvoice();
+
+populatePOSProducts();
+
+renderPOSItems();
+
+}
+
+
+function printInvoice(){
+
+window.print();
+
+}
+
+
+function openExpenseModal(){
+
+document.getElementById(
+"modalContainer"
+).innerHTML=`
+
+<div class="modal">
+
+<div class="modal-box">
+
+<h2>Add Expense</h2>
+
+<label>Description</label>
+
+<input id="expenseDescription"
+placeholder="Transport, salary, electricity...">
+
+<label>Amount</label>
+
+<input id="expenseAmount"
+type="number"
+step="0.01">
+
+<div class="row"
+style="margin-top:20px">
+
+<button onclick="saveExpense()">
+Save
+</button>
+
+<button class="btn-secondary"
+onclick="closeModal()">
+Cancel
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+
+async function saveExpense(){
+
+const description=
+document.getElementById(
+"expenseDescription"
+).value.trim();
+
+const amount=
+Number(
+document.getElementById(
+"expenseAmount"
+).value
+);
+
+
+if(!description){
+
+alert("Enter description.");
+return;
+
+}
+
+if(amount<=0){
+
+alert("Enter valid amount.");
+return;
+
+}
+
+
+const {error}=
+await supabaseClient
+.from("expenses")
+.insert({
+
+user_id:currentUser.id,
+
+description:description,
+
+amount:amount
+
+});
+
+
+if(error){
+
+alert(error.message);
+return;
+
+}
+
+
+closeModal();
+
+await loadExpenses();
+await loadDashboard();
+
+}
+
+
+function openProfile(){
+
+const metadata=
+currentUser.user_metadata||{};
+
+
+document.getElementById(
+"modalContainer"
+).innerHTML=`
+
+<div class="modal">
+
+<div class="modal-box">
+
+<h2>Profile</h2>
+
+<label>Business Name</label>
+
+<input id="profileBusiness"
+value="${metadata.business_name||""}">
+
+<label>Full Name</label>
+
+<input id="profileName"
+value="${metadata.full_name||""}">
+
+<label>Phone Number</label>
+
+<input id="profilePhone"
+value="${metadata.phone||""}">
+
+<label>Email</label>
+
+<input
+value="${currentUser.email||""}"
+disabled>
+
+<div class="row"
+style="margin-top:20px">
+
+<button onclick="saveProfile()">
+Save
+</button>
+
+<button class="btn-secondary"
+onclick="closeModal()">
+Close
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+
+async function saveProfile(){
+
+const business=
+document.getElementById(
+"profileBusiness"
+).value.trim();
+
+const name=
+document.getElementById(
+"profileName"
+).value.trim();
+
+const phone=
+document.getElementById(
+"profilePhone"
+).value.trim();
+
+
+const {data,error}=
+await supabaseClient.auth
+.updateUser({
+
+data:{
+business_name:business,
+full_name:name,
+phone:phone
+}
+
+});
+
+
+if(error){
+
+alert(error.message);
+return;
+
+}
+
+
+currentUser=data.user;
+
+closeModal();
+
+alert(
+"Profile updated successfully."
+);
+
+}
+
+
+function closeModal(){
+
+document.getElementById(
+"modalContainer"
+).innerHTML="";
+
+}
+
+
+supabaseClient.auth
+.getSession()
+.then(
+async ({data})=>{
+
+if(data.session){
+
+currentUser=
+data.session.user;
+
+await startApp();
+
+}
+
+});
+
+
+supabaseClient.auth
+.onAuthStateChange(
+async(event,session)=>{
+
+if(
+event==="PASSWORD_RECOVERY"
+&& session
+){
+
+const newPassword=
+prompt(
+"Enter your new password:"
+);
+
+if(newPassword){
+
+const {error}=
+await supabaseClient.auth
+.updateUser({
+password:newPassword
+});
+
+if(error){
+
+alert(error.message);
+
+}else{
+
+alert(
+"Password changed successfully."
+);
+
+}
+
+}
+
+}
+
+});
+
+
+</script>
+
+</body>
+</html>
