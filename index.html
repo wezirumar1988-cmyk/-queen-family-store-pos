@@ -245,7 +245,47 @@ async function saveProductEdit(id){
  try{const name=document.getElementById("epName").value.trim();const stock=Number(document.getElementById("epStock").value||0);const cost=Number(document.getElementById("epCost").value||0);const price=Number(document.getElementById("epPrice").value||0);const profit=Number(document.getElementById("epProfit").value||0);if(!name)return alert("Product name required");const r=await supabaseClient.from("products").update({name,stock,cost,selling_price:price,profit_percent:profit}).eq("id",id).eq("user_id",currentUser.id);if(r.error)throw r.error;closeModal();await loadCloudData();alert("Product updated successfully.");}catch(e){alert("Update error: "+e.message)}}
 function productMore(id){const p=data.products.find(x=>String(x.id)===String(id));if(!p)return;document.getElementById("modalHost").innerHTML=`<div class="modal"><div class="modal-box"><h2>⋮ ${escapeHtml(p.name)}</h2><p><b>Stock:</b> ${Number(p.stock||0)}</p><p><b>Average Cost:</b> ${money(p.cost)}</p><p><b>Selling Price:</b> ${money(p.selling_price)}</p><p><b>Profit / Unit:</b> ${money(Number(p.selling_price||0)-Number(p.cost||0))}</p><p><b>Profit %:</b> ${Number(p.profit_percent||0)}%</p><div class="modal-actions"><button onclick="editProduct('${p.id}')">✏️ Edit</button><button class="btn-secondary" onclick="closeModal()">Close</button></div></div></div>`}
 function renderProducts(){let h='<table><tr><th>Product</th><th>Stock</th><th>Average Cost</th><th>Selling Price</th><th>Profit / Unit</th><th>Status</th><th>More / Edit</th></tr>';data.products.forEach(p=>{const stock=Number(p.stock||0),cost=Number(p.cost||0),price=Number(p.selling_price||0),status=stock<=0?'<span class="badge out">OUT OF STOCK</span>':stock<=10?'<span class="badge low">LOW STOCK</span>':'<span class="badge good">IN STOCK</span>';h+=`<tr><td><b>${escapeHtml(p.name)}</b></td><td>${stock}</td><td>${money(cost)}</td><td>${money(price)}</td><td>${money(price-cost)}</td><td>${status}</td><td><button class="small-btn" onclick="editProduct('${p.id}')">✏️ Edit</button> <button class="small-btn" onclick="productMore('${p.id}')">⋮ More</button></td></tr>`});h+='</table>';document.getElementById("productTable").innerHTML=data.products.length?h:"No products yet.";document.getElementById("posProduct").innerHTML=data.products.filter(p=>Number(p.stock||0)>0).map(p=>`<option value="${p.id}">${escapeHtml(p.name)} — ${p.stock} available — ${money(p.selling_price)}</option>`).join("")}
-function renderPurchases(){let h='<table><tr><th>Date</th><th>Product</th><th>Qty</th><th>Purchase Cost</th><th>Transport</th><th>Loading</th><th>Total</th></tr>';data.purchases.forEach(p=>h+=`<tr><td>${p.purchase_date||""}</td><td>${escapeHtml(p.product_name)}</td><td>${p.qty}</td><td>${money(p.purchase_cost)}</td><td>${money(p.transport)}</td><td>${money(p.loading)}</td><td>${money(p.total_cost)}</td></tr>`);h+='</table>';document.getElementById("purchaseTable").innerHTML=data.purchases.length?h:"No purchases yet."}
+function renderPurchases(){let h='<table><tr><th>Date</th><th>Product</th><th>Qty</th><th>Purchase Cost</th><th>Transport</th><th>Loading</th><th>Total</th><th>Action</th></tr>';data.purchases.forEach(p=>h+=`<tr><td>${p.purchase_date||""}</td><td>${escapeHtml(p.product_name)}</td><td>${p.qty}</td><td>${money(p.purchase_cost)}</td><td>${money(p.transport)}</td><td>${money(p.loading)}</td><td>${money(p.total_cost)}</td><td><button class="small-btn" onclick="editPurchase('${p.id}')">✏️ Edit</button></td></tr>`);h+='</table>';document.getElementById("purchaseTable").innerHTML=data.purchases.length?h:"No purchases yet."}
+
+function editPurchase(id){
+  const p=data.purchases.find(x=>String(x.id)===String(id));
+  if(!p)return alert('Purchase not found.');
+  const host=document.getElementById('modalHost');
+  host.innerHTML=`<div class="modal"><div class="modal-box"><h2>✏️ Edit Purchase</h2>
+  <label>Product</label><input id="editPurchaseProduct" value="${escapeHtml(p.product_name||'')}" disabled>
+  <label>Quantity</label><input id="editPurchaseQty" type="number" min="0" step="0.01" value="${Number(p.qty||0)}">
+  <label>Purchase Cost / Unit</label><input id="editPurchaseCost" type="number" min="0" step="0.01" value="${Number(p.purchase_cost||0)}">
+  <label>Transport Cost</label><input id="editPurchaseTransport" type="number" min="0" step="0.01" value="${Number(p.transport||0)}">
+  <label>Loading / Unloading</label><input id="editPurchaseLoading" type="number" min="0" step="0.01" value="${Number(p.loading||0)}">
+  <label>Supplier</label><input id="editPurchaseSupplier" value="${escapeHtml(p.supplier||'')}">
+  <label>Purchase Date</label><input id="editPurchaseDate" type="date" value="${p.purchase_date||''}">
+  <div class="modal-actions"><button onclick="savePurchaseEdit('${p.id}')">Save Changes</button><button class="btn-secondary" onclick="closeModal()">Cancel</button></div></div></div>`;
+}
+
+async function savePurchaseEdit(id){
+  if(!currentUser)return alert('Please sign in first.');
+  const old=data.purchases.find(x=>String(x.id)===String(id));
+  if(!old)return alert('Purchase not found.');
+  const qty=Number(document.getElementById('editPurchaseQty').value), cost=Number(document.getElementById('editPurchaseCost').value), transport=Number(document.getElementById('editPurchaseTransport').value)||0, loading=Number(document.getElementById('editPurchaseLoading').value)||0;
+  const supplier=document.getElementById('editPurchaseSupplier').value.trim(), date=document.getElementById('editPurchaseDate').value||today();
+  if(qty<=0||cost<0)return alert('Quantity fi cost sirrii galchi.');
+  const totalCost=qty*cost+transport+loading;
+  const {error}=await supabaseClient.from('purchases').update({qty,purchase_cost:cost,transport,loading,total_cost:totalCost,supplier,purchase_date:date}).eq('id',old.id).eq('user_id',currentUser.id);
+  if(error)return alert(error.message);
+
+  const product=data.products.find(x=>String(x.name||'').toLowerCase()===String(old.product_name||'').toLowerCase());
+  if(product){
+    const newStock=Math.max(0,Number(product.stock||0)-Number(old.qty||0)+qty);
+    const {data:allPurchases,error:pe}=await supabaseClient.from('purchases').select('*').eq('user_id',currentUser.id).eq('product_name',old.product_name);
+    if(pe)return alert(pe.message);
+    let totalQty=0,totalLanded=0;
+    (allPurchases||[]).forEach(x=>{const q=Number(x.qty||0), landed=Number(x.purchase_cost||0)+(Number(x.transport||0)+Number(x.loading||0))/Math.max(q,1); totalQty+=q; totalLanded+=q*landed;});
+    const avgCost=totalQty?totalLanded/totalQty:Number(product.cost||0);
+    const {error:ue}=await supabaseClient.from('products').update({stock:newStock,cost:avgCost}).eq('id',product.id).eq('user_id',currentUser.id);
+    if(ue)return alert(ue.message);
+  }
+  closeModal(); await loadCloudData(); alert('Purchase updated successfully.');
+}
 function addToCart(){const id=document.getElementById("posProduct").value,qty=Number(document.getElementById("posQty").value),p=data.products.find(x=>String(x.id)===String(id));if(!p||qty<=0)return alert("Product fi quantity sirrii galchi.");const existing=cart.find(x=>String(x.id)===String(id)),totalQty=(existing?existing.qty:0)+qty;if(totalQty>Number(p.stock||0))return alert("Stock gahaa miti. Available: "+p.stock);if(existing)existing.qty+=qty;else cart.push({id:p.id,name:p.name,qty,price:Number(p.selling_price||0),cost:Number(p.cost||0)});renderCart()}
 function removeFromCart(i){cart.splice(i,1);renderCart()}
 function clearCart(){cart=[];renderCart()}
