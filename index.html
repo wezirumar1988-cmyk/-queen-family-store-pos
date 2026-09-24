@@ -7,6 +7,61 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#222}button,input,select{font:inherit}button{cursor:pointer;border:0;background:#111;color:#fff;padding:12px 16px;border-radius:10px;font-weight:bold}button:hover{opacity:.9}.btn-secondary{background:#666}.btn-danger{background:#b00020}.btn-success{background:#08752a}.small-btn{padding:8px 12px;width:auto}.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.login-card{background:#fff;width:min(430px,100%);padding:30px;border-radius:20px;box-shadow:0 10px 35px #0002}.logo{width:75px;height:75px;border-radius:20px;background:#111;color:#fff;display:grid;place-items:center;margin:auto auto 15px;font-size:25px;font-weight:bold}.center{text-align:center}.muted{color:#777}input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:6px 0 12px;background:#fff}.app{display:none;min-height:100vh}.top{height:64px;background:#111;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:10}.brand{font-weight:bold}.logout{background:#333;padding:9px 14px;width:auto}.layout{display:flex;min-height:calc(100vh - 64px)}.side{width:230px;background:#fff;border-right:1px solid #ddd;padding:14px}.nav{width:100%;text-align:left;background:#fff;color:#333;margin:4px 0}.nav.active{background:#111;color:#fff}.main{flex:1;padding:22px}.page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.stat{background:#fff;padding:18px;border-radius:15px;box-shadow:0 3px 15px #0001}.value{font-size:24px;font-weight:bold;margin-top:8px}.panel{background:#fff;padding:18px;margin-top:18px;border-radius:15px;box-shadow:0 3px 15px #0001}.row{display:flex;gap:10px}.row>*{flex:1}table{width:100%;border-collapse:collapse}th,td{padding:11px;border-bottom:1px solid #eee;text-align:left}th{color:#777;font-size:13px}.badge{display:inline-block;padding:5px 8px;border-radius:8px;background:#eee;font-size:12px}.low{background:#fff0d8;color:#9a6200}.out{background:#ffe0e0;color:#a00000}.good{background:#dff5e4;color:#08752a}.total-box{background:#111;color:#fff;padding:18px;border-radius:12px;margin-top:15px}.total-box .big{font-size:25px;font-weight:bold}.invoice{border:1px solid #ddd;padding:20px;border-radius:12px;background:#fff}.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000}.modal-box{background:#fff;width:min(520px,100%);max-height:90vh;overflow:auto;padding:25px;border-radius:18px}.modal-actions{display:flex;gap:10px;margin-top:18px}.modal-actions>*{flex:1}.invoice-header{display:flex;justify-content:space-between;gap:20px;margin-bottom:20px}.hidden{display:none!important}.notice{padding:12px;border-radius:10px;background:#eef4ff;margin:10px 0;font-size:14px}.error{color:#b00020}.success{color:#08752a}.auth-switch{background:none;color:#111;padding:5px;text-decoration:underline}@media(max-width:850px){.side{width:65px;padding:8px}.nav{font-size:0;text-align:center;padding:13px 5px}.nav:first-letter{font-size:20px}.grid{grid-template-columns:repeat(2,1fr)}.main{padding:14px}}@media(max-width:600px){.row{flex-direction:column}.grid{grid-template-columns:1fr 1fr}.main{padding:10px}table{font-size:12px}.panel{padding:12px}.invoice-header{flex-direction:column}}@media print{body *{visibility:hidden!important}#printArea,#printArea *{visibility:visible!important}#printArea{display:block!important;position:absolute;left:0;top:0;width:100%;background:#fff;color:#000}}
+
+/* WEZIR POS BLACK + GOLD + WHITE THEME */
+:root{--wp-black:#080808;--wp-black2:#151515;--wp-gold:#D4AF37;--wp-gold2:#F2D675;--wp-white:#fff;--wp-light:#f7f7f5;--wp-border:#d8c27a}
+body{background:var(--wp-light)!important;color:#171717!important}
+.login{background:linear-gradient(135deg,#050505 0%,#111 55%,#241f0d 100%)!important;position:relative}
+.login:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 15% 15%,rgba(212,175,55,.22),transparent 30%),radial-gradient(circle at 85% 85%,rgba(212,175,55,.14),transparent 30%);pointer-events:none}
+.login-card{position:relative;z-index:1;background:#fff!important;border:2px solid var(--wp-gold)!important;box-shadow:0 18px 55px rgba(0,0,0,.5)!important}
+.logo{background:linear-gradient(145deg,#050505,#202020)!important;color:var(--wp-gold)!important;border:2px solid var(--wp-gold)!important;box-shadow:0 6px 20px rgba(212,175,55,.25)}
+.login-card h1,.login-card h2,.login-card h3{color:#111!important}
+.login-card button:not(.auth-switch){background:linear-gradient(135deg,#b8860b,var(--wp-gold2))!important;color:#080808!important;border:1px solid #9f7b18!important}
+.login-card input,.login-card select{border:1px solid #cfcfcf!important;background:#fff!important;color:#111!important}
+.top{background:linear-gradient(90deg,#050505,#171717)!important;color:#fff!important;border-bottom:2px solid var(--wp-gold)!important}
+.brand{color:#fff!important}.brand::after{content:'  ◆';color:var(--wp-gold)!important}
+.logout{background:var(--wp-gold)!important;color:#111!important}
+.side{background:#fff!important;border-right:2px solid var(--wp-gold)!important}
+.nav{background:#fff!important;color:#171717!important;border-left:3px solid transparent!important}
+.nav:hover{background:#faf5e2!important;color:#111!important}
+.nav.active{background:#111!important;color:var(--wp-gold2)!important;border-left-color:var(--wp-gold)!important}
+.main{background:#f7f7f5!important}
+.stat,.panel{background:#fff!important;border:1px solid #e4dfcf!important;box-shadow:0 4px 18px rgba(0,0,0,.08)!important}
+.stat .value{color:#111!important}.total-box{background:linear-gradient(135deg,#080808,#1b1b1b)!important;color:#fff!important;border:1px solid var(--wp-gold)!important}.total-box .big{color:var(--wp-gold2)!important}
+button{background:#111!important;color:#fff!important}button:hover{background:#222!important}button.btn-success{background:#111!important;border:1px solid var(--wp-gold)!important}button.btn-danger{background:#111!important;border:1px solid #b00020!important}.small-btn{border:1px solid var(--wp-gold)!important}
+th{background:#111!important;color:var(--wp-gold2)!important}td{background:#fff!important;border-bottom:1px solid #eee!important}.good{background:#e9f5e9!important;color:#176b24!important}.low{background:#fff4d6!important;color:#8a6500!important}.out{background:#ffe7e7!important;color:#9a0000!important}
+.notice{background:#fffaf0!important;border-left:4px solid var(--wp-gold)!important}.modal-box{border:2px solid var(--wp-gold)!important}.invoice{border:2px solid var(--wp-gold)!important}
+@media print{body{background:#fff!important}.top,.side{display:none!important}#printArea{background:#fff!important;color:#000!important}}
+
+/* WEZIR POS — COMPLETE BLACK + GOLD + WHITE THEME */
+:root{--wp-black:#090909;--wp-black2:#151515;--wp-gold:#D4AF37;--wp-gold2:#F4D76A;--wp-white:#fff;--wp-bg:#f7f7f7;--wp-border:#ded7bd}
+body{background:var(--wp-bg)!important;color:#171717!important}
+button{background:var(--wp-black)!important;color:var(--wp-white)!important;border:1px solid var(--wp-black)!important}
+button:hover{background:var(--wp-gold)!important;color:#111!important;border-color:var(--wp-gold)!important}
+.btn-secondary{background:#333!important;color:#fff!important}.btn-danger{background:#8f1111!important}.btn-success{background:#111!important;border-color:var(--wp-gold)!important}
+.login{background:linear-gradient(135deg,#050505 0%,#171717 58%,#8d7220 100%)!important}
+.login-card{background:#fff!important;border:2px solid var(--wp-gold)!important;box-shadow:0 18px 55px #0008!important;position:relative;overflow:hidden}
+.login-card:before{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--wp-black),var(--wp-gold),var(--wp-black));position:absolute;left:0;right:0;top:0}
+.logo{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border:2px solid var(--wp-gold)!important;box-shadow:0 5px 20px #0004}
+.login-card h1,.login-card h2{color:#111!important}.login-card .muted{color:#777!important}
+input,select{background:#fff!important;color:#111!important;border:1px solid #cfcfcf!important}.login-card input:focus,.login-card select:focus{outline:2px solid #d4af3755;border-color:var(--wp-gold)!important}
+.app{background:var(--wp-bg)!important}
+.top{background:var(--wp-black)!important;color:#fff!important;border-bottom:3px solid var(--wp-gold)!important;box-shadow:0 4px 15px #0004}
+.brand{color:#fff!important}.brand::first-letter{color:var(--wp-gold)!important}.logout{background:#222!important;border:1px solid var(--wp-gold)!important}
+.side{background:#fff!important;border-right:2px solid var(--wp-gold)!important;box-shadow:3px 0 12px #0001}
+.nav{background:#fff!important;color:#222!important;border-left:4px solid transparent!important}.nav:hover{background:#f7f1df!important;color:#111!important}.nav.active{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border-left-color:var(--wp-gold)!important}
+.main{background:var(--wp-bg)!important}.page h1,.page h2,.page h3{color:#111!important}
+.grid{gap:16px}.stat{background:#fff!important;border:1px solid #e7e0c9!important;border-top:4px solid var(--wp-gold)!important;box-shadow:0 5px 18px #00000012!important}.stat .value{color:#111!important}
+.panel{background:#fff!important;border:1px solid #e7e0c9!important;border-top:3px solid var(--wp-gold)!important;box-shadow:0 5px 18px #00000012!important}
+th{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border-bottom:2px solid var(--wp-gold)!important}td{background:#fff!important;border-bottom:1px solid #eee!important}tr:hover td{background:#fffaf0!important}
+.badge{border:1px solid #ddd!important}.good{background:#f0f8f1!important;color:#176b2a!important;border-color:#b9d8bd!important}.low{background:#fff8e7!important;color:#8a6200!important;border-color:#e3c46c!important}.out{background:#fff0f0!important;color:#a00000!important;border-color:#e3aaaa!important}
+.small-btn{background:var(--wp-black)!important;border-color:var(--wp-gold)!important}.small-btn:hover{background:var(--wp-gold)!important;color:#111!important}
+.qfhub{background:var(--wp-black)!important;color:#fff!important;border:2px solid var(--wp-gold)!important}.qfhub h2{color:var(--wp-gold2)!important}.qfstat{background:#fff!important;border:1px solid #e7e0c9!important;border-top:3px solid var(--wp-gold)!important}
+.qfmodal{background:#0009!important}.qfbox{background:#fff!important;border:2px solid var(--wp-gold)!important;box-shadow:0 15px 50px #0008!important}.qfbox h2{color:#111!important}
+.invoice{background:#fff!important;color:#111!important}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)!important}.side{width:190px!important}}
+@media(max-width:650px){.layout{display:block!important}.side{width:100%!important;border-right:0!important;border-bottom:2px solid var(--wp-gold)!important;display:flex!important;flex-wrap:wrap!important}.nav{width:auto!important;flex:1 1 45%!important;margin:3px!important}.main{padding:12px!important}.grid{grid-template-columns:1fr 1fr!important}.row{flex-direction:column!important}}
+@media print{body{background:#fff!important}.top,.side{display:none!important}.main{padding:0!important;background:#fff!important}.panel,.stat{box-shadow:none!important;border:0!important}}
 </style>
 </head>
 <body>
