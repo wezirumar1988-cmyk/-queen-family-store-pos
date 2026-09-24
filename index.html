@@ -292,7 +292,58 @@ function clearCart(){cart=[];renderCart()}
 
 function renderCart(){const box=document.getElementById("cart");if(!cart.length){box.innerHTML='<p class="muted">Cart is empty.</p>';return}let total=0,cost=0,h='<table><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th><th></th></tr>';cart.forEach((x,i)=>{const line=x.qty*x.price;total+=line;cost+=x.qty*x.cost;h+=`<tr><td>${escapeHtml(x.name)}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(line)}</td><td><button class="small-btn btn-danger" onclick="removeFromCart(${i})">X</button></td></tr>`});h+='</table><div class="total-box"><div>Total Sale</div><div class="big">'+money(total)+'</div><div>Estimated Gross Profit: '+money(total-cost)+'</div></div>';box.innerHTML=h}
 async function checkout(){if(!cart.length)return alert("Cart keessa item hin jiru.");if(!currentUser)return alert("Please sign in.");let invoice=document.getElementById("invoiceNo").value.trim()||makeInvoice();if(data.sales.some(s=>s.invoice_no===invoice))return alert("Invoice number kun duraan jira.");const payment=document.getElementById("paymentMethod").value,customer=document.getElementById("customerName").value.trim();let total=0,cost=0;for(const x of cart){const p=data.products.find(p=>p.id===x.id);if(!p||Number(p.stock)<x.qty)return alert("Stock error: "+x.name);const line=x.qty*x.price,lineCost=x.qty*x.cost;const {error}=await supabaseClient.from("sales").insert({user_id:currentUser.id,invoice_no:invoice,product_name:x.name,qty:x.qty,selling_price:x.price,total:line,cost:lineCost,profit:line-lineCost,payment_method:payment,customer,sale_date:today()});if(error)return alert(error.message);const {error:updateError}=await supabaseClient.from("products").update({stock:Number(p.stock)-x.qty}).eq("id",p.id).eq("user_id",currentUser.id);if(updateError)return alert(updateError.message);total+=line;cost+=lineCost}const sale={invoice,date:new Date().toLocaleString(),customer,payment,items:cart.map(x=>({...x})),total,cost,profit:total-cost};cart=[];document.getElementById("customerName").value="";document.getElementById("invoiceNo").value=makeInvoice();await loadCloudData();alert(invoice+" successfully completed!\nProfit: "+money(sale.profit));printInvoice(sale)}
-function renderSales(){let groups={};data.sales.forEach(s=>{const k=s.invoice_no||"NO-INVOICE";if(!groups[k])groups[k]={invoice:k,date:s.sale_date,customer:s.customer,payment:s.payment_method,total:0,profit:0,items:[]};groups[k].total+=Number(s.total||0);groups[k].profit+=Number(s.profit||0);groups[k].items.push({name:s.product_name,qty:Number(s.qty||0),price:Number(s.selling_price||0),cost:Number(s.cost||0)})});let arr=Object.values(groups),h='<table><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Payment</th><th>Total</th><th>Profit</th><th>Action</th></tr>';arr.forEach((s,i)=>h+=`<tr><td><b>${escapeHtml(s.invoice)}</b></td><td>${s.date||""}</td><td>${escapeHtml(s.customer||"-")}</td><td>${escapeHtml(s.payment||"")}</td><td>${money(s.total)}</td><td>${money(s.profit)}</td><td><button class="small-btn" onclick='printInvoice(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Print</button></td></tr>`);h+='</table>';document.getElementById("salesTable").innerHTML=arr.length?h:"No sales yet.";document.getElementById("recentSales").innerHTML=arr.slice(0,5).map(s=>`<div style="padding:8px 0;border-bottom:1px solid #eee"><b>${escapeHtml(s.invoice)}</b> — ${money(s.total)} — Profit ${money(s.profit)}</div>`).join("")||"No sales yet."}
+function renderSales(){let groups={};data.sales.forEach(s=>{const k=s.invoice_no||"NO-INVOICE";if(!groups[k])groups[k]={invoice:k,date:s.sale_date,customer:s.customer,payment:s.payment_method,total:0,profit:0,items:[]};groups[k].total+=Number(s.total||0);groups[k].profit+=Number(s.profit||0);groups[k].items.push({name:s.product_name,qty:Number(s.qty||0),price:Number(s.selling_price||0),cost:Number(s.cost||0)})});let arr=Object.values(groups),h='<table><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Payment</th><th>Total</th><th>Profit</th><th>Action</th></tr>';arr.forEach((s,i)=>h+=`<tr><td><b>${escapeHtml(s.invoice)}</b></td><td>${s.date||""}</td><td>${escapeHtml(s.customer||"-")}</td><td>${escapeHtml(s.payment||"")}</td><td>${money(s.total)}</td><td>${money(s.profit)}</td><td><button class="small-btn" onclick='printInvoice(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Print</button></td></tr>`);h+='</table>';document.getElementById("salesTable").innerHTML=arr.length?h:"No sales yet.";document.getElementById("recentSales").innerHTML=arr.slice(0,5).map(s=>`<div style="padding:8px 0;border-bottom:1px solid #eee"><b>${escapeHtml(s.invoice)}</b> — ${money(s.total)} — Profit ${money(s.profit)} <button class="small-btn" style="float:right" onclick="editSale('${String(s.invoice).replace(/'/g,"\\'")}')">✏️ Edit</button></div>`).join("")||"No sales yet."}
+function editSale(invoice){
+  const items=data.sales.filter(s=>String(s.invoice_no)===String(invoice));
+  if(!items.length)return alert('Sale not found.');
+  const host=document.getElementById('modalHost');
+  let rows=items.map((s,i)=>`<div style="border:1px solid #ddd;border-radius:10px;padding:10px;margin:8px 0">
+    <b>${escapeHtml(s.product_name)}</b>
+    <label>Quantity</label><input id="editSaleQty${i}" type="number" min="0" step="0.01" value="${Number(s.qty||0)}">
+    <label>Selling Price / Unit</label><input id="editSalePrice${i}" type="number" min="0" step="0.01" value="${Number(s.selling_price||0)}">
+  </div>`).join('');
+  host.innerHTML=`<div class="modal"><div class="modal-box"><h2>✏️ Edit Sale — ${escapeHtml(invoice)}</h2>${rows}
+  <label>Payment Method</label><select id="editSalePayment"><option value="Cash">Cash</option><option value="Credit">Credit</option><option value="Bank">Bank</option><option value="UPI">UPI</option></select>
+  <label>Customer</label><input id="editSaleCustomer" value="${escapeHtml(items[0].customer||'')}">
+  <div class="modal-actions"><button onclick="saveSaleEdit('${String(invoice).replace(/'/g,"\\'")}')">Save Changes</button><button class="btn-secondary" onclick="closeModal()">Cancel</button></div></div></div>`;
+  document.getElementById('editSalePayment').value=items[0].payment_method||'Cash';
+}
+
+async function saveSaleEdit(invoice){
+  if(!currentUser)return alert('Please sign in first.');
+  const items=data.sales.filter(s=>String(s.invoice_no)===String(invoice));
+  if(!items.length)return alert('Sale not found.');
+  let oldQtyTotal=0,newQtyTotal=0;
+  const updates=[];
+  for(let i=0;i<items.length;i++){
+    const s=items[i];
+    const qty=Number(document.getElementById('editSaleQty'+i).value);
+    const price=Number(document.getElementById('editSalePrice'+i).value);
+    if(qty<=0||price<0)return alert('Quantity fi selling price sirrii galchi.');
+    oldQtyTotal+=Number(s.qty||0); newQtyTotal+=qty;
+    updates.push({row:s,qty,price});
+  }
+  const payment=document.getElementById('editSalePayment').value;
+  const customer=document.getElementById('editSaleCustomer').value.trim();
+  for(const u of updates){
+    const s=u.row;
+    const total=u.qty*u.price;
+    const cost=u.qty*Number(s.cost||0)/Math.max(Number(s.qty||0),1);
+    const profit=total-cost;
+    const {error}=await supabaseClient.from('sales').update({qty:u.qty,selling_price:u.price,total,cost,profit,payment_method:payment,customer}).eq('id',s.id).eq('user_id',currentUser.id);
+    if(error)return alert(error.message);
+    const p=data.products.find(x=>String(x.name||'').toLowerCase()===String(s.product_name||'').toLowerCase());
+    if(p){
+      const stock=Number(p.stock||0)+Number(s.qty||0)-u.qty;
+      const {error:ue}=await supabaseClient.from('products').update({stock:Math.max(0,stock)}).eq('id',p.id).eq('user_id',currentUser.id);
+      if(ue)return alert(ue.message);
+    }
+  }
+  closeModal();
+  await loadCloudData();
+  alert('Sale updated successfully.');
+}
+
 async function addExpense(){if(!currentUser)return alert("Please sign in.");const description=document.getElementById("eName").value.trim(),amount=Number(document.getElementById("eAmount").value);if(!description||amount<=0)return alert("Expense fi amount guuti.");const {error}=await supabaseClient.from("expenses").insert({user_id:currentUser.id,description,amount,expense_date:today()});if(error)return alert(error.message);document.getElementById("eName").value="";document.getElementById("eAmount").value="";await loadCloudData()}
 function renderExpenses(){let h='<table><tr><th>Expense</th><th>Date</th><th>Amount</th></tr>';data.expenses.forEach(e=>h+=`<tr><td>${escapeHtml(e.description)}</td><td>${e.expense_date||""}</td><td>${money(e.amount)}</td></tr>`);h+='</table>';document.getElementById("expenseTable").innerHTML=data.expenses.length?h:"No expenses yet."}
 function renderDashboard(){const sales=data.sales.reduce((a,s)=>a+Number(s.total||0),0),cogs=data.sales.reduce((a,s)=>a+Number(s.cost||0),0),expenses=data.expenses.reduce((a,e)=>a+Number(e.amount||0),0),purchase=data.purchases.reduce((a,p)=>a+Number(p.total_cost||0),0),profit=sales-cogs-expenses,stockProducts=data.products.filter(p=>Number(p.stock||0)>0).length,stockQty=data.products.reduce((a,p)=>a+Number(p.stock||0),0),stockValue=data.products.reduce((a,p)=>a+Number(p.stock||0)*Number(p.cost||0),0),invoices=new Set(data.sales.map(s=>s.invoice_no)).size;document.getElementById("dSales").textContent=money(sales);document.getElementById("dPurchase").textContent=money(purchase);document.getElementById("dExpenses").textContent=money(expenses);document.getElementById("dProfit").textContent=money(profit);document.getElementById("dStock").textContent=stockProducts;document.getElementById("dQty").textContent=stockQty;document.getElementById("dStockValue").textContent=money(stockValue);document.getElementById("dInvoices").textContent=invoices;document.getElementById("reportBox").innerHTML=`<h3>Business Report</h3><p>Total Sales: <b>${money(sales)}</b></p><p>Total Purchases: <b>${money(purchase)}</b></p><p>Cost of Goods Sold: <b>${money(cogs)}</b></p><p>Total Expenses: <b>${money(expenses)}</b></p><hr><h2>Net Profit: ${money(profit)}</h2><p>Current Stock Value: <b>${money(stockValue)}</b></p>`}
