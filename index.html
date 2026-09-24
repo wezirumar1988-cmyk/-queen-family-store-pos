@@ -270,6 +270,24 @@ alert("Password reset link has been sent to your email.");
 }
 function closeModal(){const h=document.getElementById("modalHost");if(h)h.innerHTML="";}
 
+async function adminUserAction(userId,action,hours){
+  if(!isAdmin())return alert("Admin only.");
+  if(String(userId||"")===String(currentUser?.id||""))return alert("You cannot stop or deactivate your own admin account.");
+  const labels={stop:(hours===1?"Stop for 1 Day":hours===7?"Stop for 7 Days":"Stop for 30 Days"),deactivate:"Deactivate until activated",activate:"Activate"};
+  const label=labels[action]||action;
+  if(!confirm(label+" for this user?"))return;
+  try{
+    const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+    if(sessionError)throw sessionError;
+    if(!session?.access_token)throw new Error("Admin session not found. Please sign in again.");
+    const response=await fetch(SUPER_ACTION_URL,{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({action,user_id:userId,hours})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||!result.success)throw new Error(result.error||"Action failed.");
+    alert(label+" completed successfully.");
+    await loadAdminUsers();
+  }catch(e){alert(e.message||String(e));}
+}
+
 const ADMIN_EMAIL="wezirumar1988@gmail.com";
 const SUPER_ACTION_URL="https://qoxhhdxcezmwqeehqtvy.supabase.co/functions/v1/super-action";
 function isAdmin(){return String(currentUser?.email||"").toLowerCase()===ADMIN_EMAIL.toLowerCase();}
@@ -302,8 +320,20 @@ async function loadAdminUsers(){
     const confirmed=users.filter(u=>u.email_confirmed).length;
     stats.innerHTML='<div class="stat"><div class="muted">Total Users</div><div class="value">'+users.length+'</div></div><div class="stat"><div class="muted">Active</div><div class="value">'+active+'</div></div><div class="stat"><div class="muted">Email Confirmed</div><div class="value">'+confirmed+'</div></div><div class="stat"><div class="muted">Admin</div><div class="value">1</div></div>';
     if(!users.length){table.innerHTML='<p class="muted">No users found.</p>';return;}
-    const rows=users.map((u,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeHtml(u.full_name||'—')+'</td><td>'+escapeHtml(u.business_name||'—')+'</td><td>'+escapeHtml(u.email||'—')+'</td><td>'+escapeHtml(u.phone||'—')+'</td><td>'+formatAdminDate(u.created_at)+'</td><td>'+formatAdminDate(u.last_login)+'</td><td><span class="badge '+(u.active?'good':'out')+'">'+(u.active?'Active':'Inactive')+'</span></td><td><span class="badge '+(u.email_confirmed?'good':'low')+'">'+(u.email_confirmed?'Confirmed':'Not confirmed')+'</span></td></tr>').join('');
-    table.innerHTML='<table><thead><tr><th>#</th><th>Full Name</th><th>Business</th><th>Email</th><th>Phone</th><th>Created</th><th>Last Login</th><th>Status</th><th>Email</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    const rows=users.map((u,i)=>{
+      const self=String(u.email||'').toLowerCase()===String(ADMIN_EMAIL).toLowerCase();
+      const actions=self
+        ? '<span class="muted">Admin</span>'
+        : '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+          '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'stop\',1)" title="Stop for 1 Day">⏸️ Stop 1 Day</button>'+
+          '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'stop\',7)" title="Stop for 7 Days">⏸️ Stop 7 Days</button>'+
+          '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'stop\',30)" title="Stop for 30 Days">⏸️ Stop 30 Days</button>'+
+          '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'deactivate\')" title="Deactivate until activated">🔴 Deactivate</button>'+
+          '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'activate\')" title="Activate account">🟢 Activate</button>'+
+          '</div>';
+      return '<tr><td>'+(i+1)+'</td><td>'+escapeHtml(u.full_name||'—')+'</td><td>'+escapeHtml(u.business_name||'—')+'</td><td>'+escapeHtml(u.email||'—')+'</td><td>'+escapeHtml(u.phone||'—')+'</td><td>'+formatAdminDate(u.created_at)+'</td><td>'+formatAdminDate(u.last_login)+'</td><td><span class="badge '+(u.active?'good':'out')+'">'+(u.active?'Active':'Inactive')+'</span></td><td><span class="badge '+(u.email_confirmed?'good':'low')+'">'+(u.email_confirmed?'Confirmed':'Not confirmed')+'</span></td><td>'+actions+'</td></tr>';
+    }).join('');
+    table.innerHTML='<table><thead><tr><th>#</th><th>Full Name</th><th>Business</th><th>Email</th><th>Phone</th><th>Created</th><th>Last Login</th><th>Status</th><th>Email</th><th>Actions</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }catch(e){
     table.innerHTML='<p class="error"><b>Could not load users:</b> '+escapeHtml(e.message||String(e))+'</p>';
   }
@@ -742,6 +772,21 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
   window.showSignUp=function(){document.getElementById('signInBox')?.classList.add('hidden');document.getElementById('signUpBox')?.classList.remove('hidden');};
   window.showSignIn=function(){document.getElementById('signUpBox')?.classList.add('hidden');document.getElementById('signInBox')?.classList.remove('hidden');};
   window.logout=async function(){try{await client().auth.signOut();window.currentUser=null;showLogin();}catch(e){alert(e.message||String(e));}};
+})();
+</script>
+
+<script>
+/* WEZIR POS — remove accidental duplicate Settings nav item */
+(function(){
+  function cleanupSettingsNav(){
+    document.querySelectorAll('.side .nav').forEach(function(btn){
+      const t=(btn.textContent||'').replace(/\s+/g,' ').trim();
+      if(t.includes('Settings') && t.startsWith('👑')) btn.remove();
+    });
+  }
+  window.addEventListener('load',cleanupSettingsNav);
+  const obs=new MutationObserver(cleanupSettingsNav);
+  window.addEventListener('load',function(){const side=document.querySelector('.side');if(side)obs.observe(side,{childList:true,subtree:true});});
 })();
 </script>
 
