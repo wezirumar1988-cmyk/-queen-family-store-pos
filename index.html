@@ -979,4 +979,58 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
 })();
 </script>
 
+<script>
+/* WEZIR POS — ALL FEATURES CLICK FIX V3 */
+(function(){
+  function openAllFeaturesNow(){
+    var page=document.getElementById('featurehubPage');
+    if(!page) return;
+
+    /* Hide every normal app page */
+    document.querySelectorAll('#app .page').forEach(function(x){
+      x.classList.remove('active');
+      x.style.display='none';
+    });
+
+    /* Show the feature hub directly */
+    page.classList.add('active');
+    page.style.display='block';
+    page.style.visibility='visible';
+    page.style.opacity='1';
+
+    /* Make sure the hub is visible inside the main content area */
+    var main=page.closest('.main');
+    if(main){ main.style.display='block'; }
+  }
+
+  /* Make it globally callable by the menu button */
+  window.openHub=openAllFeaturesNow;
+  window.openAllFeaturesNow=openAllFeaturesNow;
+
+  function bindButton(){
+    var btn=document.getElementById('allFeaturesNav');
+    if(!btn) return;
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      openAllFeaturesNow();
+      return false;
+    };
+  }
+
+  function run(){
+    bindButton();
+    if(document.getElementById('allFeaturesNav')){
+      document.getElementById('allFeaturesNav').style.cursor='pointer';
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run);
+  else run();
+  window.addEventListener('load',run);
+  setTimeout(run,500);
+  setTimeout(run,1500);
+  setTimeout(run,3000);
+})();
+</script>
+
 </body></html>
