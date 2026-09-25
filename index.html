@@ -81,7 +81,7 @@ th{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border-b
 <section id="expenses" class="page"><h2>Expenses</h2><div class="panel"><div class="row"><input id="eName" placeholder="Expense name"><input id="eAmount" type="number" placeholder="Amount"><button class="small-btn" onclick="addExpense()">Add Expense</button></div></div><div class="panel"><div id="expenseTable"></div></div></section>
 <section id="reports" class="page"><h2>Reports</h2><div class="panel"><div id="reportBox"></div><hr><h3>Excel</h3><button onclick="exportExcelAll()">📊 Export All to Excel</button><button class="btn-secondary" onclick="document.getElementById('excelImport').click()">📥 Upload Excel</button><input id="excelImport" type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)"><p class="muted">Excel file keessatti Sales, Stock, Purchases, Expenses sheets ni qabaata.</p></div></section>
 <section id="adminDashboard" class="page"><h2>👑 Admin Dashboard</h2><div id="adminAccessBox" class="panel"><p class="muted">Loading admin information...</p></div><div id="adminStats" class="grid" style="margin-top:15px"></div><div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">Users / Accounts</h3><button class="small-btn" onclick="loadAdminUsers()">🔄 Refresh</button></div><div id="adminUsersTable" style="margin-top:15px;overflow:auto"></div></div></section>
-<section id="settings" class="page"><h2>Settings</h2><div class="panel"><p><b>Business:</b> <span id="settingsBusinessName">WEZIR POS</span></p><p><b>Currency:</b> <span id="settingsCurrencyValue">ETB</span></p><hr><h3>Profile</h3><p id="profileSummary">Not signed in</p><button onclick="openProfile()">Edit Profile</button><button class="btn-secondary" onclick="openPasswordModal()">Change Password</button><button class="btn-secondary" onclick="forgotPassword()">Forgot Password</button><hr><h3>Language</h3><select id="settingsLanguage" onchange="setLanguage(this.value)"><option value="en">English</option><option value="om">Afaan Oromoo</option><option value="am">አማርኛ</option><option value="ar">العربية</option></select><hr><h3>Country + Currency</h3><select id="settingsCurrency" onchange="setAppCurrency(this.value)"><option value="ETB">ETB — Ethiopian Birr</option><option value="SAR">SAR — Saudi Riyal</option><option value="USD">USD — US Dollar</option><option value="EUR">EUR — Euro</option></select><hr><h3>Cloud Account</h3><p id="currentUser">Not signed in</p><hr><h3>Excel</h3><button onclick="exportExcelAll()">📊 Export Excel</button><button class="btn-secondary" onclick="document.getElementById('excelImport').click()">📥 Upload Excel</button><hr><h3>Backup</h3><button onclick="backupData()">Download Backup</button><button class="btn-secondary" onclick="document.getElementById('restoreFile').click()">Restore Backup</button><input id="restoreFile" type="file" accept=".json" style="display:none" onchange="restoreData(event)"><hr><button class="btn-danger" onclick="clearAllData()">Delete All Cloud Data</button></div></section>
+<section id="settings" class="page"><h2>Settings</h2><div class="panel"><p><b>Business:</b> <span id="settingsBusinessName">WEZIR POS</span></p><p><b>Currency:</b> <span id="settingsCurrencyValue">ETB</span></p><hr><h3>Profile</h3><p id="profileSummary">Not signed in</p><button onclick="openProfile()">Edit Profile</button><button class="btn-secondary" onclick="openPasswordModal()">Change Password</button><button class="btn-secondary" onclick="forgotPassword()">Forgot Password</button><hr><h3>Language</h3><select id="settingsLanguage" onchange="setLanguage(this.value)"><option value="en">English</option><option value="om">Afaan Oromoo</option><option value="am">አማርኛ</option><option value="ar">العربية</option></select><hr><h3>Country + Currency</h3><select id="settingsCurrency" onchange="setAppCurrency(this.value)"><option value="ETB">ETB — Ethiopian Birr</option><option value="SAR">SAR — Saudi Riyal</option><option value="AED">AED — UAE Dirham</option><option value="USD">USD — US Dollar</option><option value="GBP">GBP — British Pound</option><option value="EUR">EUR — Euro</option><option value="CAD">CAD — Canadian Dollar</option><option value="AUD">AUD — Australian Dollar</option><option value="KES">KES — Kenyan Shilling</option><option value="TRY">TRY — Turkish Lira</option><option value="UGX">UGX — Ugandan Shilling</option><option value="TZS">TZS — Tanzanian Shilling</option><option value="RWF">RWF — Rwandan Franc</option><option value="SOS">SOS — Somali Shilling</option><option value="DJF">DJF — Djiboutian Franc</option><option value="QAR">QAR — Qatari Riyal</option><option value="KWD">KWD — Kuwaiti Dinar</option><option value="OMR">OMR — Omani Rial</option><option value="BHD">BHD — Bahraini Dinar</option><option value="EGP">EGP — Egyptian Pound</option></select><hr><h3>Cloud Account</h3><p id="currentUser">Not signed in</p><hr><h3>Excel</h3><button onclick="exportExcelAll()">📊 Export Excel</button><button class="btn-secondary" onclick="document.getElementById('excelImport').click()">📥 Upload Excel</button><hr><h3>Backup</h3><button onclick="backupData()">Download Backup</button><button class="btn-secondary" onclick="document.getElementById('restoreFile').click()">Restore Backup</button><input id="restoreFile" type="file" accept=".json" style="display:none" onchange="restoreData(event)"><hr><button class="btn-danger" onclick="clearAllData()">Delete All Cloud Data</button></div></section>
 </main></div></div><div id="printArea" class="hidden"></div><div id="modalHost"></div>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
@@ -90,7 +90,7 @@ const SUPABASE_PUBLISHABLE_KEY="sb_publishable_YbbcWEzxx2uqEYMZnR1XEg_CLApqkip";
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 let data={products:[],purchases:[],sales:[],expenses:[]};let cart=[];let currentUser=null;
 function getCurrency(){return localStorage.getItem("qfs_currency")||"ETB";}
-function currencySymbol(c){return ({ETB:"ETB",SAR:"SAR",USD:"$",EUR:"€"})[c]||c||"ETB";}
+function currencySymbol(c){return ({ETB:"ETB",SAR:"SAR",AED:"AED",USD:"USD",GBP:"GBP",EUR:"EUR",CAD:"CAD",AUD:"AUD",KES:"KES",TRY:"TRY",UGX:"UGX",TZS:"TZS",RWF:"RWF",SOS:"SOS",DJF:"DJF",QAR:"QAR",KWD:"KWD",OMR:"OMR",BHD:"BHD",EGP:"EGP"})[c]||c||"ETB";}
 function money(n){const c=getCurrency();return currencySymbol(c)+" "+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}function today(){return new Date().toISOString().slice(0,10)}function escapeHtml(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}function makeInvoice(){
 const nums=data.sales.map(s=>String(s.invoice_no||"").match(/^INV-(\d{4})$/)).filter(Boolean).map(m=>Number(m[1]));
 const next=(nums.length?Math.max(...nums):0)+1;
@@ -299,6 +299,19 @@ function setupAdminNav(){
   if(!nav)return;
   nav.classList.remove("hidden");
 }
+async function adminSubscriptionAction(userId,plan,days,status){
+  if(!isAdmin())return alert("Admin only.");
+  if(String(userId||"")===String(currentUser?.id||""))return alert("Use your own account settings for the admin account.");
+  const label=status==="Active"?(plan+" for "+days+" days"):status;
+  if(!confirm(label+" for this user?"))return;
+  try{
+    const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+    if(sessionError)throw sessionError;if(!session?.access_token)throw new Error("Admin session not found.");
+    const response=await fetch(SUPER_ACTION_URL,{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({action:"subscription",user_id:userId,plan,status,days})});
+    const result=await response.json().catch(()=>({}));if(!response.ok||!result.success)throw new Error(result.error||"Subscription action failed.");
+    alert("Subscription updated successfully.");await loadAdminUsers();
+  }catch(e){alert(e.message||String(e));}
+}
 async function loadAdminUsers(){
   const box=document.getElementById("adminAccessBox");
   const table=document.getElementById("adminUsersTable");
@@ -333,9 +346,9 @@ async function loadAdminUsers(){
           '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'deactivate\')" title="Deactivate until activated">🔴 Deactivate</button>'+
           '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'activate\')" title="Activate account">🟢 Activate</button>'+
           '</div>';
-      return '<tr><td>'+(i+1)+'</td><td>'+escapeHtml(u.full_name||'—')+'</td><td>'+escapeHtml(u.business_name||'—')+'</td><td>'+escapeHtml(u.email||'—')+'</td><td>'+escapeHtml(u.phone||'—')+'</td><td>'+formatAdminDate(u.created_at)+'</td><td>'+formatAdminDate(u.last_login)+'</td><td><span class="badge '+(u.active?'good':'out')+'">'+(u.active?'Active':'Inactive')+'</span></td><td><span class="badge '+(u.email_confirmed?'good':'low')+'">'+(u.email_confirmed?'Confirmed':'Not confirmed')+'</span></td><td>'+actions+'</td></tr>';
+      const sub=u.subscription||{};const subStatus=String(sub.status||'Trial');const subPlan=String(sub.plan||'30-Day Free Trial');const subExpiry=sub.expires_at?formatAdminDate(sub.expires_at):'—';const subActions=self?'<span class="muted">Admin</span>':'<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="small-btn" onclick="adminSubscriptionAction(\''+u.id+'\',\'Monthly\',30,\'Active\')">💳 30 Days</button><button class="small-btn" onclick="adminSubscriptionAction(\''+u.id+'\',\'Trial\',30,\'Trial\')">🎁 Trial 30 Days</button><button class="small-btn" onclick="adminSubscriptionAction(\''+u.id+'\',\'Yearly\',365,\'Active\')">💳 1 Year</button><button class="small-btn" onclick="adminSubscriptionAction(\''+u.id+'\',\'Custom\',0,\'Suspended\')">⛔ Suspend</button></div>';return '<tr><td>'+(i+1)+'</td><td>'+escapeHtml(u.full_name||'—')+'</td><td>'+escapeHtml(u.business_name||'—')+'</td><td>'+escapeHtml(u.email||'—')+'</td><td>'+escapeHtml(u.phone||'—')+'</td><td>'+formatAdminDate(u.created_at)+'</td><td>'+formatAdminDate(u.last_login)+'</td><td><span class="badge '+(u.active?'good':'out')+'">'+(u.active?'Active':'Inactive')+'</span></td><td><span class="badge '+(u.email_confirmed?'good':'low')+'">'+(u.email_confirmed?'Confirmed':'Not confirmed')+'</span></td><td><b>'+escapeHtml(subStatus)+'</b><br><span class="muted">'+escapeHtml(subPlan)+' · '+escapeHtml(subExpiry)+'</span></td><td>'+actions+'<br>'+subActions+'</td></tr>';
     }).join('');
-    table.innerHTML='<table><thead><tr><th>#</th><th>Full Name</th><th>Business</th><th>Email</th><th>Phone</th><th>Created</th><th>Last Login</th><th>Status</th><th>Email</th><th>Actions</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    table.innerHTML='<table><thead><tr><th>#</th><th>Full Name</th><th>Business</th><th>Email</th><th>Phone</th><th>Created</th><th>Last Login</th><th>Status</th><th>Email</th><th>Subscription</th><th>Actions</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }catch(e){
     table.innerHTML='<p class="error"><b>Could not load users:</b> '+escapeHtml(e.message||String(e))+'</p>';
   }
@@ -678,17 +691,30 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
   const MOD={customers:'customers',suppliers:'suppliers',adjustments:'stock_adjustments',returns:'returns',batches:'batches',payments:'payments',users:'user_permissions',subscription:'subscription'};
   const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const money2=n=>currencySymbol(getCurrency())+' '+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  let cachedBusinessId=null;
+  async function myBusinessId(){
+    if(cachedBusinessId) return cachedBusinessId;
+    if(!window.currentUser) return null;
+    const {data,error}=await supabaseClient.rpc('get_my_business_id');
+    if(error) throw error;
+    cachedBusinessId=data||null;
+    return cachedBusinessId;
+  }
   async function list(module){
     if(!window.currentUser) return [];
-    const {data,error}=await supabaseClient.from('qf_records').select('*').eq('user_id',currentUser.id).eq('module',module).order('created_at',{ascending:true});
+    const bid=await myBusinessId();
+    if(!bid) return [];
+    const {data,error}=await supabaseClient.from('qf_records').select('*').eq('business_id',bid).eq('module',module).order('created_at',{ascending:true});
     if(error){alert(error.message);return []} return data||[];
   }
   async function save(module,key,payload){
-    const row={user_id:currentUser.id,module,record_key:String(key),data:payload};
+    const bid=await myBusinessId();
+    if(!bid) throw new Error("Business account hin argamne. Mee deebi'ii login godhi.");
+    const row={user_id:currentUser.id,business_id:bid,module,record_key:String(key),data:payload};
     const {error}=await supabaseClient.from('qf_records').upsert(row,{onConflict:'user_id,module,record_key'});
     if(error) throw error; return row;
   }
-  async function del(id){const {error}=await supabaseClient.from('qf_records').delete().eq('id',id).eq('user_id',currentUser.id);if(error)throw error}
+  async function del(id){const bid=await myBusinessId();const {error}=await supabaseClient.from('qf_records').delete().eq('id',id).eq('business_id',bid);if(error)throw error}
   function M(title,body){document.querySelector('.qfmodal')?.remove();const m=document.createElement('div');m.className='qfmodal';m.innerHTML=`<div class="qfbox"><div style="display:flex;justify-content:space-between;align-items:center"><h2>${title}</h2><button onclick="this.closest('.qfmodal').remove()">✕</button></div>${body}</div>`;document.body.appendChild(m);return m}
   const rowsTable=(rows,heads)=>`<div style="overflow:auto"><table><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr>${rows.join('')}</table></div>`;
 
@@ -785,13 +811,55 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
   async function barcode(){M('📱 Barcode / SKU',`<p>Scan/type a barcode or SKU. Product SKU is stored in Supabase.</p><input id="qbar" placeholder="Scan or type barcode/SKU"><button onclick="qfBarcodeCloud()">Find Product</button><div id="qbarResult" style="margin-top:15px"></div>`)}
   window.qfBarcodeCloud=async()=>{try{let q=qbar.value.trim();if(!q)return;let {data:p,error}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id).eq('sku',q).limit(1);if(error)throw error;qbarResult.innerHTML=p&&p[0]?`<b>${esc(p[0].name)}</b><br>Stock: ${p[0].stock}<br>Selling: ${money2(p[0].selling_price)}`:'Product not found'}catch(e){alert(e.message)}};
 
-  async function subscription(){const a=await list(MOD.subscription);let d=a[0]?.data||{plan:'Free',status:'Active'};M('💳 Subscription / Business Management',`<div class="qfgrid"><div class="qfstat"><b>Business</b><br>${esc(currentUser?.user_metadata?.business_name||'WEZIR POS')}</div><div class="qfstat"><b>Plan</b><br>${esc(d.plan)}</div><div class="qfstat"><b>Status</b><br>${esc(d.status)}</div></div><br><label>Plan</label><select id="qsubPlan"><option>Free</option><option>Trial</option><option>Monthly</option><option>Yearly</option></select><label>Status</label><select id="qsubStatus"><option>Active</option><option>Pending</option><option>Expired</option></select><br><button onclick="qfSubscriptionSave()">Save</button><p class="qfmuted">This stores subscription status. Payment-gateway integration is separate.</p>`)}
-  window.qfSubscriptionSave=async()=>{try{await save(MOD.subscription,'main',{plan:qsubPlan.value,status:qsubStatus.value,updated_at:new Date().toISOString()});alert('Subscription settings saved');document.querySelector('.qfmodal')?.remove()}catch(e){alert(e.message)}};
+  const WEZIR_COUNTRIES=[
+    ['ET','Ethiopia','ETB','Ethiopian Birr'],['SA','Saudi Arabia','SAR','Saudi Riyal'],['AE','United Arab Emirates','AED','UAE Dirham'],['US','United States','USD','US Dollar'],['GB','United Kingdom','GBP','British Pound'],['EU','European Union','EUR','Euro'],['CA','Canada','CAD','Canadian Dollar'],['AU','Australia','AUD','Australian Dollar'],['KE','Kenya','KES','Kenyan Shilling'],['TR','Turkey','TRY','Turkish Lira'],['UG','Uganda','UGX','Ugandan Shilling'],['TZ','Tanzania','TZS','Tanzanian Shilling'],['RW','Rwanda','RWF','Rwandan Franc'],['SO','Somalia','SOS','Somali Shilling'],['DJ','Djibouti','DJF','Djiboutian Franc'],['QA','Qatar','QAR','Qatari Riyal'],['KW','Kuwait','KWD','Kuwaiti Dinar'],['OM','Oman','OMR','Omani Rial'],['BH','Bahrain','BHD','Bahraini Dinar'],['EG','Egypt','EGP','Egyptian Pound']
+  ];
+  function trialInfo(){
+    const created=new Date(currentUser?.created_at||Date.now());
+    const expiry=new Date(created.getTime()+30*24*60*60*1000);
+    const now=new Date();
+    const remaining=Math.max(0,Math.ceil((expiry-now)/86400000));
+    return {created,expiry,remaining,expired:now>=expiry};
+  }
+  async function subscription(){
+    const u=window.currentUser;
+    if(!u)return;
+    const trialStart=new Date(u.created_at||Date.now());
+    const trialExpiry=new Date(trialStart.getTime()+30*86400000);
+    const now=new Date();
+    let status='Trial',plan='30-Day Free Trial',expires=trialExpiry;
+    try{
+      const a=await list(MOD.subscription);
+      const d=a[0]?.data||{};
+      if(d.status)status=String(d.status);
+      if(d.plan)plan=String(d.plan);
+      if(d.expires_at)expires=new Date(d.expires_at);
+    }catch(e){}
+    const remaining=Math.max(0,Math.ceil((expires-now)/86400000));
+    const expired=now>=expires && !['Active'].includes(status);
+    const contact=`<p class="qfmuted">After the free trial, contact WEZIR POS Administrator for activation.</p><p><b>Email:</b> <a href="mailto:wezirumar1988@gmail.com">wezirumar1988@gmail.com</a><br><b>Phone:</b> <a href="tel:+966536690242">+966 536 690 242</a><br><a target="_blank" href="https://wa.me/966536690242?text=Hello%20WEZIR%20POS%20Admin%2C%20I%20need%20subscription%20help.">Chat on WhatsApp</a></p>`;
+    M('💳 Subscription / Business Management',`
+      <div class="qfgrid">
+        <div class="qfstat"><b>Business</b><br>${esc(u.user_metadata?.business_name||'WEZIR POS')}</div>
+        <div class="qfstat"><b>Plan</b><br>${esc(plan)}</div>
+        <div class="qfstat"><b>Status</b><br>${esc(status)}</div>
+        <div class="qfstat"><b>${status==='Trial'?'Trial Remaining':'Days Remaining'}</b><br>${expired?'Expired':remaining+' days'}</div>
+      </div>
+      <br><p><b>Trial started:</b> ${trialStart.toLocaleDateString()}<br><b>Trial ends:</b> ${trialExpiry.toLocaleDateString()}</p>
+      ${expired?'<div style="padding:12px;border:1px solid #d33;border-radius:10px;background:#fff5f5"><b>Free Trial Expired</b><br>Your business data is kept. Contact WEZIR POS Administrator to activate your subscription.</div>':status==='Trial'?'<div style="padding:12px;border:1px solid #D4AF37;border-radius:10px;background:#fffdf3"><b>30-Day Free Trial</b><br>Your trial is active.</div>':''}
+      ${contact}
+      <button onclick="document.querySelector('.qfmodal')?.remove()">Close</button>
+    `);
+  }
 
-  async function help(){M('🆘 Help / Contact',`<p><b>WEZIR POS</b></p><p>Help information is stored with your business settings.</p><input id="qhContact" placeholder="WhatsApp / phone"><button onclick="qfHelpSave()">Save Contact</button>`)}
-  window.qfHelpSave=async()=>{try{await save('business_help','main',{contact:qhContact.value});alert('Saved');document.querySelector('.qfmodal')?.remove()}catch(e){alert(e.message)}};
-  async function currency(){M('🌍 '+((I18N[getLanguage()]||I18N.en)['Country + Currency']||'Country + Currency'),`<label>${((I18N[getLanguage()]||I18N.en).Country||'Country')}</label><input id="qfCountry" value="Ethiopia"><label>${((I18N[getLanguage()]||I18N.en).Currency||'Currency')}</label><select id="qfCurrency"><option value="ETB">ETB — Ethiopian Birr</option><option value="SAR">SAR — Saudi Riyal</option><option value="USD">USD — US Dollar</option><option value="EUR">EUR — Euro</option></select><p class="qfmuted">Currency changes the display unit only; it does not automatically convert existing amounts.</p><button onclick="qfCurrencySave()">${((I18N[getLanguage()]||I18N.en).Save||'Save')}</button>`);syncLanguageSelectors();translateUI()}
-  window.qfCurrencySave=async()=>{try{await save('business_settings','currency',{country:qfCountry.value,currency:qfCurrency.value});localStorage.setItem('qf_country',qfCountry.value);localStorage.setItem('qf_currency',qfCurrency.value);await loadCloudData();document.querySelector('.qfmodal')?.remove();alert('Saved');applyLanguage()}catch(e){alert(e.message)}};
+  async function currency(){
+    const savedCountry=localStorage.getItem('qf_country')||'ET';const savedCurrency=localStorage.getItem('qf_currency')||'ETB';
+    const rows=WEZIR_COUNTRIES.map(x=>`<option value="${x[0]}" data-currency="${x[2]}">${x[1]} — ${x[2]} (${x[3]})</option>`).join('');
+    M('🌍 '+((I18N[getLanguage()]||I18N.en)['Country + Currency']||'Country + Currency'),`<label>${((I18N[getLanguage()]||I18N.en).Country||'Country')}</label><select id="qfCountry" onchange="qfCountryChanged()">${rows}</select><label>${((I18N[getLanguage()]||I18N.en).Currency||'Currency')}</label><select id="qfCurrency"></select><p class="qfmuted">Country and currency are saved for this business. Existing amounts are not converted automatically.</p><button onclick="qfCurrencySave()">${((I18N[getLanguage()]||I18N.en).Save||'Save')}</button>`);
+    const c=document.getElementById('qfCountry');if(c)c.value=WEZIR_COUNTRIES.some(x=>x[0]===savedCountry)?savedCountry:'ET';window.qfCountryChanged();const cur=document.getElementById('qfCurrency');if(cur&&savedCurrency)cur.value=savedCurrency;
+  }
+  window.qfCountryChanged=()=>{const code=document.getElementById('qfCountry')?.value||'ET';const found=WEZIR_COUNTRIES.find(x=>x[0]===code)||WEZIR_COUNTRIES[0];const cur=document.getElementById('qfCurrency');if(cur)cur.innerHTML=`<option value="${found[2]}">${found[2]} — ${found[3]}</option>`;};
+  window.qfCurrencySave=async()=>{try{const country=WEZIR_COUNTRIES.find(x=>x[0]===qfCountry.value)||WEZIR_COUNTRIES[0];const currency=qfCurrency.value||country[2];await save('business_settings','currency',{country_code:country[0],country:country[1],currency,updated_at:new Date().toISOString()});localStorage.setItem('qf_country',country[0]);localStorage.setItem('qf_currency',currency);localStorage.setItem('qfs_currency',currency);const el=document.getElementById('settingsCurrency');if(el)el.value=currency;const sv=document.getElementById('settingsCurrencyValue');if(sv)sv.textContent=currency;await loadCloudData();document.querySelector('.qfmodal')?.remove();renderAll();applyLanguage();alert('Country and currency saved');}catch(e){alert(e.message)}};
 
   async function exportExcel(){
     const dataRows=[['Product','SKU','Stock','Cost','Selling Price','Profit/Unit']].concat((data.products||[]).map(p=>[p.name,p.sku||'',p.stock,p.cost,p.selling_price,Number(p.selling_price||0)-Number(p.cost||0)]));
@@ -967,341 +1035,49 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
 })();
 </script>
 
-<script>
-/* WEZIR POS — ALL FEATURES MENU HARD-FIX */
-(function(){
-  function installAllFeatures(){
-    var side=document.querySelector('.side');
-    if(!side) return;
-    var btn=document.getElementById('allFeaturesNav');
-    if(!btn){
-      btn=document.createElement('button');
-      btn.id='allFeaturesNav';
-      btn.className='nav';
-      btn.type='button';
-      btn.innerHTML='🧩 <span>All Features</span>';
-      btn.onclick=function(){
-        if(typeof openHub==='function') openHub();
-        else if(typeof show==='function') show('featurehub');
-      };
-      var settings=[].slice.call(side.querySelectorAll('.nav')).find(function(b){
-        return (b.textContent||'').replace(/\s+/g,' ').trim().includes('Settings');
-      });
-      if(settings) side.insertBefore(btn,settings);
-      else side.appendChild(btn);
-    }
-    btn.classList.remove('hidden');
-    btn.style.setProperty('display','block','important');
-    btn.style.setProperty('visibility','visible','important');
-    btn.style.setProperty('opacity','1','important');
-  }
-  function run(){installAllFeatures();}
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run);
-  else run();
-  window.addEventListener('load',run);
-  setTimeout(run,500);
-  setTimeout(run,1500);
-  setTimeout(run,3000);
-})();
-</script>
 
 
 <script>
-/* WEZIR POS — All Features click hard-fix */
+/* WEZIR POS — COMMERCIAL FINAL ROUTER */
 (function(){
-  function openAllFeatures(){
-    var page=document.getElementById('featurehubPage');
-    if(!page) return;
-    document.querySelectorAll('#app .page').forEach(function(x){ x.classList.add('hidden'); });
-    document.querySelectorAll('#app .container > div[id$="Page"]').forEach(function(x){ x.classList.add('hidden'); });
-    document.querySelectorAll('#app .page').forEach(function(x){ x.classList.remove('active'); x.style.display='none'; });
-    page.classList.remove('hidden');
-    page.classList.add('active');
-    page.style.display='block';
-    page.scrollIntoView({behavior:'smooth',block:'start'});
+ const ADV=["customers","customercredit","suppliers","supplierbalance","adjustment","salesreturn","purchasereturn","expiry","batch","users","payments","barcode","export","help","currency","subscription"];
+ const CORE=["dashboard","products","pos","purchases","expenses","reports","settings"];
+ const F=[["🏠","Dashboard","dashboard"],["📦","Stock / Inventory","products"],["🛒","POS / Gurgurtaa","pos"],["🧾","Invoice","invoicehub"],["🖨️","Invoice Print","print"],["📊","Sales Reports","reports"],["🛍️","Purchases","purchases"],["💰","Expenses","expenses"],["👥","Customers","customers"],["💳","Customer Credit / Balance","customercredit"],["🏭","Suppliers","suppliers"],["💵","Supplier Balance","supplierbalance"],["🔄","Stock Adjustment","adjustment"],["↩️","Sales Return / Refund","salesreturn"],["↩️","Purchase Return","purchasereturn"],["🔔","Low Stock Alert","lowstock"],["🚫","Out of Stock","outstock"],["📅","Expiry Date","expiry"],["🏷️","Batch / Lot","batch"],["👤","Users & Permissions","users"],["💳","Payment Methods","payments"],["⚙️","Settings","settings"],["💾","Backup / Restore","backup"],["☁️","Cloud Account & Data Separation","cloud"],["📈","Profit / Net Profit","profit"],["📊","Export Report → Excel","export"],["🔐","Forgot Password","forgot"],["🔄","Change Password","changepassword"],["📱","Barcode","barcode"],["🧾","Automatic Invoice Number","autoinvoice"],["🆘","Help & Contact","help"],["🌍","Country + Currency","currency"],["🔑","Email Login","email"],["💳","Subscription / Business Management","subscription"]];
+ function route(k){try{
+   if(ADV.includes(k)&&typeof window.qfFeature==='function')return Promise.resolve(window.qfFeature(k)).catch(e=>alert('Feature error: '+(e.message||e)));
+   if(CORE.includes(k)&&typeof window.showPage==='function')return window.showPage(k);
+   if(k==='invoicehub'&&typeof window.showPage==='function')return window.showPage('pos');
+   if(k==='print')return window.print();
+   if(k==='forgot'&&typeof window.forgotPassword==='function')return window.forgotPassword();
+   if(k==='changepassword'&&typeof window.openPasswordModal==='function')return window.openPasswordModal();
+   if(k==='backup'&&typeof window.backupData==='function')return window.backupData();
+   if(k==='cloud'&&typeof window.showPage==='function')return window.showPage('settings');
+   if(k==='autoinvoice')return alert('Automatic invoice numbers are enabled: INV-0001, INV-0002, INV-0003 …');
+   if(k==='email')return alert('WEZIR POS uses Supabase email login.');
+   alert('This feature is not connected yet.');
+ }catch(e){alert('Feature error: '+(e.message||e));}}
+ function open(){document.getElementById('WEZIR_COMMERCIAL_FEATURES')?.remove();const w=document.createElement('div');w.id='WEZIR_COMMERCIAL_FEATURES';w.style.cssText='position:fixed;inset:0;background:#000b;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:18px';w.innerHTML='<div style="background:#fff;width:min(1050px,96vw);max-height:90vh;overflow:auto;border:2px solid #D4AF37;border-radius:18px;padding:20px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div><h2 style="margin:0;color:#111">🧩 WEZIR POS — All Features</h2><p style="margin:5px 0;color:#777">34 business features</p></div><button id="WEZIR_FEATURE_CLOSE" type="button" style="width:auto;background:#111;color:#fff">✕ Close</button></div><div id="WEZIR_FEATURE_GRID" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px"></div></div>';document.body.appendChild(w);w.querySelector('#WEZIR_FEATURE_CLOSE').onclick=()=>w.remove();const g=w.querySelector('#WEZIR_FEATURE_GRID');g.innerHTML=F.map(f=>'<button type="button" data-k="'+f[2]+'" style="background:#fff;color:#111;border:1px solid #ddd;border-top:3px solid #D4AF37;border-radius:14px;padding:15px;text-align:left;cursor:pointer;min-height:105px"><div style="font-size:27px">'+f[0]+'</div><b>'+f[1]+'</b><div style="font-size:12px;color:#777;margin-top:5px">Open '+f[1]+'</div></button>').join('');g.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k;w.remove();route(k)});}
+ window.WEZIR_OPEN_ALL_FEATURES=open;window.openAllFeaturesFinal=open;
+ function bind(){const b=document.getElementById('allFeaturesNav');if(b){b.type='button';b.onclick=e=>{e.preventDefault();e.stopPropagation();open();return false;}}const a=document.getElementById('adminNav');if(a)a.classList.remove('hidden');}
+ document.addEventListener('click',e=>{const b=e.target?.closest?.('#allFeaturesNav');if(b){e.preventDefault();e.stopImmediatePropagation();open()}},true);
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();window.addEventListener('load',bind);setTimeout(bind,500);setTimeout(bind,1500);
+})();
+</script><script>
+/* WEZIR POS — 30 DAY TRIAL + SUBSCRIPTION GATE */
+(function(){
+  function info(){const u=window.currentUser;if(!u)return null;const start=new Date(u.created_at||Date.now());const expiry=new Date(start.getTime()+30*86400000);return {start,expiry,expired:new Date()>=expiry,days:Math.max(0,Math.ceil((expiry-Date.now())/86400000))};}
+  async function check(){
+    const u=window.currentUser;if(!u)return true;
+    if(typeof window.isAdmin==='function'&&window.isAdmin())return true;
+    let status='',expires=null;
+    try{const {data}=await supabaseClient.from('qf_records').select('data').eq('user_id',u.id).eq('module','subscription').eq('record_key','main').limit(1);const d=data?.[0]?.data||{};status=String(d.status||'');expires=d.expires_at?new Date(d.expires_at):null;}catch(e){}
+    if(status.toLowerCase()==='active'&&(!expires||new Date()<expires))return true;
+    if(status.toLowerCase()==='suspended'||status.toLowerCase()==='expired')return lock();
+    const t=info();if(!t||!t.expired)return true;return lock();
   }
-
-  window.openHub=openAllFeatures;
-  window.openAllFeatures=openAllFeatures;
-
-  function fixButton(){
-    var side=document.querySelector('.side');
-    if(!side) return;
-
-    var btn=document.getElementById('allFeaturesNav');
-    if(!btn){
-      btn=document.createElement('button');
-      btn.id='allFeaturesNav';
-      btn.className='nav';
-      btn.type='button';
-      btn.innerHTML='🧩 <span>All Features</span>';
-      side.appendChild(btn);
-    }
-
-    btn.onclick=function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      openAllFeatures();
-    };
-    btn.classList.remove('hidden');
-    btn.style.setProperty('display','block','important');
-    btn.style.setProperty('visibility','visible','important');
-    btn.style.setProperty('opacity','1','important');
-  }
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',fixButton);
-  }else{
-    fixButton();
-  }
-  window.addEventListener('load',fixButton);
-  setTimeout(fixButton,500);
-  setTimeout(fixButton,1500);
+  function lock(){if(document.getElementById('wezirTrialLock'))return false;const t=info();const x=document.createElement('div');x.id='wezirTrialLock';x.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:2147483646;display:flex;align-items:center;justify-content:center;padding:20px';x.innerHTML='<div style="background:#fff;border:2px solid #D4AF37;border-radius:18px;max-width:520px;padding:30px;text-align:center"><div style="font-size:46px">⏳</div><h2>WEZIR POS — Free Trial Expired</h2><p>Your 30-day free trial has ended.</p><p>Please contact the WEZIR POS Administrator to activate your subscription.</p><p><b>Email:</b> <a href="mailto:wezirumar1988@gmail.com">wezirumar1988@gmail.com</a><br><b>Phone:</b> <a href="tel:+966536690242">+966 536 690 242</a></p><button id="wezirTrialHelp" style="background:#111;color:#fff">🆘 Help & Contact</button><button id="wezirTrialLogout">Logout</button></div>';document.body.appendChild(x);x.querySelector('#wezirTrialHelp').onclick=()=>{x.remove();if(typeof window.qfFeature==='function')window.qfFeature('help')};x.querySelector('#wezirTrialLogout').onclick=()=>window.logout();return false;}
+  window.wezirCheckSubscription=check;
+  supabaseClient.auth.onAuthStateChange((event,session)=>{if(session)setTimeout(check,1200);else document.getElementById('wezirTrialLock')?.remove();});
 })();
 </script>
-
-<script>
-/* WEZIR POS — ALL FEATURES CLICK FIX V3 */
-(function(){
-  function openAllFeaturesNow(){
-    var page=document.getElementById('featurehubPage');
-    if(!page) return;
-
-    /* Hide every normal app page */
-    document.querySelectorAll('#app .page').forEach(function(x){
-      x.classList.remove('active');
-      x.style.display='none';
-    });
-
-    /* Show the feature hub directly */
-    page.classList.add('active');
-    page.style.display='block';
-    page.style.visibility='visible';
-    page.style.opacity='1';
-
-    /* Make sure the hub is visible inside the main content area */
-    var main=page.closest('.main');
-    if(main){ main.style.display='block'; }
-  }
-
-  /* Make it globally callable by the menu button */
-  window.openHub=openAllFeaturesNow;
-  window.openAllFeaturesNow=openAllFeaturesNow;
-
-  function bindButton(){
-    var btn=document.getElementById('allFeaturesNav');
-    if(!btn) return;
-    btn.onclick=function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      openAllFeaturesNow();
-      return false;
-    };
-  }
-
-  function run(){
-    bindButton();
-    if(document.getElementById('allFeaturesNav')){
-      document.getElementById('allFeaturesNav').style.cursor='pointer';
-    }
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run);
-  else run();
-  window.addEventListener('load',run);
-  setTimeout(run,500);
-  setTimeout(run,1500);
-  setTimeout(run,3000);
-})();
-</script>
-
-
-<script>
-/* WEZIR POS — FINAL ALL FEATURES FIX
-   Opens the feature menu directly as a modal; does not depend on page/show navigation. */
-(function(){
-  const WEZIR_ALL_FEATURES=[["🏠", "Dashboard", "dashboard"], ["📦", "Stock / Inventory", "products"], ["🛒", "POS / Gurgurtaa", "pos"], ["🧾", "Invoice", "invoicehub"], ["🖨️", "Invoice Print", "print"], ["📊", "Sales Reports", "reports"], ["🛍️", "Purchases", "purchases"], ["💰", "Expenses", "expenses"], ["👥", "Customers", "customers"], ["💳", "Customer Credit / Balance", "customercredit"], ["🏭", "Suppliers", "suppliers"], ["💵", "Supplier Balance", "supplierbalance"], ["🔄", "Stock Adjustment", "adjustment"], ["↩️", "Sales Return / Refund", "salesreturn"], ["↩️", "Purchase Return", "purchasereturn"], ["🔔", "Low Stock Alert", "lowstock"], ["🚫", "Out of Stock", "outstock"], ["📅", "Expiry Date", "expiry"], ["🏷️", "Batch / Lot", "batch"], ["👤", "Users & Permissions", "users"], ["💳", "Payment Methods", "payments"], ["⚙️", "Settings", "settings"], ["💾", "Backup / Restore", "backup"], ["☁️", "Cloud Account & Data Separation", "cloud"], ["📈", "Profit / Net Profit", "profit"], ["📊", "Export Report → Excel", "export"], ["🔐", "Forgot Password", "forgot"], ["🔄", "Change Password", "changepassword"], ["📱", "Barcode", "barcode"], ["🧾", "Automatic Invoice Number", "autoinvoice"], ["🆘", "Help / Contact", "help"], ["🌍", "Country + Currency", "currency"], ["🔑", "Email Login", "email"], ["💳", "Subscription / Business Management", "subscription"]];
-
-  function openAllFeaturesFinal(){
-    const old=document.getElementById('wezirAllFeaturesModal');
-    if(old) old.remove();
-
-    const wrap=document.createElement('div');
-    wrap.id='wezirAllFeaturesModal';
-    wrap.className='qfmodal';
-    wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:999999;display:flex;align-items:center;justify-content:center;padding:18px;';
-
-    const cards=WEZIR_ALL_FEATURES.map(function(f){
-      const icon=f[0], name=f[1], key=f[2];
-      return '<button type="button" class="wezir-feature-card" data-key="'+key+'" style="background:#fff!important;color:#111!important;border:1px solid #e4dfcf!important;border-top:3px solid #D4AF37!important;border-radius:14px;padding:16px;text-align:left;cursor:pointer;min-height:105px;">'
-        +'<div style="font-size:27px">'+icon+'</div>'
-        +'<div style="font-weight:700;margin-top:7px">'+name+'</div>'
-        +'<div style="font-size:12px;color:#777;margin-top:4px">Open '+name+'</div>'
-        +'</button>';
-    }).join('');
-
-    wrap.innerHTML=
-      '<div style="background:#fff;width:min(1000px,96vw);max-height:90vh;overflow:auto;border:2px solid #D4AF37;border-radius:18px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.5);">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;">'
-      +'<div><h2 style="margin:0;color:#111;">🧩 WEZIR POS — All Features</h2><p style="margin:5px 0 0;color:#777;">34 business features</p></div>'
-      +'<button type="button" id="wezirCloseFeatures" style="width:auto;background:#111!important;color:#fff!important;padding:9px 14px;">✕ Close</button>'
-      +'</div>'
-      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;">'+cards+'</div>'
-      +'</div>';
-
-    document.body.appendChild(wrap);
-    document.getElementById('wezirCloseFeatures').onclick=function(){wrap.remove();};
-
-    wrap.querySelectorAll('.wezir-feature-card').forEach(function(btn){
-      btn.onclick=function(){
-        const key=btn.getAttribute('data-key');
-        wrap.remove();
-        if(typeof window.qfFeature==='function') window.qfFeature(key);
-        else if(['dashboard','products','pos','purchases','expenses','reports','settings'].includes(key) && typeof window.showPage==='function') window.showPage(key);
-        else alert('Feature is not ready: '+key);
-      };
-    });
-  }
-
-  window.openAllFeaturesFinal=openAllFeaturesFinal;
-  window.openHub=openAllFeaturesFinal;
-
-  function bindFinal(){
-    const btn=document.getElementById('allFeaturesNav');
-    if(!btn) return;
-    btn.onclick=function(e){
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      openAllFeaturesFinal();
-      return false;
-    };
-    btn.setAttribute('type','button');
-    btn.style.cursor='pointer';
-  }
-
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindFinal);
-  else bindFinal();
-  window.addEventListener('load',bindFinal);
-  setTimeout(bindFinal,300);
-  setTimeout(bindFinal,1000);
-  setTimeout(bindFinal,2500);
-})();
-</script>
-
-
-<script>
-/* WEZIR POS — FINAL TRULY FIXED ALL FEATURES
-   Uses document-level click capture, so it works even if older handlers are broken. */
-(function(){
-  const FEATURES = [
-    ["🏠","Dashboard","dashboard"],["📦","Stock / Inventory","products"],
-    ["🛒","POS / Gurgurtaa","pos"],["🧾","Invoice","invoicehub"],
-    ["🖨️","Invoice Print","print"],["📊","Sales Reports","reports"],
-    ["🛍️","Purchases","purchases"],["💰","Expenses","expenses"],
-    ["👥","Customers","customers"],["💳","Customer Credit / Balance","customercredit"],
-    ["🏭","Suppliers","suppliers"],["💵","Supplier Balance","supplierbalance"],
-    ["🔄","Stock Adjustment","adjustment"],["↩️","Sales Return / Refund","salesreturn"],
-    ["↩️","Purchase Return","purchasereturn"],["🔔","Low Stock Alert","lowstock"],
-    ["🚫","Out of Stock","outstock"],["📅","Expiry Date","expiry"],
-    ["🏷️","Batch / Lot","batch"],["👤","Users & Permissions","users"],
-    ["💳","Payment Methods","payments"],["⚙️","Settings","settings"],
-    ["💾","Backup / Restore","backup"],["☁️","Cloud Account & Data Separation","cloud"],
-    ["📈","Profit / Net Profit","profit"],["📊","Export Report → Excel","export"],
-    ["🔐","Forgot Password","forgot"],["🔄","Change Password","changepassword"],
-    ["📱","Barcode","barcode"],["🧾","Automatic Invoice Number","autoinvoice"],
-    ["🆘","Help / Contact","help"],["🌍","Country + Currency","currency"],
-    ["🔑","Email Login","email"],["💳","Subscription / Business Management","subscription"]
-  ];
-
-  function openMenu(){
-    let old=document.getElementById("WEZIR_ALL_FEATURES_FINAL_MENU");
-    if(old) old.remove();
-
-    const overlay=document.createElement("div");
-    overlay.id="WEZIR_ALL_FEATURES_FINAL_MENU";
-    overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:18px;";
-
-    const cards=FEATURES.map(function(f){
-      return '<button type="button" data-wezir-key="'+f[2]+'" style="background:#fff;color:#111;border:1px solid #ddd;border-top:3px solid #d4af37;border-radius:14px;padding:15px;text-align:left;cursor:pointer;min-height:105px;">'
-        +'<div style="font-size:27px">'+f[0]+'</div>'
-        +'<div style="font-weight:700;margin-top:7px">'+f[1]+'</div>'
-        +'<div style="font-size:12px;color:#777;margin-top:4px">Open '+f[1]+'</div>'
-        +'</button>';
-    }).join("");
-
-    overlay.innerHTML=
-      '<div style="background:#fff;width:min(1050px,96vw);max-height:90vh;overflow:auto;border:2px solid #d4af37;border-radius:18px;padding:20px;">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">'
-      +'<div><h2 style="margin:0;color:#111;">🧩 WEZIR POS — All Features</h2><p style="margin:5px 0;color:#777;">34 business features</p></div>'
-      +'<button type="button" id="WEZIR_FEATURE_CLOSE" style="background:#111;color:#fff;padding:9px 14px;width:auto;">✕ Close</button>'
-      +'</div>'
-      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;">'+cards+'</div>'
-      +'</div>';
-
-    document.body.appendChild(overlay);
-    document.getElementById("WEZIR_FEATURE_CLOSE").onclick=function(){overlay.remove();};
-
-    overlay.querySelectorAll("[data-wezir-key]").forEach(function(card){
-      card.onclick=function(){
-        const key=card.getAttribute("data-wezir-key");
-        overlay.remove();
-        /* Advanced modules have their real handlers in qfAdv.
-           Use qfAdv first; otherwise use the normal app feature handler. */
-        const advanced=["customers","customercredit","suppliers","supplierbalance","adjustment","salesreturn","purchasereturn","expiry","batch","users","payments","barcode","export"];
-        if(advanced.includes(key) && typeof window.qfAdv==="function"){
-          Promise.resolve(window.qfAdv(key)).catch(function(err){
-            console.error("Feature error:",err);
-            alert("This feature could not open: "+(err?.message||err));
-          });
-        }else if(typeof window.qfFeature==="function"){
-          Promise.resolve(window.qfFeature(key)).catch(function(err){
-            console.error("Feature error:",err);
-            alert("This feature could not open: "+(err?.message||err));
-          });
-        }else if(["dashboard","products","pos","purchases","expenses","reports","settings"].includes(key) && typeof window.showPage==="function"){
-          window.showPage(key);
-        }else{
-          alert("Feature is not connected yet: "+key);
-        }
-      };
-    });
-  }
-
-  /* Capture phase: stops every older broken All Features handler. */
-  document.addEventListener("click",function(e){
-    const el=e.target && e.target.closest ? e.target.closest("#allFeaturesNav, #allFeaturesNav *") : null;
-    if(!el) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    openMenu();
-  },true);
-
-  window.WEZIR_OPEN_ALL_FEATURES=openMenu;
-})();
-</script>
-
-
-<script>
-/* WEZIR POS — FEATURE ROUTING BRIDGE */
-(function(){
-  function install(){
-    if(typeof window.qfAdv!=="function" || typeof window.qfFeature!=="function") return;
-    if(window.__wezirFeatureRoutingInstalled) return;
-    window.__wezirFeatureRoutingInstalled=true;
-
-    const original=window.qfFeature;
-    const advanced=["customers","customercredit","suppliers","supplierbalance","adjustment","salesreturn","purchasereturn","expiry","batch","users","payments","barcode","export"];
-
-    window.qfFeature=function(key){
-      if(advanced.includes(key)) return window.qfAdv(key);
-      return original(key);
-    };
-  }
-
-  install();
-  setTimeout(install,500);
-  setTimeout(install,1500);
-  setTimeout(install,3000);
-})();
-</script>
-
 </body></html>
