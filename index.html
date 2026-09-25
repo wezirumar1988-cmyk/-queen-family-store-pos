@@ -924,4 +924,57 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
 })();
 </script>
 
+
+<script>
+/* WEZIR POS — All Features click hard-fix */
+(function(){
+  function openAllFeatures(){
+    var page=document.getElementById('featurehubPage');
+    if(!page) return;
+    document.querySelectorAll('#app .page').forEach(function(x){ x.classList.add('hidden'); });
+    document.querySelectorAll('#app .container > div[id$="Page"]').forEach(function(x){ x.classList.add('hidden'); });
+    page.classList.remove('hidden');
+    page.style.display='block';
+    page.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  window.openHub=openAllFeatures;
+  window.openAllFeatures=openAllFeatures;
+
+  function fixButton(){
+    var side=document.querySelector('.side');
+    if(!side) return;
+
+    var btn=document.getElementById('allFeaturesNav');
+    if(!btn){
+      btn=document.createElement('button');
+      btn.id='allFeaturesNav';
+      btn.className='nav';
+      btn.type='button';
+      btn.innerHTML='🧩 <span>All Features</span>';
+      side.appendChild(btn);
+    }
+
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      openAllFeatures();
+    };
+    btn.classList.remove('hidden');
+    btn.style.setProperty('display','block','important');
+    btn.style.setProperty('visibility','visible','important');
+    btn.style.setProperty('opacity','1','important');
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',fixButton);
+  }else{
+    fixButton();
+  }
+  window.addEventListener('load',fixButton);
+  setTimeout(fixButton,500);
+  setTimeout(fixButton,1500);
+})();
+</script>
+
 </body></html>
