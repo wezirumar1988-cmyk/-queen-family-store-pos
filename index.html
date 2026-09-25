@@ -1163,12 +1163,23 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
       card.onclick=function(){
         const key=card.getAttribute("data-wezir-key");
         overlay.remove();
-        if(typeof window.qfFeature==="function"){
-          window.qfFeature(key);
+        /* Advanced modules have their real handlers in qfAdv.
+           Use qfAdv first; otherwise use the normal app feature handler. */
+        const advanced=["customers","customercredit","suppliers","supplierbalance","adjustment","salesreturn","purchasereturn","expiry","batch","users","payments","barcode","export"];
+        if(advanced.includes(key) && typeof window.qfAdv==="function"){
+          Promise.resolve(window.qfAdv(key)).catch(function(err){
+            console.error("Feature error:",err);
+            alert("This feature could not open: "+(err?.message||err));
+          });
+        }else if(typeof window.qfFeature==="function"){
+          Promise.resolve(window.qfFeature(key)).catch(function(err){
+            console.error("Feature error:",err);
+            alert("This feature could not open: "+(err?.message||err));
+          });
         }else if(["dashboard","products","pos","purchases","expenses","reports","settings"].includes(key) && typeof window.showPage==="function"){
           window.showPage(key);
         }else{
-          alert("Feature: "+key);
+          alert("Feature is not connected yet: "+key);
         }
       };
     });
@@ -1184,6 +1195,31 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
   },true);
 
   window.WEZIR_OPEN_ALL_FEATURES=openMenu;
+})();
+</script>
+
+
+<script>
+/* WEZIR POS — FEATURE ROUTING BRIDGE */
+(function(){
+  function install(){
+    if(typeof window.qfAdv!=="function" || typeof window.qfFeature!=="function") return;
+    if(window.__wezirFeatureRoutingInstalled) return;
+    window.__wezirFeatureRoutingInstalled=true;
+
+    const original=window.qfFeature;
+    const advanced=["customers","customercredit","suppliers","supplierbalance","adjustment","salesreturn","purchasereturn","expiry","batch","users","payments","barcode","export"];
+
+    window.qfFeature=function(key){
+      if(advanced.includes(key)) return window.qfAdv(key);
+      return original(key);
+    };
+  }
+
+  install();
+  setTimeout(install,500);
+  setTimeout(install,1500);
+  setTimeout(install,3000);
 })();
 </script>
 
