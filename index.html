@@ -1033,4 +1033,77 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
 })();
 </script>
 
+
+<script>
+/* WEZIR POS — FINAL ALL FEATURES FIX
+   Opens the feature menu directly as a modal; does not depend on page/show navigation. */
+(function(){
+  const WEZIR_ALL_FEATURES=[["🏠", "Dashboard", "dashboard"], ["📦", "Stock / Inventory", "products"], ["🛒", "POS / Gurgurtaa", "pos"], ["🧾", "Invoice", "invoicehub"], ["🖨️", "Invoice Print", "print"], ["📊", "Sales Reports", "reports"], ["🛍️", "Purchases", "purchases"], ["💰", "Expenses", "expenses"], ["👥", "Customers", "customers"], ["💳", "Customer Credit / Balance", "customercredit"], ["🏭", "Suppliers", "suppliers"], ["💵", "Supplier Balance", "supplierbalance"], ["🔄", "Stock Adjustment", "adjustment"], ["↩️", "Sales Return / Refund", "salesreturn"], ["↩️", "Purchase Return", "purchasereturn"], ["🔔", "Low Stock Alert", "lowstock"], ["🚫", "Out of Stock", "outstock"], ["📅", "Expiry Date", "expiry"], ["🏷️", "Batch / Lot", "batch"], ["👤", "Users & Permissions", "users"], ["💳", "Payment Methods", "payments"], ["⚙️", "Settings", "settings"], ["💾", "Backup / Restore", "backup"], ["☁️", "Cloud Account & Data Separation", "cloud"], ["📈", "Profit / Net Profit", "profit"], ["📊", "Export Report → Excel", "export"], ["🔐", "Forgot Password", "forgot"], ["🔄", "Change Password", "changepassword"], ["📱", "Barcode", "barcode"], ["🧾", "Automatic Invoice Number", "autoinvoice"], ["🆘", "Help / Contact", "help"], ["🌍", "Country + Currency", "currency"], ["🔑", "Email Login", "email"], ["💳", "Subscription / Business Management", "subscription"]];
+
+  function openAllFeaturesFinal(){
+    const old=document.getElementById('wezirAllFeaturesModal');
+    if(old) old.remove();
+
+    const wrap=document.createElement('div');
+    wrap.id='wezirAllFeaturesModal';
+    wrap.className='qfmodal';
+    wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:999999;display:flex;align-items:center;justify-content:center;padding:18px;';
+
+    const cards=WEZIR_ALL_FEATURES.map(function(f){
+      const icon=f[0], name=f[1], key=f[2];
+      return '<button type="button" class="wezir-feature-card" data-key="'+key+'" style="background:#fff!important;color:#111!important;border:1px solid #e4dfcf!important;border-top:3px solid #D4AF37!important;border-radius:14px;padding:16px;text-align:left;cursor:pointer;min-height:105px;">'
+        +'<div style="font-size:27px">'+icon+'</div>'
+        +'<div style="font-weight:700;margin-top:7px">'+name+'</div>'
+        +'<div style="font-size:12px;color:#777;margin-top:4px">Open '+name+'</div>'
+        +'</button>';
+    }).join('');
+
+    wrap.innerHTML=
+      '<div style="background:#fff;width:min(1000px,96vw);max-height:90vh;overflow:auto;border:2px solid #D4AF37;border-radius:18px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.5);">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;">'
+      +'<div><h2 style="margin:0;color:#111;">🧩 WEZIR POS — All Features</h2><p style="margin:5px 0 0;color:#777;">34 business features</p></div>'
+      +'<button type="button" id="wezirCloseFeatures" style="width:auto;background:#111!important;color:#fff!important;padding:9px 14px;">✕ Close</button>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;">'+cards+'</div>'
+      +'</div>';
+
+    document.body.appendChild(wrap);
+    document.getElementById('wezirCloseFeatures').onclick=function(){wrap.remove();};
+
+    wrap.querySelectorAll('.wezir-feature-card').forEach(function(btn){
+      btn.onclick=function(){
+        const key=btn.getAttribute('data-key');
+        wrap.remove();
+        if(typeof window.qfFeature==='function') window.qfFeature(key);
+        else if(['dashboard','products','pos','purchases','expenses','reports','settings'].includes(key) && typeof window.showPage==='function') window.showPage(key);
+        else alert('Feature is not ready: '+key);
+      };
+    });
+  }
+
+  window.openAllFeaturesFinal=openAllFeaturesFinal;
+  window.openHub=openAllFeaturesFinal;
+
+  function bindFinal(){
+    const btn=document.getElementById('allFeaturesNav');
+    if(!btn) return;
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      openAllFeaturesFinal();
+      return false;
+    };
+    btn.setAttribute('type','button');
+    btn.style.cursor='pointer';
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindFinal);
+  else bindFinal();
+  window.addEventListener('load',bindFinal);
+  setTimeout(bindFinal,300);
+  setTimeout(bindFinal,1000);
+  setTimeout(bindFinal,2500);
+})();
+</script>
+
 </body></html>
