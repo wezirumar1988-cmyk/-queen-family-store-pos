@@ -538,7 +538,88 @@ document.getElementById("buyDate").value=today();document.getElementById("invoic
 supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;setupAdminNav();if(currentUser){const cu=document.getElementById("currentUser");if(cu)cu.textContent=currentUser.email||"";updateProfileSummary();updateBusinessDisplay();}});
 </script>
 <script>
-// WEZIR POS - 34 FEATURE HUB\n(function(){\nconst features=[\n['🏠','Dashboard','dashboard'],['📦','Stock / Inventory','products'],['🛒','POS / Gurgurtaa','pos'],['🧾','Invoice','invoicehub'],['🖨️','Invoice Print','print'],['📊','Sales Reports','reports'],['🛍️','Purchases','purchases'],['💰','Expenses','expenses'],['👥','Customers','customers'],['💳','Customer Credit / Balance','customercredit'],['🏭','Suppliers','suppliers'],['💵','Supplier Balance','supplierbalance'],['🔄','Stock Adjustment','adjustment'],['↩️','Sales Return / Refund','salesreturn'],['↩️','Purchase Return','purchasereturn'],['🔔','Low Stock Alert','lowstock'],['🚫','Out of Stock','outstock'],['📅','Expiry Date','expiry'],['🏷️','Batch / Lot','batch'],['👤','Users & Permissions','users'],['💳','Payment Methods','payments'],['⚙️','Settings','settings'],['💾','Backup / Restore','backup'],['☁️','Cloud Account & Data Separation','cloud'],['📈','Profit / Net Profit','profit'],['📊','Export Report → Excel','export'],['🔐','Forgot Password','forgot'],['🔄','Change Password','changepassword'],['📱','Barcode','barcode'],['🧾','Automatic Invoice Number','autoinvoice'],['🆘','Help / Contact','help'],['🌍','Country + Currency','currency'],['🔑','Email Login','email'],['💳','Subscription / Business Management','subscription']\n];\nfunction addStyle(){const st=document.createElement('style');st.textContent=`.qf34{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.qf34 .f{background:#fff;border:1px solid #eee;border-radius:16px;padding:18px;cursor:pointer;box-shadow:0 3px 14px #0001;transition:.15s}.qf34 .f:hover{transform:translateY(-2px);box-shadow:0 7px 20px #0002}.qf34 .ico{font-size:28px}.qf34 h3{margin:8px 0 4px}.qf34 p{margin:0;color:#777;font-size:13px}.qfhub{background:#fff;border-radius:16px;padding:20px;margin-bottom:20px}.qfmodal{position:fixed;inset:0;background:#0008;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}.qfbox{background:#fff;border-radius:18px;width:min(720px,100%);max-height:90vh;overflow:auto;padding:24px}.qfgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.qfstat{padding:15px;border-radius:12px;background:#f5f5f5}.qfmuted{color:#777}`;document.head.appendChild(st)}\nfunction show(id){document.querySelectorAll('#app>div.container>div[id$="Page"],#app .container>div[id$="Page"]').forEach(x=>x.classList.add('hidden'));const el=document.getElementById(id+'Page');if(el)el.classList.remove('hidden')}\nfunction openHub(){show('featurehub')}\nfunction modal(title,html){const m=document.createElement('div');m.className='qfmodal';m.innerHTML=`<div class="qfbox"><div style="display:flex;justify-content:space-between;align-items:center"><h2>${title}</h2><button onclick="this.closest('.qfmodal').remove()">X</button></div>${html}</div>`;document.body.appendChild(m)}\nfunction local(key,def=[]){try{return JSON.parse(localStorage.getItem('qf_'+key)||JSON.stringify(def))}catch(e){return def}}\nfunction saveLocal(key,val){localStorage.setItem('qf_'+key,JSON.stringify(val))}\nwindow.qfFeature=function(key){\nif(key==='dashboard'||key==='products'||key==='pos'||key==='purchases'||key==='expenses'||key==='reports'||key==='settings'){if(typeof showPage==='function')showPage(key);return}\nif(key==='forgot'){if(typeof forgotPassword==='function')forgotPassword();return}\nif(key==='changepassword'){if(typeof changePassword==='function')changePassword();return}\nif(key==='backup'){if(typeof downloadBackup==='function')downloadBackup();return}\nif(key==='cloud'){if(typeof showPage==='function')showPage('settings');return}\nif(key==='print'){window.print();return}\nif(key==='email'){modal('🔑 Email Login','<p>Your account uses Supabase Email Login.</p><p class="qfmuted">Sign in and account separation are protected by your user account and database policies.</p>');return}\nif(key==='autoinvoice'){modal('🧾 Automatic Invoice Number','<p>The POS generates invoice numbers automatically, for example <b>INV-0001</b>.</p><p class="qfmuted">Each completed sale moves to Sales History.</p>');return}\nif(key==='lowstock'||key==='outstock'){const rows=(window.products||[]).filter(p=>key==='outstock'?Number(p.stock||0)<=0:Number(p.stock||0)<=10);modal(key==='outstock'?'🚫 Out of Stock':'🔔 Low Stock Alert',rows.length?'<div class="qfgrid">'+rows.map(p=>`<div class="qfstat"><b>${p.name}</b><br>Stock: ${p.stock||0}</div>`).join('')+'</div>':'<p>No matching products.</p>');return}\nif(key==='profit'){const s=(window.sales||[]).reduce((a,b)=>a+Number(b.profit||0),0);const e=(window.expenses||[]).reduce((a,b)=>a+Number(b.amount||0),0);modal('📈 Profit / Net Profit',`<div class="qfgrid"><div class="qfstat">Sales Profit<br><b>${money(s)}</b></div><div class="qfstat">Expenses<br><b>${money(e)}</b></div><div class="qfstat">Net Profit<br><b>${money(s-e)}</b></div></div>`);return}\nconst names={invoicehub:'🧾 Invoice',customers:'👥 Customers',customercredit:'💳 Customer Credit / Balance',suppliers:'🏭 Suppliers',supplierbalance:'💵 Supplier Balance',adjustment:'🔄 Stock Adjustment',salesreturn:'↩️ Sales Return / Refund',purchasereturn:'↩️ Purchase Return',expiry:'📅 Expiry Date',batch:'🏷️ Batch / Lot',users:'👤 Users & Permissions',payments:'💳 Payment Methods',export:'📊 Export Report → Excel',barcode:'📱 Barcode',help:'🆘 Help / Contact',currency:'🌍 Country + Currency',subscription:'💳 Subscription / Business Management'};\nif(key==='export'){exportCSV();return}\nif(key==='barcode'){modal('📱 Barcode','<p>Barcode module is ready for product barcode/SKU entry. Use the SKU field in Stock and scan/type the code into POS when barcode input is available.</p>');return}\nif(key==='currency'){modal('🌍 Country + Currency','<label>Country</label><input id="qfCountry" value="Ethiopia"><label>Currency</label><select id="qfCurrency"><option>ETB — Ethiopian Birr</option><option>SAR — Saudi Riyal</option><option>USD — US Dollar</option></select><br><br><button onclick="localStorage.setItem('qf_country',document.getElementById('qfCountry').value);localStorage.setItem('qf_currency',document.getElementById('qfCurrency').value);this.closest('.qfmodal').remove();alert('Saved')">Save</button>');return}\nif(key==='help'){modal('🆘 Help / Contact','<p><b>WEZIR POS</b></p><p>For support, contact your business administrator.</p><p class="qfmuted">You can add your WhatsApp/phone contact here later.</p>');return}\nif(key==='subscription'){modal('💳 Subscription / Business Management','<div class="qfgrid"><div class="qfstat"><b>Business</b><br>WEZIR POS</div><div class="qfstat"><b>Plan</b><br>Free / Trial</div><div class="qfstat"><b>Status</b><br>Active</div></div><p class="qfmuted">Subscription payment integration can be connected later without changing the POS data structure.</p>');return}\nmodal(names[key]||key,'<p>This module is included in the WEZIR POS feature hub.</p><p class="qfmuted">Core POS, Stock, Purchases, Sales, Expenses, Reports, Login, Password and Cloud features are connected to the existing Supabase app. This section is ready for its dedicated database workflow.</p>');\n};\nwindow.exportCSV=function(){const rows=[['Product','Stock','Cost','Selling Price']].concat((window.products||[]).map(p=>[p.name,p.stock,p.cost,p.selling_price]));const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='wezir-pos-stock-report.csv';a.click();};\naddStyle();\nwindow.addEventListener('load',()=>{const app=document.getElementById('app');if(!app)return;const container=app.querySelector('.main');if(!container)return;const page=document.createElement('section');page.id='featurehubPage';page.className='page';page.style.display='none';page.innerHTML=`<div class="qfhub"><h2>👑 WEZIR POS — 34 Features</h2><p class="qfmuted">All business functions in one place.</p></div><div class="qf34">${features.map(f=>`<div class="f" onclick="qfFeature('${f[2]}')"><div class="ico">${f[0]}</div><h3>${f[1]}</h3><p>Open ${f[1]}</p></div>`).join('')}</div>`;container.appendChild(page);const brand=app.querySelector('.brand');if(brand){brand.style.cursor='pointer';brand.title='All 34 Features';brand.onclick=openHub}});\n})();\n</script>\n<script>
+/* WEZIR POS — CLEAN 34 FEATURE HUB */
+(function(){
+  const features=[
+    ["🏠","Dashboard","dashboard"],["📦","Stock / Inventory","products"],
+    ["🛒","POS / Gurgurtaa","pos"],["🧾","Invoice","invoicehub"],
+    ["🖨️","Invoice Print","print"],["📊","Sales Reports","reports"],
+    ["🛍️","Purchases","purchases"],["💰","Expenses","expenses"],
+    ["👥","Customers","customers"],["💳","Customer Credit / Balance","customercredit"],
+    ["🏭","Suppliers","suppliers"],["💵","Supplier Balance","supplierbalance"],
+    ["🔄","Stock Adjustment","adjustment"],["↩️","Sales Return / Refund","salesreturn"],
+    ["↩️","Purchase Return","purchasereturn"],["🔔","Low Stock Alert","lowstock"],
+    ["🚫","Out of Stock","outstock"],["📅","Expiry Date","expiry"],
+    ["🏷️","Batch / Lot","batch"],["👤","Users & Permissions","users"],
+    ["💳","Payment Methods","payments"],["⚙️","Settings","settings"],
+    ["💾","Backup / Restore","backup"],["☁️","Cloud Account & Data Separation","cloud"],
+    ["📈","Profit / Net Profit","profit"],["📊","Export Report → Excel","export"],
+    ["🔐","Forgot Password","forgot"],["🔄","Change Password","changepassword"],
+    ["📱","Barcode","barcode"],["🧾","Automatic Invoice Number","autoinvoice"],
+    ["🆘","Help / Contact","help"],["🌍","Country + Currency","currency"],
+    ["🔑","Email Login","email"],["💳","Subscription / Business Management","subscription"]
+  ];
+  function addStyle(){
+    if(document.getElementById("wezirFeatureHubStyle")) return;
+    const st=document.createElement("style");st.id="wezirFeatureHubStyle";
+    st.textContent=".qf34{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.qf34 .f{background:#fff;border:1px solid #eee;border-radius:16px;padding:18px;cursor:pointer;box-shadow:0 3px 14px #0001}.qf34 .f:hover{transform:translateY(-2px)}.qfhub{background:#111;color:#fff;border:2px solid #D4AF37;border-radius:16px;padding:20px;margin-bottom:20px}.qfhub h2{color:#F4D76A}.qfmodal{position:fixed;inset:0;background:#0008;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.qfbox{background:#fff;border:2px solid #D4AF37;border-radius:18px;width:min(720px,100%);max-height:90vh;overflow:auto;padding:24px}.qfgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.qfstat{padding:15px;border-radius:12px;background:#f5f5f5}.qfmuted{color:#777}";
+    document.head.appendChild(st);
+  }
+  function modal(title,html){
+    document.querySelector(".qfmodal")?.remove();
+    const m=document.createElement("div");m.className="qfmodal";
+    m.innerHTML='<div class="qfbox"><div style="display:flex;justify-content:space-between;align-items:center"><h2>'+title+'</h2><button type="button" onclick="this.closest(\'.qfmodal\').remove()">✕</button></div>'+html+"</div>";
+    document.body.appendChild(m);return m;
+  }
+  function exportCSV(){
+    const rows=[["Product","Stock","Cost","Selling Price"]].concat((window.products||[]).map(p=>[p.name,p.stock,p.cost,p.selling_price]));
+    const csv=rows.map(r=>r.map(v=>'"'+String(v??"").replaceAll('"','""')+'"').join(",")).join("\n");
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="wezir-pos-stock-report.csv";a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }
+  window.exportCSV=exportCSV;
+  window.qfFeature=function(key){
+    if(["dashboard","products","pos","purchases","expenses","reports","settings"].includes(key)){
+      if(typeof window.showPage==="function") return window.showPage(key); return;
+    }
+    if(key==="forgot") return typeof window.forgotPassword==="function" ? window.forgotPassword() : modal("🔐 Forgot Password","<p>Use Forgot Password on the login screen.</p>");
+    if(key==="changepassword") return typeof window.openPasswordModal==="function" ? window.openPasswordModal() : modal("🔄 Change Password","<p>Use Settings → Change Password.</p>");
+    if(key==="backup") return typeof window.backupData==="function" ? window.backupData() : modal("💾 Backup / Restore","<p>Use Settings → Backup.</p>");
+    if(key==="cloud") return typeof window.showPage==="function" ? window.showPage("settings") : null;
+    if(key==="print") return window.print();
+    if(key==="invoicehub") return typeof window.showPage==="function" ? window.showPage("pos") : null;
+    if(key==="autoinvoice") return modal("🧾 Automatic Invoice Number","<p>The POS generates invoice numbers such as <b>INV-0001</b> automatically.</p>");
+    if(key==="email") return modal("🔑 Email Login","<p>WEZIR POS uses your Supabase email account for login.</p>");
+    if(key==="lowstock" || key==="outstock"){
+      const rows=(window.products||[]).filter(p=>key==="outstock"?Number(p.stock||0)<=0:Number(p.stock||0)<=10);
+      return modal(key==="outstock"?"🚫 Out of Stock":"🔔 Low Stock Alert",rows.length?'<div class="qfgrid">'+rows.map(p=>'<div class="qfstat"><b>'+String(p.name||"")+'</b><br>Stock: '+Number(p.stock||0)+'</div>').join("")+"</div>":"<p>No matching products.</p>");
+    }
+    if(key==="profit"){
+      const s=(window.sales||[]).reduce((a,b)=>a+Number(b.profit||0),0),e=(window.expenses||[]).reduce((a,b)=>a+Number(b.amount||0),0);
+      return modal("📈 Profit / Net Profit",'<div class="qfgrid"><div class="qfstat">Sales Profit<br><b>'+money(s)+'</b></div><div class="qfstat">Expenses<br><b>'+money(e)+'</b></div><div class="qfstat">Net Profit<br><b>'+money(s-e)+'</b></div></div>');
+    }
+    if(["customers","customercredit","suppliers","supplierbalance","adjustment","salesreturn","purchasereturn","expiry","batch","users","payments","barcode","export","help","currency","subscription"].includes(key)){
+      if(typeof window.qfAdv==="function") return window.qfAdv(key);
+    }
+    return modal("WEZIR POS","<p>This feature is connected to the WEZIR POS feature system.</p>");
+  };
+  function openHub(){
+    const page=document.getElementById("featurehubPage");if(!page)return;
+    document.querySelectorAll("#app .page").forEach(x=>{x.classList.remove("active");x.style.display="none";});
+    page.classList.add("active");page.style.display="block";
+  }
+  window.openHub=openHub;
+  function createHub(){
+    addStyle();const app=document.getElementById("app"),main=app?.querySelector(".main");
+    if(!main||document.getElementById("featurehubPage"))return;
+    const page=document.createElement("section");page.id="featurehubPage";page.className="page";page.style.display="none";
+    page.innerHTML='<div class="qfhub"><h2>🧩 WEZIR POS — All Features</h2><p>34 business features</p></div><div class="qf34">'+features.map(f=>'<div class="f" data-key="'+f[2]+'"><div class="ico" style="font-size:28px">'+f[0]+'</div><h3>'+f[1]+'</h3><p>Open '+f[1]+'</p></div>').join("")+"</div>";
+    main.appendChild(page);page.querySelectorAll(".f").forEach(card=>card.addEventListener("click",()=>window.qfFeature(card.dataset.key)));
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",createHub);else createHub();
+  window.addEventListener("load",createHub);setTimeout(createHub,500);
+})();
+</script>\n<script>
 /* WEZIR POS 34 FEATURES - FUNCTIONAL MODULE PACK */
 (function(){
  const K={customers:'qf_customers',suppliers:'qf_suppliers',returns:'qf_returns',adjustments:'qf_adjustments',batches:'qf_batches',payments:'qf_payments',users:'qf_users'};
