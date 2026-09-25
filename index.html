@@ -792,4 +792,35 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
 })();
 </script>
 
+
+<script>
+/* WEZIR POS — Admin Dashboard navigation hard-fix */
+(function(){
+  function ensureAdminButton(){
+    var side=document.querySelector('.side');
+    if(!side) return;
+    var btn=document.getElementById('adminNav');
+    if(!btn){
+      var reports=[].slice.call(side.querySelectorAll('.nav')).find(function(b){return (b.textContent||'').includes('Reports');});
+      btn=document.createElement('button');
+      btn.id='adminNav';
+      btn.className='nav';
+      btn.type='button';
+      btn.textContent='👑 Admin Dashboard';
+      btn.onclick=function(){ if(typeof showPage==='function') showPage('adminDashboard',btn); };
+      if(reports && reports.parentNode) reports.parentNode.insertBefore(btn,reports.nextSibling);
+      else side.appendChild(btn);
+    }
+    btn.classList.remove('hidden');
+    btn.style.setProperty('display','block','important');
+    btn.style.setProperty('visibility','visible','important');
+    btn.style.setProperty('opacity','1','important');
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ensureAdminButton);
+  else ensureAdminButton();
+  window.addEventListener('load',ensureAdminButton);
+  setTimeout(ensureAdminButton,500);
+  setTimeout(ensureAdminButton,1500);
+})();
+</script>
 </body></html>
