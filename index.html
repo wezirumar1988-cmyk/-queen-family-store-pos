@@ -1111,4 +1111,36 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
 })();
 </script>
 
+
+<script>
+/* WEZIR POS — FINAL HELP FEATURE FIX */
+(function(){
+  window.help = window.help || async function(){
+    var old=document.querySelector('.qfmodal');
+    if(old) old.remove();
+
+    var modal=document.createElement('div');
+    modal.className='qfmodal';
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.innerHTML =
+      '<div style="background:#fff;border:2px solid #D4AF37;border-radius:18px;max-width:560px;width:100%;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.25)">'+
+      '<h2 style="margin-top:0">🆘 WEZIR POS Help & Contact</h2>'+
+      '<p><b>Administrator:</b> Wezir Umar</p>'+
+      '<p><b>Email:</b> <a href="mailto:wezirumar1988@gmail.com?subject=WEZIR%20POS%20Support">wezirumar1988@gmail.com</a></p>'+
+      '<p><b>WhatsApp:</b> <a target="_blank" rel="noopener" href="https://wa.me/966536690242?text=Hello%20WEZIR%20POS%20Admin%2C%20I%20need%20help.">+966 536 690 242</a></p>'+
+      '<p class="qfmuted">For account, subscription, login, or POS support, contact the WEZIR POS Administrator.</p>'+
+      '<button type="button" onclick="this.closest(\\'.qfmodal\\').remove()">Close</button>'+
+      '</div>';
+    document.body.appendChild(modal);
+  };
+
+  // Also expose the feature-router callback expected by trial/subscription screens.
+  window.qfHelp = window.qfHelp || window.help;
+
+  // If a router calls help() as a bare identifier, globalThis is the global scope in browsers.
+  try { globalThis.help = window.help; } catch(e) {}
+
+})();
+</script>
+
 </body></html>
