@@ -443,7 +443,7 @@ async function loadAdminUsers(){
 }
 function formatAdminDate(value){if(!value)return "—";const d=new Date(value);if(Number.isNaN(d.getTime()))return escapeHtml(value);return escapeHtml(d.toLocaleString());}
 function showPage(id,btn){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));const page=document.getElementById(id);if(!page)return;page.classList.add("active");document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));if(btn)btn.classList.add("active");if(id==="adminDashboard")loadAdminUsers();renderAll();}
-async function addPurchase(){if(!currentUser)return alert("Please sign in first.");const name=document.getElementById("buyProduct").value.trim(),qty=Number(document.getElementById("buyQty").value),cost=Number(document.getElementById("buyCost").value),transport=Number(document.getElementById("buyTransport").value)||0,loading=Number(document.getElementById("buyLoading").value)||0,supplier=document.getElementById("buySupplier").value.trim(),profitPercent=Number(document.getElementById("buyProfitPercent").value)||0,date=document.getElementById("buyDate").value||today();let selling=Number(document.getElementById("buySellingPrice").value)||0;if(!name||!Number.isFinite(qty)||qty<=0||!Number.isFinite(cost)||cost<0||!Number.isFinite(transport)||transport<0||!Number.isFinite(loading)||loading<0||!Number.isFinite(profitPercent)||profitPercent<0||!Number.isFinite(selling)||selling<0)return alert("Product, quantity fi gatii sirrii guuti.");const landed=cost+(transport+loading)/qty;if(selling<=0)selling=landed*(1+profitPercent/100);const existing=data.products.find(p=>p.name.toLowerCase()===name.toLowerCase());if(existing){const oldQty=Number(existing.stock||0),oldCost=Number(existing.cost||0),avg=(oldQty*oldCost+qty*landed)/(oldQty+qty);const {error}=await supabaseClient.from("products").update({stock:oldQty+qty,cost:avg,selling_price:selling,profit_percent:profitPercent}).eq("id",existing.id).eq("user_id",currentUser.id);if(error)return alert(error.message)}else{const {error}=await supabaseClient.from("products").insert({user_id:currentUser.id,name,sku:"",unit:"kg",stock:qty,cost:landed,selling_price:selling,profit_percent:profitPercent});if(error)return alert(error.message)}const {error}=await supabaseClient.from("purchases").insert({user_id:currentUser.id,product_name:name,qty,purchase_cost:cost,transport,loading,total_cost:qty*cost+transport+loading,supplier,purchase_date:date});if(error)return alert(error.message);alert("Purchase saved!\nLanded Cost: "+money(landed)+" / unit\nSelling Price: "+money(selling)+" / unit");["buyProduct","buyQty","buyCost","buyTransport","buyLoading","buySupplier","buySellingPrice"].forEach(id=>document.getElementById(id).value="");document.getElementById("buyProfitPercent").value=10;await loadCloudData()}
+async function addPurchase(){if(!currentUser)return alert("Please sign in first.");const name=document.getElementById("buyProduct").value.trim(),qty=Number(document.getElementById("buyQty").value),cost=Number(document.getElementById("buyCost").value),transport=Number(document.getElementById("buyTransport").value)||0,loading=Number(document.getElementById("buyLoading").value)||0,supplier=document.getElementById("buySupplier").value.trim(),profitPercent=Number(document.getElementById("buyProfitPercent").value)||0,date=document.getElementById("buyDate").value||today();let selling=Number(document.getElementById("buySellingPrice").value)||0;if(!name||qty<=0||cost<0)return alert("Product, quantity fi cost guuti.");const landed=cost+(transport+loading)/qty;if(selling<=0)selling=landed*(1+profitPercent/100);const existing=data.products.find(p=>p.name.toLowerCase()===name.toLowerCase());if(existing){const oldQty=Number(existing.stock||0),oldCost=Number(existing.cost||0),avg=(oldQty*oldCost+qty*landed)/(oldQty+qty);const {error}=await supabaseClient.from("products").update({stock:oldQty+qty,cost:avg,selling_price:selling,profit_percent:profitPercent}).eq("id",existing.id).eq("user_id",currentUser.id);if(error)return alert(error.message)}else{const {error}=await supabaseClient.from("products").insert({user_id:currentUser.id,name,sku:"",unit:"kg",stock:qty,cost:landed,selling_price:selling,profit_percent:profitPercent});if(error)return alert(error.message)}const {error}=await supabaseClient.from("purchases").insert({user_id:currentUser.id,product_name:name,qty,purchase_cost:cost,transport,loading,total_cost:qty*cost+transport+loading,supplier,purchase_date:date});if(error)return alert(error.message);alert("Purchase saved!\nLanded Cost: "+money(landed)+" / unit\nSelling Price: "+money(selling)+" / unit");["buyProduct","buyQty","buyCost","buyTransport","buyLoading","buySupplier","buySellingPrice"].forEach(id=>document.getElementById(id).value="");document.getElementById("buyProfitPercent").value=10;await loadCloudData()}
 function editProduct(id){
  const p=data.products.find(x=>String(x.id)===String(id)); if(!p)return alert("Product hin argamne.");
  document.getElementById("modalHost").innerHTML=`<div class="modal"><div class="modal-box"><h2>✏️ Edit Product</h2><label>Product</label><input id="epName" value="${escapeHtml(p.name||"")}"><label>Stock</label><input id="epStock" type="number" step="0.01" value="${Number(p.stock||0)}"><label>Average Cost</label><input id="epCost" type="number" step="0.01" value="${Number(p.cost||0)}"><label>Selling Price</label><input id="epPrice" type="number" step="0.01" value="${Number(p.selling_price||0)}"><label>Profit %</label><input id="epProfit" type="number" step="0.01" value="${Number(p.profit_percent||0)}"><div class="modal-actions"><button onclick="saveProductEdit('${p.id}')">Save</button><button class="btn-secondary" onclick="closeModal()">Close</button></div></div></div>`;
@@ -481,14 +481,20 @@ async function deleteProduct(id){
 }
 
 function renderPosProductButtons(){
-  const box=document.getElementById("posProductButtons");if(!box)return;
+  const box=document.getElementById("posProductButtons");
+  if(!box)return;
   const query=(document.getElementById("posSearch")?.value||"").trim().toLowerCase();
   const available=data.products.filter(p=>Number(p.stock||0)>0&&String(p.name||"").toLowerCase().includes(query));
-  box.innerHTML=available.length?available.map(p=>`<button type="button" class="pos-product-btn" onclick="addProductToCart(${JSON.stringify(String(p.id))})" aria-label="Add ${escapeHtml(p.name)} to invoice">
+  box.innerHTML=available.length?available.map(p=>`<button type="button" class="pos-product-btn" data-product-id="${escapeHtml(String(p.id))}" aria-label="Add ${escapeHtml(p.name)} to invoice">
     <span class="pos-product-icon">＋</span><span class="pos-product-name">${escapeHtml(p.name)}</span>
     <span class="pos-product-price">${money(p.selling_price)}</span><span class="pos-product-stock">${Number(p.stock||0).toLocaleString()} available</span>
   </button>`).join(""):`<div class="pos-empty">${query?"No matching products found.":"No products in stock yet."}</div>`;
+  // Bind clicks after rendering; avoids broken inline handlers when IDs contain quotes.
+  box.querySelectorAll(".pos-product-btn[data-product-id]").forEach(button=>{
+    button.addEventListener("click",()=>addProductToCart(button.getAttribute("data-product-id")));
+  });
 }
+
 function addProductToCart(id){
   const product=data.products.find(p=>String(p.id)===String(id));
   if(!product)return alert("Product hin argamne.");
@@ -586,7 +592,7 @@ async function checkout(){
     const p=data.products.find(p=>String(p.id)===String(x.id));
     const qty=Number(x.qty), price=Number(x.price), unitCost=Number(x.cost);
     if(!p)return alert("Product hin argamne: "+x.name);
-    if(!Number.isFinite(qty)||qty<=0||!Number.isFinite(price)||price<0||!Number.isFinite(unitCost)||unitCost<0)return alert("Quantity ykn gatiin sirrii miti: "+x.name);
+    if(!Number.isFinite(qty)||qty<=0||!Number.isFinite(price)||price<0)return alert("Quantity ykn gatiin sirrii miti: "+x.name);
     if(qty>Number(p.stock||0))return alert("Stock gahaa miti: "+x.name+". Available: "+p.stock);
     lines.push({product:p,item:x,qty,price,unitCost,total:qty*price,cost:qty*unitCost});
   }
@@ -597,18 +603,8 @@ async function checkout(){
     const rows=lines.map(({item,qty,price,cost,total})=>({user_id:currentUser.id,invoice_no:invoice,product_name:item.name,qty,selling_price:price,total,cost,profit:total-cost,payment_method:payment,customer,sale_date:today()}));
     const {error:salesError}=await supabaseClient.from("sales").insert(rows);
     if(salesError)throw salesError;
-    // Deduct each product once. If the same product appears on multiple
-    // invoice lines, subtract the combined quantity rather than overwriting
-    // stock repeatedly from the same original value.
-    const deductions=new Map();
     for(const line of lines){
-      const key=String(line.product.id);
-      const entry=deductions.get(key)||{product:line.product,qty:0};
-      entry.qty+=line.qty;
-      deductions.set(key,entry);
-    }
-    for(const {product,qty} of deductions.values()){
-      const {error:updateError}=await supabaseClient.from("products").update({stock:Number(product.stock)-qty}).eq("id",product.id).eq("user_id",currentUser.id);
+      const {error:updateError}=await supabaseClient.from("products").update({stock:Number(line.product.stock)-line.qty}).eq("id",line.product.id).eq("user_id",currentUser.id);
       if(updateError)throw updateError;
     }
     const total=lines.reduce((sum,x)=>sum+x.total,0),cost=lines.reduce((sum,x)=>sum+x.cost,0);
