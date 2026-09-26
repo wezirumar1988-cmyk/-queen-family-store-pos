@@ -447,10 +447,19 @@ function renderPosProductButtons(){
   const box=document.getElementById("posProductButtons");if(!box)return;
   const query=(document.getElementById("posSearch")?.value||"").trim().toLowerCase();
   const available=data.products.filter(p=>Number(p.stock||0)>0&&String(p.name||"").toLowerCase().includes(query));
-  box.innerHTML=available.length?available.map(p=>`<button type="button" class="pos-product-btn" onclick="addProductToCart(${JSON.stringify(String(p.id))})" aria-label="Add ${escapeHtml(p.name)} to invoice">
+  if(!available.length){
+    box.innerHTML=`<div class="pos-empty">${query?"No matching products found.":"No products in stock yet."}</div>`;
+    return;
+  }
+  // Use data attributes + addEventListener. Putting a quoted product ID inside
+  // an inline HTML onclick attribute can break the attribute and make taps do nothing.
+  box.innerHTML=available.map(p=>`<button type="button" class="pos-product-btn" data-product-id="${escapeHtml(String(p.id))}" aria-label="Add ${escapeHtml(p.name)} to invoice">
     <span class="pos-product-icon">＋</span><span class="pos-product-name">${escapeHtml(p.name)}</span>
     <span class="pos-product-price">${money(p.selling_price)}</span><span class="pos-product-stock">${Number(p.stock||0).toLocaleString()} available</span>
-  </button>`).join(""):`<div class="pos-empty">${query?"No matching products found.":"No products in stock yet."}</div>`;
+  </button>`).join("");
+  box.querySelectorAll(".pos-product-btn").forEach(button=>{
+    button.addEventListener("click",()=>addProductToCart(button.dataset.productId));
+  });
 }
 function addProductToCart(id){
   const product=data.products.find(p=>String(p.id)===String(id));
