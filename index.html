@@ -450,7 +450,36 @@ function editProduct(id){
 }
 async function saveProductEdit(id){
  try{const name=document.getElementById("epName").value.trim();const stock=Number(document.getElementById("epStock").value||0);const cost=Number(document.getElementById("epCost").value||0);const price=Number(document.getElementById("epPrice").value||0);const profit=Number(document.getElementById("epProfit").value||0);if(!name)return alert("Product name required");const r=await supabaseClient.from("products").update({name,stock,cost,selling_price:price,profit_percent:profit}).eq("id",id).eq("user_id",currentUser.id);if(r.error)throw r.error;closeModal();await loadCloudData();alert("Product updated successfully.");}catch(e){alert("Update error: "+e.message)}}
-function productMore(id){const p=data.products.find(x=>String(x.id)===String(id));if(!p)return;document.getElementById("modalHost").innerHTML=`<div class="modal"><div class="modal-box"><h2>⋮ ${escapeHtml(p.name)}</h2><p><b>Stock:</b> ${Number(p.stock||0)}</p><p><b>Average Cost:</b> ${money(p.cost)}</p><p><b>Selling Price:</b> ${money(p.selling_price)}</p><p><b>Profit / Unit:</b> ${money(Number(p.selling_price||0)-Number(p.cost||0))}</p><p><b>Profit %:</b> ${Number(p.profit_percent||0)}%</p><div class="modal-actions"><button onclick="editProduct('${p.id}')">✏️ Edit</button><button class="btn-secondary" onclick="closeModal()">Close</button></div></div></div>`}
+function productMore(id){
+  const p=data.products.find(x=>String(x.id)===String(id));
+  if(!p)return;
+  document.getElementById("modalHost").innerHTML=`<div class="modal"><div class="modal-box"><h2>⋮ ${escapeHtml(p.name)}</h2>
+    <p><b>Stock:</b> ${Number(p.stock||0)}</p>
+    <p><b>Average Cost:</b> ${money(p.cost)}</p>
+    <p><b>Selling Price:</b> ${money(p.selling_price)}</p>
+    <p><b>Profit / Unit:</b> ${money(Number(p.selling_price||0)-Number(p.cost||0))}</p>
+    <p><b>Profit %:</b> ${Number(p.profit_percent||0)}%</p>
+    <div class="modal-actions">
+      <button onclick="editProduct(${JSON.stringify(String(p.id))})">✏️ Edit</button>
+      <button class="small-btn" style="background:#b42318;color:#fff" onclick="deleteProduct(${JSON.stringify(String(p.id))})">🗑️ Delete</button>
+      <button class="btn-secondary" onclick="closeModal()">Close</button>
+    </div></div></div>`;
+}
+async function deleteProduct(id){
+  const p=data.products.find(x=>String(x.id)===String(id));
+  if(!p)return alert("Product hin argamne.");
+  if(!currentUser)return alert("Please sign in first.");
+  const yes=confirm(`Meeshaa "${p.name}" stock keessaa haquu barbaaddaa? Seenaa gurgurtaa fi bittaa duraanii hin haqamu.`);
+  if(!yes)return;
+  try{
+    const {error}=await supabaseClient.from("products").delete().eq("id",id).eq("user_id",currentUser.id);
+    if(error)throw error;
+    closeModal();
+    await loadCloudData();
+    alert("Product deleted from stock. Sales and purchase history were not deleted.");
+  }catch(e){alert("Delete error: "+(e.message||String(e))+"\nSupabase DELETE policy may be required.");}
+}
+
 function renderPosProductButtons(){
   const box=document.getElementById("posProductButtons");if(!box)return;
   const query=(document.getElementById("posSearch")?.value||"").trim().toLowerCase();
