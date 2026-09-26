@@ -146,7 +146,7 @@ th{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border-b
 <section id="expenses" class="page"><h2>Expenses</h2><div class="panel"><div class="row"><input id="eName" placeholder="Expense name"><input id="eAmount" type="number" placeholder="Amount"><button class="small-btn" onclick="addExpense()">Add Expense</button></div></div><div class="panel"><div id="expenseTable"></div></div></section>
 <section id="reports" class="page"><h2>Reports</h2><div class="panel"><div id="reportBox"></div><hr><h3>Excel</h3><button onclick="exportExcelAll()">📊 Export All to Excel</button><button class="btn-secondary" onclick="document.getElementById('excelImport').click()">📥 Upload Excel</button><input id="excelImport" type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)"><p class="muted">Excel file keessatti Sales, Stock, Purchases, Expenses sheets ni qabaata.</p></div></section>
 <section id="adminDashboard" class="page"><h2>👑 Admin Dashboard</h2><div id="adminAccessBox" class="panel"><p class="muted">Loading admin information...</p></div><div id="adminStats" class="grid" style="margin-top:15px"></div><div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">Users / Accounts</h3><button class="small-btn" onclick="loadAdminUsers()">🔄 Refresh</button></div><div id="adminUsersTable" style="margin-top:15px;overflow:auto"></div></div></section>
-<section id="settings" class="page"><h2>Settings</h2><div class="panel"><p><b>Business:</b> <span id="settingsBusinessName">WEZIR POS</span></p><p><b>Currency:</b> <span id="settingsCurrencyValue">ETB</span></p><hr><h3>Profile</h3><p id="profileSummary">Not signed in</p><button onclick="openProfile()">Edit Profile</button><button class="btn-secondary" onclick="openPasswordModal()">Change Password</button><button class="btn-secondary" onclick="forgotPassword()">Forgot Password</button><hr><h3>🔐 Page Access PIN</h3><p class="muted">Create a personal PIN for this account. Protected pages will ask for it when opened.</p><p id="pinStatus" class="muted">PIN status: checking...</p><button type="button" onclick="openPinSettings()">Set / Change PIN</button><hr><h3>Language</h3><select id="settingsLanguage" onchange="setLanguage(this.value)"><option value="en">English</option><option value="om">Afaan Oromoo</option><option value="am">አማርኛ</option><option value="ar">العربية</option></select><hr><h3>Country + Currency</h3><select id="settingsCurrency" onchange="setAppCurrency(this.value)"><option value="ETB">ETB — Ethiopian Birr</option><option value="SAR">SAR — Saudi Riyal</option><option value="AED">AED — UAE Dirham</option><option value="USD">USD — US Dollar</option><option value="GBP">GBP — British Pound</option><option value="EUR">EUR — Euro</option><option value="CAD">CAD — Canadian Dollar</option><option value="AUD">AUD — Australian Dollar</option><option value="KES">KES — Kenyan Shilling</option><option value="TRY">TRY — Turkish Lira</option><option value="UGX">UGX — Ugandan Shilling</option><option value="TZS">TZS — Tanzanian Shilling</option><option value="RWF">RWF — Rwandan Franc</option><option value="SOS">SOS — Somali Shilling</option><option value="DJF">DJF — Djiboutian Franc</option><option value="QAR">QAR — Qatari Riyal</option><option value="KWD">KWD — Kuwaiti Dinar</option><option value="OMR">OMR — Omani Rial</option><option value="BHD">BHD — Bahraini Dinar</option><option value="EGP">EGP — Egyptian Pound</option></select><hr><h3>Cloud Account</h3><p id="currentUser">Not signed in</p><hr><h3>Excel</h3><button onclick="exportExcelAll()">📊 Export Excel</button><button class="btn-secondary" onclick="document.getElementById('excelImport').click()">📥 Upload Excel</button><hr><h3>Backup</h3><button onclick="backupData()">Download Backup</button><button class="btn-secondary" onclick="document.getElementById('restoreFile').click()">Restore Backup</button><input id="restoreFile" type="file" accept=".json" style="display:none" onchange="restoreData(event)"><hr><button class="btn-danger" onclick="clearAllData()">Delete All Cloud Data</button></div></section>
+<section id="settings" class="page"><h2>Settings</h2><div class="panel"><p><b>Business:</b> <span id="settingsBusinessName">WEZIR POS</span></p><p><b>Currency:</b> <span id="settingsCurrencyValue">ETB</span></p><hr><h3>Profile</h3><p id="profileSummary">Not signed in</p><button onclick="openProfile()">Edit Profile</button><button class="btn-secondary" onclick="openPasswordModal()">Change Password</button><button class="btn-secondary" onclick="forgotPassword()">Forgot Password</button><hr><h3>Language</h3><select id="settingsLanguage" onchange="setLanguage(this.value)"><option value="en">English</option><option value="om">Afaan Oromoo</option><option value="am">አማርኛ</option><option value="ar">العربية</option></select><hr><h3>Country + Currency</h3><select id="settingsCurrency" onchange="setAppCurrency(this.value)"><option value="ETB">ETB — Ethiopian Birr</option><option value="SAR">SAR — Saudi Riyal</option><option value="AED">AED — UAE Dirham</option><option value="USD">USD — US Dollar</option><option value="GBP">GBP — British Pound</option><option value="EUR">EUR — Euro</option><option value="CAD">CAD — Canadian Dollar</option><option value="AUD">AUD — Australian Dollar</option><option value="KES">KES — Kenyan Shilling</option><option value="TRY">TRY — Turkish Lira</option><option value="UGX">UGX — Ugandan Shilling</option><option value="TZS">TZS — Tanzanian Shilling</option><option value="RWF">RWF — Rwandan Franc</option><option value="SOS">SOS — Somali Shilling</option><option value="DJF">DJF — Djiboutian Franc</option><option value="QAR">QAR — Qatari Riyal</option><option value="KWD">KWD — Kuwaiti Dinar</option><option value="OMR">OMR — Omani Rial</option><option value="BHD">BHD — Bahraini Dinar</option><option value="EGP">EGP — Egyptian Pound</option></select><hr><h3>Cloud Account</h3><p id="currentUser">Not signed in</p><hr><h3>Excel</h3><button onclick="exportExcelAll()">📊 Export Excel</button><button class="btn-secondary" onclick="document.getElementById('excelImport').click()">📥 Upload Excel</button><hr><h3>Backup</h3><button onclick="backupData()">Download Backup</button><button class="btn-secondary" onclick="document.getElementById('restoreFile').click()">Restore Backup</button><input id="restoreFile" type="file" accept=".json" style="display:none" onchange="restoreData(event)"><hr><button class="btn-danger" onclick="clearAllData()">Delete All Cloud Data</button></div></section>
 </main></div></div><div id="printArea" class="hidden"></div><div id="modalHost"></div>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
@@ -1422,11 +1422,7 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
     ["🔑","Email Login","email"],["💳","Subscription / Business Management","subscription"]
   ];
 
-  function openMenu(pinPassed){
-    if(!pinPassed && typeof window.wezirRequirePin==="function"){
-      window.wezirRequirePin("allFeatures",function(){openMenu(true);});
-      return;
-    }
+  function openMenu(){
     let old=document.getElementById("WEZIR_ALL_FEATURES_FINAL_MENU");
     if(old) old.remove();
 
@@ -1551,101 +1547,6 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
 </script>
 
 
-<script>
-/* WEZIR POS — account-specific PIN gate */
-(function(){
-  const LOCKED_PAGES = new Set(["dashboard","purchases","products","expenses","reports","adminDashboard"]);
-  let pendingAction = null;
 
-  function pinHash(pin, userId){
-    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(userId+":"+pin+":WEZIR_POS_PIN_V1"))
-      .then(buf=>Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join(""));
-  }
-  function savedHash(){ return currentUser?.user_metadata?.wezir_pin_hash || ""; }
-  function updatePinStatus(){
-    const el=document.getElementById("pinStatus");
-    if(el) el.textContent=savedHash() ? "PIN status: set for this account." : "PIN status: not set yet.";
-  }
-  function modal(title, body, actionText, action){
-    const host=document.getElementById("modalHost");
-    host.innerHTML='<div class="modal" id="wezirPinModal"><div class="modal-box"><h2>'+title+'</h2>'+body+
-      '<p id="wezirPinError" class="error" role="alert"></p><div class="modal-actions"><button type="button" id="wezirPinSubmit">'+actionText+'</button><button type="button" class="btn-secondary" id="wezirPinCancel">Cancel</button></div></div></div>';
-    document.getElementById("wezirPinCancel").onclick=()=>{host.innerHTML="";pendingAction=null;};
-    document.getElementById("wezirPinSubmit").onclick=action;
-  }
-  function pinFields(includeCurrent){
-    return (includeCurrent?'<label>Current PIN</label><input id="wezirCurrentPin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8" placeholder="Enter current PIN">':'')+
-      '<label>New PIN (4–8 digits)</label><input id="wezirNewPin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="8" placeholder="4–8 digits">'+
-      '<label>Confirm new PIN</label><input id="wezirConfirmPin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="8" placeholder="Repeat PIN">';
-  }
-  async function savePin(includeCurrent){
-    const err=document.getElementById("wezirPinError");
-    const current=document.getElementById("wezirCurrentPin")?.value||"";
-    const pin=document.getElementById("wezirNewPin")?.value||"";
-    const confirmPin=document.getElementById("wezirConfirmPin")?.value||"";
-    if(includeCurrent){
-      if(!current){err.textContent="Enter your current PIN.";return;}
-      const oldHash=await pinHash(current,currentUser.id);
-      if(oldHash!==savedHash()){err.textContent="Current PIN is incorrect.";return;}
-    }
-    if(!/^\d{4,8}$/.test(pin)){err.textContent="PIN must contain 4–8 digits.";return;}
-    if(pin!==confirmPin){err.textContent="PINs do not match.";return;}
-    const hash=await pinHash(pin,currentUser.id);
-    const {data,error}=await supabaseClient.auth.updateUser({data:{...(currentUser.user_metadata||{}),wezir_pin_hash:hash}});
-    if(error){err.textContent=error.message;return;}
-    currentUser=data.user;
-    document.getElementById("modalHost").innerHTML="";
-    updatePinStatus();
-    alert("Your account PIN has been saved.");
-    const next=pendingAction;pendingAction=null;if(next)next();
-  }
-  window.openPinSettings=function(){
-    if(!currentUser)return alert("Please sign in first.");
-    const exists=!!savedHash();
-    modal(exists?"Change your account PIN":"Create your account PIN",
-      (exists?'<p>Verify your current PIN, then choose a new one.</p>':'<p>Create a PIN for this account. You will use it to open protected pages.</p>')+pinFields(exists),
-      exists?"Save new PIN":"Create PIN",()=>savePin(exists));
-  };
-  window.wezirRequirePin=function(scope,onSuccess){
-    if(!currentUser){alert("Please sign in first.");return;}
-    pendingAction=onSuccess;
-    if(!savedHash()){
-      modal("Create your account PIN",'<p>No PIN is set for this account yet. Create one to continue.</p>'+pinFields(false),"Create PIN",()=>savePin(false));
-      return;
-    }
-    modal("🔐 Enter your PIN",'<p>Enter the PIN for this account to open this section.</p><label>PIN</label><input id="wezirVerifyPin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8" placeholder="Enter PIN">',"Unlock",async()=>{
-      const pin=document.getElementById("wezirVerifyPin").value;
-      const err=document.getElementById("wezirPinError");
-      if(!/^\d{4,8}$/.test(pin)){err.textContent="Enter your 4–8 digit PIN.";return;}
-      const hash=await pinHash(pin,currentUser.id);
-      if(hash!==savedHash()){err.textContent="Incorrect PIN. Try again.";return;}
-      document.getElementById("modalHost").innerHTML="";
-      const next=pendingAction;pendingAction=null;if(next)next();
-    });
-  };
-
-  // Wrap navigation so locked pages cannot be opened through menu cards or direct calls.
-  const originalShowPage=window.showPage;
-  if(typeof originalShowPage==="function"){
-    window.showPage=function(id,btn){
-      if(LOCKED_PAGES.has(id)){
-        window.wezirRequirePin(id,()=>originalShowPage.call(this,id,btn));
-        return;
-      }
-      return originalShowPage.call(this,id,btn);
-    };
-  }
-
-  // Update status when Settings is opened and after authentication changes.
-  const originalRenderAll=window.renderAll;
-  if(typeof originalRenderAll==="function"){
-    window.renderAll=function(){const result=originalRenderAll.apply(this,arguments);updatePinStatus();return result;};
-  }
-  setTimeout(updatePinStatus,0);
-  if(window.supabaseClient?.auth?.onAuthStateChange){
-    window.supabaseClient.auth.onAuthStateChange(()=>setTimeout(updatePinStatus,0));
-  }
-})();
-</script>
 
 </body></html>
