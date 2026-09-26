@@ -62,6 +62,44 @@ th{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border-b
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)!important}.side{width:190px!important}}
 @media(max-width:650px){.layout{display:block!important}.side{width:100%!important;border-right:0!important;border-bottom:2px solid var(--wp-gold)!important;display:flex!important;flex-wrap:wrap!important}.nav{width:auto!important;flex:1 1 45%!important;margin:3px!important}.main{padding:12px!important}.grid{grid-template-columns:1fr 1fr!important}.row{flex-direction:column!important}}
 @media print{body{background:#fff!important}.top,.side{display:none!important}.main{padding:0!important;background:#fff!important}.panel,.stat{box-shadow:none!important;border:0!important}}
+
+/* POS checkout workspace — clear, responsive and touch-friendly */
+.pos-workspace{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr);gap:18px;align-items:start}
+.pos-workspace>.panel{margin-top:0;padding:20px;min-width:0}
+.pos-section-title{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.pos-section-title h3{margin:0 0 4px;font-size:19px}
+.pos-section-title p{margin:0;color:#777;font-size:13px}
+.pos-step{display:grid;place-items:center;flex:0 0 36px;height:36px;border-radius:12px;background:#111;color:#f4d76a;border:1px solid #d4af37;font-weight:800}
+.pos-tools,.pos-payment{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pos-products{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.pos-product-btn{position:relative;min-height:125px!important;padding:16px 10px!important;border:1px solid #e7dfc5!important;box-shadow:0 4px 14px #0000000d!important;transition:transform .15s,box-shadow .15s,border-color .15s}
+.pos-product-btn:hover{transform:translateY(-2px);border-color:#d4af37!important;box-shadow:0 7px 18px #00000016!important}
+.pos-product-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#111;color:#f4d76a;font-size:19px;line-height:1}
+.pos-product-btn .pos-product-name{max-width:100%;overflow-wrap:anywhere}
+.pos-product-btn .pos-product-price{font-weight:800;font-size:15px}
+.pos-product-btn .pos-product-stock{font-size:11px}
+.pos-empty{padding:22px 12px;text-align:center;color:#777;background:#faf9f5;border:1px dashed #ded7bd;border-radius:12px;font-size:13px}
+.pos-cart-empty{display:flex;flex-direction:column;align-items:center;gap:7px;padding:35px 12px}
+.pos-empty-icon{font-size:28px}
+.pos-cart-table-wrap{width:100%;overflow-x:auto}
+.pos-cart-table{min-width:420px}
+.pos-cart-table th{font-size:12px}
+.pos-cart-table td{vertical-align:middle;padding:10px 7px}
+.qty-control{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.qty-control button{width:28px;height:28px;padding:0;border-radius:8px;background:#f5f1e3!important;color:#111!important;border:1px solid #d4af37!important;font-size:17px}
+.qty-control span{min-width:18px;text-align:center;font-weight:700}
+.pos-remove{min-width:30px;padding:4px 8px!important;font-size:18px}
+.pos-total{margin-top:14px;padding:17px;border-radius:13px}
+.pos-total-label{font-size:12px;letter-spacing:.08em;color:#ddd}
+.pos-total .big{font-size:30px;margin:3px 0}
+.pos-profit{font-size:12px;color:#e9e1c7}
+.pos-actions{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-top:14px}
+.pos-actions button{min-height:48px}
+.pos-checkout{background:linear-gradient(135deg,#d4af37,#f4d76a)!important;color:#111!important;border:1px solid #b18c1d!important}
+#posSearch{margin-bottom:14px}
+@media(max-width:1000px){.pos-workspace{grid-template-columns:1fr}.pos-right{order:2}.pos-left{order:1}}
+@media(max-width:600px){.pos-workspace{gap:10px}.pos-workspace>.panel{padding:13px}.pos-tools,.pos-payment{gap:8px}.pos-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.pos-product-btn{min-height:112px!important}.pos-actions{grid-template-columns:1fr 1.4fr}.pos-total .big{font-size:25px}}
+
 </style>
 </head>
 <body>
@@ -76,7 +114,34 @@ th{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border-b
 <section id="dashboard" class="page active"><h2>Dashboard</h2><div class="grid"><div class="stat"><div class="muted">Total Sales</div><div id="dSales" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Purchase Cost</div><div id="dPurchase" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Expenses</div><div id="dExpenses" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Net Profit</div><div id="dProfit" class="value">ETB 0.00</div></div></div><div class="grid" style="margin-top:15px"><div class="stat"><div class="muted">Stock Products</div><div id="dStock" class="value">0</div></div><div class="stat"><div class="muted">Stock Quantity</div><div id="dQty" class="value">0</div></div><div class="stat"><div class="muted">Stock Value</div><div id="dStockValue" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Invoices</div><div id="dInvoices" class="value">0</div></div></div><div class="panel"><h3>Recent Sales</h3><div id="recentSales">No sales yet.</div></div></section>
 <section id="purchases" class="page"><h2>Purchase / Stock Entry</h2><div class="panel"><div class="row"><div><label>Product</label><input id="buyProduct" placeholder="e.g. Sukkara"></div><div><label>Quantity</label><input id="buyQty" type="number" min="0" placeholder="10000"></div><div><label>Purchase Cost / Unit</label><input id="buyCost" type="number" min="0" placeholder="20"></div></div><div class="row"><div><label>Transport Cost</label><input id="buyTransport" type="number" min="0" value="0"></div><div><label>Loading / Unloading</label><input id="buyLoading" type="number" min="0" value="0"></div><div><label>Supplier</label><input id="buySupplier" placeholder="Supplier name"></div></div><div class="row"><div><label>Desired Profit %</label><input id="buyProfitPercent" type="number" min="0" value="10"></div><div><label>Selling Price / Unit</label><input id="buySellingPrice" type="number" min="0" placeholder="Automatic"></div><div><label>Purchase Date</label><input id="buyDate" type="date"></div></div><button onclick="addPurchase()">Save Purchase</button></div><div class="panel"><h3>Purchase History</h3><div id="purchaseTable"></div></div></section>
 <section id="products" class="page"><h2>Stock / Products</h2><div class="panel"><div id="productTable"></div></div></section>
-<section id="pos" class="page"><h2>Point of Sale</h2><div class="panel"><div class="row"><div><label>Invoice No.</label><input id="invoiceNo" placeholder="INV-0001"></div><div><label>Quantity</label><input id="posQty" type="number" value="1" min="1"></div></div><h3>Choose Product</h3><div id="posProductButtons" class="pos-products"></div><select id="posProduct" class="hidden"></select><button onclick="addToCart()" class="btn-secondary">➕ Add Selected Item</button><button class="btn-secondary" onclick="clearCart()" style="margin-left:8px">Clear Invoice Items</button><div id="cart" style="margin-top:20px"></div><div class="row" style="margin-top:15px"><div><label>Payment Method</label><select id="paymentMethod"><option>Cash</option><option>UPI</option><option>Credit</option></select></div><div><label>Customer</label><input id="customerName" placeholder="Customer name"></div></div><button onclick="checkout()" style="margin-top:15px">Complete Sale</button></div></section>
+<section id="pos" class="page">
+<h2>Point of Sale</h2>
+<div class="pos-workspace">
+  <div class="panel pos-left">
+    <div class="pos-section-title"><span class="pos-step">1</span><div><h3>Choose Product</h3><p>Search or tap a product to add it to the invoice.</p></div></div>
+    <label for="posSearch">Search products</label>
+    <input id="posSearch" type="search" placeholder="Type product name..." oninput="renderPosProductButtons()" autocomplete="off">
+    <div class="pos-tools">
+      <div><label for="invoiceNo">Invoice No.</label><input id="invoiceNo" placeholder="INV-0001"></div>
+      <div><label for="posQty">Quantity to add</label><input id="posQty" type="number" value="1" min="0.01" step="any"></div>
+    </div>
+    <div id="posProductButtons" class="pos-products"></div>
+    <select id="posProduct" class="hidden"></select>
+  </div>
+  <div class="panel pos-right">
+    <div class="pos-section-title"><span class="pos-step">2</span><div><h3>Current Invoice</h3><p>Review items and quantities before payment.</p></div></div>
+    <div id="cart" class="pos-cart"></div>
+    <div class="pos-payment">
+      <div><label for="paymentMethod">Payment Method</label><select id="paymentMethod"><option>Cash</option><option>UPI</option><option>Credit</option></select></div>
+      <div><label for="customerName">Customer (optional)</label><input id="customerName" placeholder="Customer name"></div>
+    </div>
+    <div class="pos-actions">
+      <button class="btn-secondary" onclick="clearCart()">Clear Invoice</button>
+      <button class="pos-checkout" onclick="checkout()">Complete Sale&nbsp; →</button>
+    </div>
+  </div>
+</div>
+</section>
 <section id="sales" class="page"><h2>Sales History</h2><div class="panel"><div id="salesTable"></div></div></section>
 <section id="expenses" class="page"><h2>Expenses</h2><div class="panel"><div class="row"><input id="eName" placeholder="Expense name"><input id="eAmount" type="number" placeholder="Amount"><button class="small-btn" onclick="addExpense()">Add Expense</button></div></div><div class="panel"><div id="expenseTable"></div></div></section>
 <section id="reports" class="page"><h2>Reports</h2><div class="panel"><div id="reportBox"></div><hr><h3>Excel</h3><button onclick="exportExcelAll()">📊 Export All to Excel</button><button class="btn-secondary" onclick="document.getElementById('excelImport').click()">📥 Upload Excel</button><input id="excelImport" type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)"><p class="muted">Excel file keessatti Sales, Stock, Purchases, Expenses sheets ni qabaata.</p></div></section>
@@ -378,7 +443,15 @@ function editProduct(id){
 async function saveProductEdit(id){
  try{const name=document.getElementById("epName").value.trim();const stock=Number(document.getElementById("epStock").value||0);const cost=Number(document.getElementById("epCost").value||0);const price=Number(document.getElementById("epPrice").value||0);const profit=Number(document.getElementById("epProfit").value||0);if(!name)return alert("Product name required");const r=await supabaseClient.from("products").update({name,stock,cost,selling_price:price,profit_percent:profit}).eq("id",id).eq("user_id",currentUser.id);if(r.error)throw r.error;closeModal();await loadCloudData();alert("Product updated successfully.");}catch(e){alert("Update error: "+e.message)}}
 function productMore(id){const p=data.products.find(x=>String(x.id)===String(id));if(!p)return;document.getElementById("modalHost").innerHTML=`<div class="modal"><div class="modal-box"><h2>⋮ ${escapeHtml(p.name)}</h2><p><b>Stock:</b> ${Number(p.stock||0)}</p><p><b>Average Cost:</b> ${money(p.cost)}</p><p><b>Selling Price:</b> ${money(p.selling_price)}</p><p><b>Profit / Unit:</b> ${money(Number(p.selling_price||0)-Number(p.cost||0))}</p><p><b>Profit %:</b> ${Number(p.profit_percent||0)}%</p><div class="modal-actions"><button onclick="editProduct('${p.id}')">✏️ Edit</button><button class="btn-secondary" onclick="closeModal()">Close</button></div></div></div>`}
-function renderPosProductButtons(){const box=document.getElementById("posProductButtons");if(!box)return;const available=data.products.filter(p=>Number(p.stock||0)>0);box.innerHTML=available.length?available.map(p=>`<button type="button" class="pos-product-btn" onclick="addProductToCart(${JSON.stringify(String(p.id))})"><span class="pos-product-name">${escapeHtml(p.name)}</span><span class="pos-product-price">${money(p.selling_price)}</span><span class="pos-product-stock">${p.stock} available</span></button>`).join(""):`<p class="muted">No products in stock.</p>`}
+function renderPosProductButtons(){
+  const box=document.getElementById("posProductButtons");if(!box)return;
+  const query=(document.getElementById("posSearch")?.value||"").trim().toLowerCase();
+  const available=data.products.filter(p=>Number(p.stock||0)>0&&String(p.name||"").toLowerCase().includes(query));
+  box.innerHTML=available.length?available.map(p=>`<button type="button" class="pos-product-btn" onclick="addProductToCart(${JSON.stringify(String(p.id))})" aria-label="Add ${escapeHtml(p.name)} to invoice">
+    <span class="pos-product-icon">＋</span><span class="pos-product-name">${escapeHtml(p.name)}</span>
+    <span class="pos-product-price">${money(p.selling_price)}</span><span class="pos-product-stock">${Number(p.stock||0).toLocaleString()} available</span>
+  </button>`).join(""):`<div class="pos-empty">${query?"No matching products found.":"No products in stock yet."}</div>`;
+}
 function addProductToCart(id){
   const product=data.products.find(p=>String(p.id)===String(id));
   if(!product)return alert("Product hin argamne.");
@@ -441,8 +514,71 @@ function addToCart(){const id=document.getElementById("posProduct").value,qty=Nu
 function removeFromCart(i){cart.splice(i,1);renderCart()}
 function clearCart(){cart=[];renderCart()}
 
-function renderCart(){const box=document.getElementById("cart");if(!cart.length){box.innerHTML='<p class="muted">Cart is empty.</p>';return}let total=0,cost=0,h='<table><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th><th></th></tr>';cart.forEach((x,i)=>{const line=x.qty*x.price;total+=line;cost+=x.qty*x.cost;h+=`<tr><td>${escapeHtml(x.name)}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(line)}</td><td><button class="small-btn btn-danger" onclick="removeFromCart(${i})">X</button></td></tr>`});h+='</table><div class="total-box"><div>Total Sale</div><div class="big">'+money(total)+'</div><div>Estimated Gross Profit: '+money(total-cost)+'</div></div>';box.innerHTML=h}
-async function checkout(){if(!cart.length)return alert("Cart keessa item hin jiru.");if(!currentUser)return alert("Please sign in.");let invoice=document.getElementById("invoiceNo").value.trim()||makeInvoice();if(data.sales.some(s=>s.invoice_no===invoice))return alert("Invoice number kun duraan jira.");const payment=document.getElementById("paymentMethod").value,customer=document.getElementById("customerName").value.trim();let total=0,cost=0;for(const x of cart){const p=data.products.find(p=>p.id===x.id);if(!p||Number(p.stock)<x.qty)return alert("Stock error: "+x.name);const line=x.qty*x.price,lineCost=x.qty*x.cost;const {error}=await supabaseClient.from("sales").insert({user_id:currentUser.id,invoice_no:invoice,product_name:x.name,qty:x.qty,selling_price:x.price,total:line,cost:lineCost,profit:line-lineCost,payment_method:payment,customer,sale_date:today()});if(error)return alert(error.message);const {error:updateError}=await supabaseClient.from("products").update({stock:Number(p.stock)-x.qty}).eq("id",p.id).eq("user_id",currentUser.id);if(updateError)return alert(updateError.message);total+=line;cost+=lineCost}const sale={invoice,date:new Date().toLocaleString(),customer,payment,items:cart.map(x=>({...x})),total,cost,profit:total-cost};cart=[];document.getElementById("customerName").value="";document.getElementById("invoiceNo").value=makeInvoice();await loadCloudData();alert(invoice+" successfully completed!\nProfit: "+money(sale.profit));printInvoice(sale)}
+function updateCartQty(index,delta){
+  const item=cart[index];if(!item)return;
+  const product=data.products.find(p=>String(p.id)===String(item.id));
+  const next=Number(item.qty)+delta;
+  if(next<=0){removeFromCart(index);return;}
+  if(product&&next>Number(product.stock||0))return alert("Stock gahaa miti. Available: "+product.stock);
+  item.qty=Number(next.toFixed(4));renderCart();
+}
+function renderCart(){
+  const box=document.getElementById("cart");if(!box)return;
+  if(!cart.length){box.innerHTML='<div class="pos-empty pos-cart-empty"><div class="pos-empty-icon">🧾</div><b>Invoice is empty</b><span>Choose a product to get started.</span></div>';return;}
+  let total=0,cost=0;
+  let h='<div class="pos-cart-table-wrap"><table class="pos-cart-table"><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th><th></th></tr></thead><tbody>';
+  cart.forEach((x,i)=>{
+    const line=Number(x.qty)*Number(x.price);total+=line;cost+=Number(x.qty)*Number(x.cost);
+    h+=`<tr><td><b>${escapeHtml(x.name)}</b></td><td><div class="qty-control"><button type="button" aria-label="Decrease quantity" onclick="updateCartQty(${i},-1)">−</button><span>${Number(x.qty).toLocaleString()}</span><button type="button" aria-label="Increase quantity" onclick="updateCartQty(${i},1)">+</button></div></td><td>${money(x.price)}</td><td><b>${money(line)}</b></td><td><button class="small-btn btn-danger pos-remove" onclick="removeFromCart(${i})" aria-label="Remove item">×</button></td></tr>`;
+  });
+  h+='</tbody></table></div><div class="total-box pos-total"><div class="pos-total-label">TOTAL SALE</div><div class="big">'+money(total)+'</div><div class="pos-profit">Estimated gross profit: '+money(total-cost)+'</div></div>';
+  box.innerHTML=h;
+}
+let checkoutInProgress=false;
+async function checkout(){
+  if(checkoutInProgress)return;
+  if(!cart.length)return alert("Cart keessa item hin jiru.");
+  if(!currentUser)return alert("Please sign in.");
+  const invoice=document.getElementById("invoiceNo").value.trim()||makeInvoice();
+  if(data.sales.some(s=>String(s.invoice_no)===String(invoice)))return alert("Invoice number kun duraan jira.");
+  const payment=document.getElementById("paymentMethod").value;
+  const customer=document.getElementById("customerName").value.trim();
+  // Validate the entire invoice before writing anything.
+  const lines=[];
+  for(const x of cart){
+    const p=data.products.find(p=>String(p.id)===String(x.id));
+    const qty=Number(x.qty), price=Number(x.price), unitCost=Number(x.cost);
+    if(!p)return alert("Product hin argamne: "+x.name);
+    if(!Number.isFinite(qty)||qty<=0||!Number.isFinite(price)||price<0)return alert("Quantity ykn gatiin sirrii miti: "+x.name);
+    if(qty>Number(p.stock||0))return alert("Stock gahaa miti: "+x.name+". Available: "+p.stock);
+    lines.push({product:p,item:x,qty,price,unitCost,total:qty*price,cost:qty*unitCost});
+  }
+  checkoutInProgress=true;
+  const checkoutBtn=document.querySelector(".pos-checkout");
+  if(checkoutBtn){checkoutBtn.disabled=true;checkoutBtn.textContent="Processing...";}
+  try{
+    const rows=lines.map(({item,qty,price,cost,total})=>({user_id:currentUser.id,invoice_no:invoice,product_name:item.name,qty,selling_price:price,total,cost,profit:total-cost,payment_method:payment,customer,sale_date:today()}));
+    const {error:salesError}=await supabaseClient.from("sales").insert(rows);
+    if(salesError)throw salesError;
+    for(const line of lines){
+      const {error:updateError}=await supabaseClient.from("products").update({stock:Number(line.product.stock)-line.qty}).eq("id",line.product.id).eq("user_id",currentUser.id);
+      if(updateError)throw updateError;
+    }
+    const total=lines.reduce((sum,x)=>sum+x.total,0),cost=lines.reduce((sum,x)=>sum+x.cost,0);
+    const sale={invoice,date:new Date().toLocaleString(),customer,payment,items:cart.map(x=>({...x})),total,cost,profit:total-cost};
+    cart=[];
+    document.getElementById("customerName").value="";
+    document.getElementById("invoiceNo").value=makeInvoice();
+    await loadCloudData();
+    alert(invoice+" successfully completed!\\nProfit: "+money(sale.profit));
+    printInvoice(sale);
+  }catch(error){
+    alert("Sale hin xumuramne: "+(error?.message||String(error))+"\\nYoo sale galmaa'e ta'e, invoice history fi stock ilaali; irra deebi'anii hin cuqaasinaa.");
+  }finally{
+    checkoutInProgress=false;
+    if(checkoutBtn){checkoutBtn.disabled=false;checkoutBtn.innerHTML="Complete Sale&nbsp; →";}
+  }
+}
 function renderSales(){let groups={};data.sales.forEach(s=>{const k=s.invoice_no||"NO-INVOICE";if(!groups[k])groups[k]={invoice:k,date:s.sale_date,customer:s.customer,payment:s.payment_method,total:0,profit:0,items:[]};groups[k].total+=Number(s.total||0);groups[k].profit+=Number(s.profit||0);groups[k].items.push({name:s.product_name,qty:Number(s.qty||0),price:Number(s.selling_price||0),cost:Number(s.cost||0)})});let arr=Object.values(groups),h='<table><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Payment</th><th>Total</th><th>Profit</th><th>Action</th></tr>';arr.forEach((s,i)=>h+=`<tr><td><b>${escapeHtml(s.invoice)}</b></td><td>${s.date||""}</td><td>${escapeHtml(s.customer||"-")}</td><td>${escapeHtml(s.payment||"")}</td><td>${money(s.total)}</td><td>${money(s.profit)}</td><td><button class="small-btn" onclick='printInvoice(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Print</button> <button class="small-btn" onclick="editSale('${String(s.invoice).replace(/'/g,"\\'")}')">✏️ Edit</button></td></tr>`);h+='</table>';document.getElementById("salesTable").innerHTML=arr.length?h:"No sales yet.";document.getElementById("recentSales").innerHTML=arr.slice(0,5).map(s=>`<div style="padding:8px 0;border-bottom:1px solid #eee"><b>${escapeHtml(s.invoice)}</b> — ${money(s.total)} — Profit ${money(s.profit)} <button class="small-btn" style="float:right" onclick="editSale('${String(s.invoice).replace(/'/g,"\\'")}')">✏️ Edit</button></div>`).join("")||"No sales yet."}
 function editSale(invoice){
   const items=data.sales.filter(s=>String(s.invoice_no)===String(invoice));
