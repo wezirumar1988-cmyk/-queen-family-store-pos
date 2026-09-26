@@ -1550,3 +1550,40 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
 
 
 </body></html>
+
+<script>
+/* WEZIR POS — keep one Settings button and restore Admin Dashboard navigation */
+(function(){
+  function repairSidebar(){
+    var side=document.querySelector('.side');
+    if(!side) return;
+    var navs=Array.from(side.querySelectorAll('button.nav'));
+    var settings=navs.filter(function(b){
+      return (b.textContent||'').replace(/\s+/g,' ').trim().replace(/^[^A-Za-z]+/,'').toLowerCase()==='settings';
+    });
+    settings.slice(1).forEach(function(b){b.remove();});
+    var admin=document.getElementById('adminNav');
+    if(!admin){
+      admin=document.createElement('button');
+      admin.id='adminNav'; admin.type='button'; admin.className='nav';
+      admin.textContent='👑 Admin Dashboard';
+    }
+    admin.classList.remove('hidden');
+    admin.style.setProperty('display','block','important');
+    admin.style.setProperty('visibility','visible','important');
+    admin.style.setProperty('opacity','1','important');
+    admin.onclick=function(){ if(typeof window.showPage==='function') window.showPage('adminDashboard',admin); };
+    var reports=Array.from(side.querySelectorAll('button.nav')).find(function(b){return /reports/i.test(b.textContent||'');});
+    var firstSettings=Array.from(side.querySelectorAll('button.nav')).find(function(b){return (b.textContent||'').replace(/\s+/g,' ').trim().replace(/^[^A-Za-z]+/,'').toLowerCase()==='settings';});
+    if(reports && reports.nextSibling!==admin) side.insertBefore(admin,reports.nextSibling);
+    else if(!reports && firstSettings) side.insertBefore(admin,firstSettings);
+    else if(!admin.parentNode) side.appendChild(admin);
+  }
+  function start(){repairSidebar(); var side=document.querySelector('.side'); if(side && !side.__wezirAdminObserver){
+    side.__wezirAdminObserver=new MutationObserver(repairSidebar);
+    side.__wezirAdminObserver.observe(side,{childList:true,subtree:true});
+  }}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+  window.addEventListener('load',start); setTimeout(start,300); setTimeout(start,1000); setTimeout(start,2500);
+})();
+</script>
