@@ -71,7 +71,7 @@ th{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border-b
 <div id="signUpBox" class="hidden"><div class="notice">🌐 <b>Public Account:</b> Anyone can create their own account online and use WEZIR POS. Each account sees only its own business data.</div><label>Business Name</label><input id="signupBusinessName" placeholder="Your business name"><label>Full Name</label><input id="signupFullName" placeholder="Full name"><label>Phone Number</label><input id="signupPhone" type="tel" placeholder="Phone number"><label>Email</label><input id="signupEmail" type="email" placeholder="example@email.com"><label>Password</label><input id="signupPassword" type="password" placeholder="At least 6 characters"><label>Confirm Password</label><input id="signupPassword2" type="password" placeholder="Repeat password"><p id="signupError" class="error"></p><p id="signupSuccess" class="success"></p><button onclick="signUp()" style="width:100%">CREATE ACCOUNT</button><p class="center">Already have account? <button class="auth-switch" onclick="showSignIn()">Sign In</button></p></div>
 </div></div>
 <div id="app" class="app"><div class="top"><div id="businessBrand" class="brand">WEZIR POS</div><button class="logout" onclick="logout()">Logout</button></div><div class="layout"><aside class="side">
-<button class="nav active" onclick="showPage('dashboard',this)">📊 Dashboard</button><button class="nav" onclick="showPage('purchases',this)">📥 Purchases</button><button class="nav" onclick="showPage('products',this)">📦 Stock</button><button class="nav" onclick="showPage('pos',this)">🛒 POS</button><button class="nav" onclick="showPage('sales',this)">🧾 Sales</button><button class="nav" onclick="showPage('expenses',this)">💰 Expenses</button><button class="nav" id="allFeaturesNav" type="button" onclick="return false">🧩 All Features</button><button class="nav" onclick="showPage('reports',this)">📈 Reports</button><button id="adminNav" class="nav" onclick="showPage('adminDashboard',this)">👑 Admin Dashboard</button><button class="nav" onclick="showPage('settings',this)">⚙️ Settings</button>
+<button class="nav active" onclick="showPage('dashboard',this)">📊 Dashboard</button><button class="nav" onclick="showPage('purchases',this)">📥 Purchases</button><button class="nav" onclick="showPage('products',this)">📦 Stock</button><button class="nav" onclick="showPage('pos',this)">🛒 POS</button><button class="nav" onclick="showPage('sales',this)">🧾 Sales</button><button class="nav" onclick="showPage('expenses',this)">💰 Expenses</button><button class="nav" onclick="showPage('reports',this)">📈 Reports</button><button id="adminNav" class="nav" onclick="showPage('adminDashboard',this)">👑 Admin Dashboard</button><button class="nav" onclick="showPage('settings',this)">⚙️ Settings</button>
 </aside><main class="main">
 <section id="dashboard" class="page active"><h2>Dashboard</h2><div class="grid"><div class="stat"><div class="muted">Total Sales</div><div id="dSales" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Purchase Cost</div><div id="dPurchase" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Expenses</div><div id="dExpenses" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Net Profit</div><div id="dProfit" class="value">ETB 0.00</div></div></div><div class="grid" style="margin-top:15px"><div class="stat"><div class="muted">Stock Products</div><div id="dStock" class="value">0</div></div><div class="stat"><div class="muted">Stock Quantity</div><div id="dQty" class="value">0</div></div><div class="stat"><div class="muted">Stock Value</div><div id="dStockValue" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Invoices</div><div id="dInvoices" class="value">0</div></div></div><div class="panel"><h3>Recent Sales</h3><div id="recentSales">No sales yet.</div></div></section>
 <section id="purchases" class="page"><h2>Purchase / Stock Entry</h2><div class="panel"><div class="row"><div><label>Product</label><input id="buyProduct" placeholder="e.g. Sukkara"></div><div><label>Quantity</label><input id="buyQty" type="number" min="0" placeholder="10000"></div><div><label>Purchase Cost / Unit</label><input id="buyCost" type="number" min="0" placeholder="20"></div></div><div class="row"><div><label>Transport Cost</label><input id="buyTransport" type="number" min="0" value="0"></div><div><label>Loading / Unloading</label><input id="buyLoading" type="number" min="0" value="0"></div><div><label>Supplier</label><input id="buySupplier" placeholder="Supplier name"></div></div><div class="row"><div><label>Desired Profit %</label><input id="buyProfitPercent" type="number" min="0" value="10"></div><div><label>Selling Price / Unit</label><input id="buySellingPrice" type="number" min="0" placeholder="Automatic"></div><div><label>Purchase Date</label><input id="buyDate" type="date"></div></div><button onclick="addPurchase()">Save Purchase</button></div><div class="panel"><h3>Purchase History</h3><div id="purchaseTable"></div></div></section>
@@ -299,19 +299,6 @@ function setupAdminNav(){
   if(!nav)return;
   nav.classList.remove("hidden");
 }
-async function adminSubscriptionAction(userId,plan,days,status){
-  if(!isAdmin())return alert("Admin only.");
-  if(String(userId||"")===String(currentUser?.id||""))return alert("Use your own account settings for the admin account.");
-  const label=status==="Active"?(plan+" for "+days+" days"):status;
-  if(!confirm(label+" for this user?"))return;
-  try{
-    const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
-    if(sessionError)throw sessionError;if(!session?.access_token)throw new Error("Admin session not found.");
-    const response=await fetch(SUPER_ACTION_URL,{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({action:"subscription",user_id:userId,plan,status,days})});
-    const result=await response.json().catch(()=>({}));if(!response.ok||!result.success)throw new Error(result.error||"Subscription action failed.");
-    alert("Subscription updated successfully.");await loadAdminUsers();
-  }catch(e){alert(e.message||String(e));}
-}
 async function loadAdminUsers(){
   const box=document.getElementById("adminAccessBox");
   const table=document.getElementById("adminUsersTable");
@@ -346,9 +333,9 @@ async function loadAdminUsers(){
           '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'deactivate\')" title="Deactivate until activated">🔴 Deactivate</button>'+
           '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'activate\')" title="Activate account">🟢 Activate</button>'+
           '</div>';
-      const sub=u.subscription||{};const subStatus=String(sub.status||'Trial');const subPlan=String(sub.plan||'30-Day Free Trial');const subExpiry=sub.expires_at?formatAdminDate(sub.expires_at):'—';const subActions=self?'<span class="muted">Admin</span>':'<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="small-btn" onclick="adminSubscriptionAction(\''+u.id+'\',\'Monthly\',30,\'Active\')">💳 30 Days</button><button class="small-btn" onclick="adminSubscriptionAction(\''+u.id+'\',\'Trial\',30,\'Trial\')">🎁 Trial 30 Days</button><button class="small-btn" onclick="adminSubscriptionAction(\''+u.id+'\',\'Yearly\',365,\'Active\')">💳 1 Year</button><button class="small-btn" onclick="adminSubscriptionAction(\''+u.id+'\',\'Custom\',0,\'Suspended\')">⛔ Suspend</button></div>';return '<tr><td>'+(i+1)+'</td><td>'+escapeHtml(u.full_name||'—')+'</td><td>'+escapeHtml(u.business_name||'—')+'</td><td>'+escapeHtml(u.email||'—')+'</td><td>'+escapeHtml(u.phone||'—')+'</td><td>'+formatAdminDate(u.created_at)+'</td><td>'+formatAdminDate(u.last_login)+'</td><td><span class="badge '+(u.active?'good':'out')+'">'+(u.active?'Active':'Inactive')+'</span></td><td><span class="badge '+(u.email_confirmed?'good':'low')+'">'+(u.email_confirmed?'Confirmed':'Not confirmed')+'</span></td><td><b>'+escapeHtml(subStatus)+'</b><br><span class="muted">'+escapeHtml(subPlan)+' · '+escapeHtml(subExpiry)+'</span></td><td>'+actions+'<br>'+subActions+'</td></tr>';
+      return '<tr><td>'+(i+1)+'</td><td>'+escapeHtml(u.full_name||'—')+'</td><td>'+escapeHtml(u.business_name||'—')+'</td><td>'+escapeHtml(u.email||'—')+'</td><td>'+escapeHtml(u.phone||'—')+'</td><td>'+formatAdminDate(u.created_at)+'</td><td>'+formatAdminDate(u.last_login)+'</td><td><span class="badge '+(u.active?'good':'out')+'">'+(u.active?'Active':'Inactive')+'</span></td><td><span class="badge '+(u.email_confirmed?'good':'low')+'">'+(u.email_confirmed?'Confirmed':'Not confirmed')+'</span></td><td>'+actions+'</td></tr>';
     }).join('');
-    table.innerHTML='<table><thead><tr><th>#</th><th>Full Name</th><th>Business</th><th>Email</th><th>Phone</th><th>Created</th><th>Last Login</th><th>Status</th><th>Email</th><th>Subscription</th><th>Actions</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    table.innerHTML='<table><thead><tr><th>#</th><th>Full Name</th><th>Business</th><th>Email</th><th>Phone</th><th>Created</th><th>Last Login</th><th>Status</th><th>Email</th><th>Actions</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }catch(e){
     table.innerHTML='<p class="error"><b>Could not load users:</b> '+escapeHtml(e.message||String(e))+'</p>';
   }
@@ -691,30 +678,17 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
   const MOD={customers:'customers',suppliers:'suppliers',adjustments:'stock_adjustments',returns:'returns',batches:'batches',payments:'payments',users:'user_permissions',subscription:'subscription'};
   const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const money2=n=>currencySymbol(getCurrency())+' '+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-  let cachedBusinessId=null;
-  async function myBusinessId(){
-    if(cachedBusinessId) return cachedBusinessId;
-    if(!window.currentUser) return null;
-    const {data,error}=await supabaseClient.rpc('get_my_business_id');
-    if(error) throw error;
-    cachedBusinessId=data||null;
-    return cachedBusinessId;
-  }
   async function list(module){
     if(!window.currentUser) return [];
-    const bid=await myBusinessId();
-    if(!bid) return [];
-    const {data,error}=await supabaseClient.from('qf_records').select('*').eq('business_id',bid).eq('module',module).order('created_at',{ascending:true});
+    const {data,error}=await supabaseClient.from('qf_records').select('*').eq('user_id',currentUser.id).eq('module',module).order('created_at',{ascending:true});
     if(error){alert(error.message);return []} return data||[];
   }
   async function save(module,key,payload){
-    const bid=await myBusinessId();
-    if(!bid) throw new Error("Business account hin argamne. Mee deebi'ii login godhi.");
-    const row={user_id:currentUser.id,business_id:bid,module,record_key:String(key),data:payload};
+    const row={user_id:currentUser.id,module,record_key:String(key),data:payload};
     const {error}=await supabaseClient.from('qf_records').upsert(row,{onConflict:'user_id,module,record_key'});
     if(error) throw error; return row;
   }
-  async function del(id){const bid=await myBusinessId();const {error}=await supabaseClient.from('qf_records').delete().eq('id',id).eq('business_id',bid);if(error)throw error}
+  async function del(id){const {error}=await supabaseClient.from('qf_records').delete().eq('id',id).eq('user_id',currentUser.id);if(error)throw error}
   function M(title,body){document.querySelector('.qfmodal')?.remove();const m=document.createElement('div');m.className='qfmodal';m.innerHTML=`<div class="qfbox"><div style="display:flex;justify-content:space-between;align-items:center"><h2>${title}</h2><button onclick="this.closest('.qfmodal').remove()">✕</button></div>${body}</div>`;document.body.appendChild(m);return m}
   const rowsTable=(rows,heads)=>`<div style="overflow:auto"><table><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr>${rows.join('')}</table></div>`;
 
@@ -822,36 +796,14 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
     return {created,expiry,remaining,expired:now>=expiry};
   }
   async function subscription(){
-    const u=window.currentUser;
-    if(!u)return;
-    const trialStart=new Date(u.created_at||Date.now());
-    const trialExpiry=new Date(trialStart.getTime()+30*86400000);
-    const now=new Date();
-    let status='Trial',plan='30-Day Free Trial',expires=trialExpiry;
-    try{
-      const a=await list(MOD.subscription);
-      const d=a[0]?.data||{};
-      if(d.status)status=String(d.status);
-      if(d.plan)plan=String(d.plan);
-      if(d.expires_at)expires=new Date(d.expires_at);
-    }catch(e){}
-    const remaining=Math.max(0,Math.ceil((expires-now)/86400000));
-    const expired=now>=expires && !['Active'].includes(status);
-    const contact=`<p class="qfmuted">After the free trial, contact WEZIR POS Administrator for activation.</p><p><b>Email:</b> <a href="mailto:wezirumar1988@gmail.com">wezirumar1988@gmail.com</a><br><b>Phone:</b> <a href="tel:+966536690242">+966 536 690 242</a><br><a target="_blank" href="https://wa.me/966536690242?text=Hello%20WEZIR%20POS%20Admin%2C%20I%20need%20subscription%20help.">Chat on WhatsApp</a></p>`;
-    M('💳 Subscription / Business Management',`
-      <div class="qfgrid">
-        <div class="qfstat"><b>Business</b><br>${esc(u.user_metadata?.business_name||'WEZIR POS')}</div>
-        <div class="qfstat"><b>Plan</b><br>${esc(plan)}</div>
-        <div class="qfstat"><b>Status</b><br>${esc(status)}</div>
-        <div class="qfstat"><b>${status==='Trial'?'Trial Remaining':'Days Remaining'}</b><br>${expired?'Expired':remaining+' days'}</div>
-      </div>
-      <br><p><b>Trial started:</b> ${trialStart.toLocaleDateString()}<br><b>Trial ends:</b> ${trialExpiry.toLocaleDateString()}</p>
-      ${expired?'<div style="padding:12px;border:1px solid #d33;border-radius:10px;background:#fff5f5"><b>Free Trial Expired</b><br>Your business data is kept. Contact WEZIR POS Administrator to activate your subscription.</div>':status==='Trial'?'<div style="padding:12px;border:1px solid #D4AF37;border-radius:10px;background:#fffdf3"><b>30-Day Free Trial</b><br>Your trial is active.</div>':''}
-      ${contact}
-      <button onclick="document.querySelector('.qfmodal')?.remove()">Close</button>
-    `);
+    const a=await list(MOD.subscription);let d=a[0]?.data||{};const t=trialInfo();
+    const status=d.status||((t.expired)?'Expired':'Trial');const plan=d.plan||((t.expired)?'Free Trial Expired':'30-Day Free Trial');
+    M('💳 Subscription / Business Management',`<div class="qfgrid"><div class="qfstat"><b>Business</b><br>${esc(currentUser?.user_metadata?.business_name||'WEZIR POS')}</div><div class="qfstat"><b>Plan</b><br>${esc(plan)}</div><div class="qfstat"><b>Status</b><br>${esc(status)}</div><div class="qfstat"><b>Trial</b><br>${t.expired?'Expired':t.remaining+' days remaining'}</div></div><br><p><b>Free Trial:</b> 30 days from account creation.</p><p class="qfmuted">After the trial ends, contact WEZIR POS Administrator to activate a paid plan. Your business data is kept; access is controlled by subscription status.</p><hr><label>Plan</label><select id="qsubPlan"><option>30-Day Free Trial</option><option>Monthly</option><option>Yearly</option><option>Custom</option></select><label>Status</label><select id="qsubStatus"><option>Trial</option><option>Active</option><option>Pending</option><option>Expired</option><option>Suspended</option></select><br><button onclick="qfSubscriptionSave()">Save</button>`);
   }
+  window.qfSubscriptionSave=async()=>{try{await save(MOD.subscription,'main',{plan:qsubPlan.value,status:qsubStatus.value,trial_started_at:currentUser?.created_at||new Date().toISOString(),trial_expires_at:trialInfo().expiry.toISOString(),updated_at:new Date().toISOString()});alert('Subscription settings saved');document.querySelector('.qfmodal')?.remove()}catch(e){alert(e.message)}};
 
+  async function help(){M('🆘 Help & Contact',`<div class="qfgrid"><div class="qfstat"><b>WEZIR POS Support</b><br>We are here to help.</div></div><br><p><b>Administrator:</b> Wezir Umar</p><p><b>Email:</b> <a href="mailto:wezirumar1988@gmail.com?subject=WEZIR%20POS%20Support">wezirumar1988@gmail.com</a></p><p><b>Phone:</b> <a href="tel:+966536690242">+966 536 690 242</a></p><p><b>WhatsApp:</b> <a href="https://wa.me/966536690242?text=Hello%20WEZIR%20POS%20Admin%2C%20I%20need%20help." target="_blank">Chat on WhatsApp</a></p><hr><label>Your message</label><textarea id="qhMessage" rows="4" placeholder="Describe your problem..."></textarea><button onclick="qfHelpSave()">Send Support Request</button>`)}
+  window.qfHelpSave=async()=>{try{const msg=document.getElementById('qhMessage')?.value.trim()||'';const subject=encodeURIComponent('WEZIR POS Support - '+(currentUser?.user_metadata?.business_name||'Business'));const body=encodeURIComponent('Business: '+(currentUser?.user_metadata?.business_name||'')+'\nEmail: '+(currentUser?.email||'')+'\n\nMessage: '+msg);window.location.href='mailto:wezirumar1988@gmail.com?subject='+subject+'&body='+body;await save('business_help',crypto.randomUUID(),{message:msg,email:currentUser?.email||'',business:currentUser?.user_metadata?.business_name||'',date:new Date().toISOString()});}catch(e){alert(e.message)}};
   async function currency(){
     const savedCountry=localStorage.getItem('qf_country')||'ET';const savedCurrency=localStorage.getItem('qf_currency')||'ETB';
     const rows=WEZIR_COUNTRIES.map(x=>`<option value="${x[0]}" data-currency="${x[2]}">${x[1]} — ${x[2]} (${x[3]})</option>`).join('');
@@ -989,65 +941,112 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
 </script>
 
 <script>
-/* WEZIR POS — COMMERCIAL FINAL ROUTER */
+/* WEZIR POS — remove accidental duplicate Settings nav item */
 (function(){
- const ADV=["customers","customercredit","suppliers","supplierbalance","adjustment","salesreturn","purchasereturn","expiry","batch","users","payments","barcode","export","help","currency","subscription"];
- const CORE=["dashboard","products","pos","purchases","expenses","reports","settings"];
- const F=[["🏠","Dashboard","dashboard"],["📦","Stock / Inventory","products"],["🛒","POS / Gurgurtaa","pos"],["🧾","Invoice","invoicehub"],["🖨️","Invoice Print","print"],["📊","Sales Reports","reports"],["🛍️","Purchases","purchases"],["💰","Expenses","expenses"],["👥","Customers","customers"],["💳","Customer Credit / Balance","customercredit"],["🏭","Suppliers","suppliers"],["💵","Supplier Balance","supplierbalance"],["🔄","Stock Adjustment","adjustment"],["↩️","Sales Return / Refund","salesreturn"],["↩️","Purchase Return","purchasereturn"],["🔔","Low Stock Alert","lowstock"],["🚫","Out of Stock","outstock"],["📅","Expiry Date","expiry"],["🏷️","Batch / Lot","batch"],["👤","Users & Permissions","users"],["💳","Payment Methods","payments"],["⚙️","Settings","settings"],["💾","Backup / Restore","backup"],["☁️","Cloud Account & Data Separation","cloud"],["📈","Profit / Net Profit","profit"],["📊","Export Report → Excel","export"],["🔐","Forgot Password","forgot"],["🔄","Change Password","changepassword"],["📱","Barcode","barcode"],["🧾","Automatic Invoice Number","autoinvoice"],["🆘","Help & Contact","help"],["🌍","Country + Currency","currency"],["🔑","Email Login","email"],["💳","Subscription / Business Management","subscription"]];
- function route(k){try{
-   if(ADV.includes(k)&&typeof window.qfFeature==='function')return Promise.resolve(window.qfFeature(k)).catch(e=>alert('Feature error: '+(e.message||e)));
-   if(CORE.includes(k)&&typeof window.showPage==='function')return window.showPage(k);
-   if(k==='invoicehub'&&typeof window.showPage==='function')return window.showPage('pos');
-   if(k==='print')return window.print();
-   if(k==='forgot'&&typeof window.forgotPassword==='function')return window.forgotPassword();
-   if(k==='changepassword'&&typeof window.openPasswordModal==='function')return window.openPasswordModal();
-   if(k==='backup'&&typeof window.backupData==='function')return window.backupData();
-   if(k==='cloud'&&typeof window.showPage==='function')return window.showPage('settings');
-   if(k==='autoinvoice')return alert('Automatic invoice numbers are enabled: INV-0001, INV-0002, INV-0003 …');
-   if(k==='email')return alert('WEZIR POS uses Supabase email login.');
-   alert('This feature is not connected yet.');
- }catch(e){alert('Feature error: '+(e.message||e));}}
- function open(){document.getElementById('WEZIR_COMMERCIAL_FEATURES')?.remove();const w=document.createElement('div');w.id='WEZIR_COMMERCIAL_FEATURES';w.style.cssText='position:fixed;inset:0;background:#000b;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:18px';w.innerHTML='<div style="background:#fff;width:min(1050px,96vw);max-height:90vh;overflow:auto;border:2px solid #D4AF37;border-radius:18px;padding:20px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div><h2 style="margin:0;color:#111">🧩 WEZIR POS — All Features</h2><p style="margin:5px 0;color:#777">34 business features</p></div><button id="WEZIR_FEATURE_CLOSE" type="button" style="width:auto;background:#111;color:#fff">✕ Close</button></div><div id="WEZIR_FEATURE_GRID" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px"></div></div>';document.body.appendChild(w);w.querySelector('#WEZIR_FEATURE_CLOSE').onclick=()=>w.remove();const g=w.querySelector('#WEZIR_FEATURE_GRID');g.innerHTML=F.map(f=>'<button type="button" data-k="'+f[2]+'" style="background:#fff;color:#111;border:1px solid #ddd;border-top:3px solid #D4AF37;border-radius:14px;padding:15px;text-align:left;cursor:pointer;min-height:105px"><div style="font-size:27px">'+f[0]+'</div><b>'+f[1]+'</b><div style="font-size:12px;color:#777;margin-top:5px">Open '+f[1]+'</div></button>').join('');g.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k;w.remove();route(k)});}
- window.WEZIR_OPEN_ALL_FEATURES=open;window.openAllFeaturesFinal=open;
- function bind(){const b=document.getElementById('allFeaturesNav');if(b){b.type='button';b.onclick=e=>{e.preventDefault();e.stopPropagation();open();return false;}}const a=document.getElementById('adminNav');if(a)a.classList.remove('hidden');}
- document.addEventListener('click',e=>{const b=e.target?.closest?.('#allFeaturesNav');if(b){e.preventDefault();e.stopImmediatePropagation();open()}},true);
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();window.addEventListener('load',bind);setTimeout(bind,500);setTimeout(bind,1500);
-})();
-</script><script>
-/* WEZIR POS — 30 DAY TRIAL + SUBSCRIPTION GATE */
-(function(){
-  function info(){const u=window.currentUser;if(!u)return null;const start=new Date(u.created_at||Date.now());const expiry=new Date(start.getTime()+30*86400000);return {start,expiry,expired:new Date()>=expiry,days:Math.max(0,Math.ceil((expiry-Date.now())/86400000))};}
-  async function check(){
-    const u=window.currentUser;if(!u)return true;
-    if(typeof window.isAdmin==='function'&&window.isAdmin())return true;
-    let status='',expires=null;
-    try{const {data}=await supabaseClient.from('qf_records').select('data').eq('user_id',u.id).eq('module','subscription').eq('record_key','main').limit(1);const d=data?.[0]?.data||{};status=String(d.status||'');expires=d.expires_at?new Date(d.expires_at):null;}catch(e){}
-    if(status.toLowerCase()==='active'&&(!expires||new Date()<expires))return true;
-    if(status.toLowerCase()==='suspended'||status.toLowerCase()==='expired')return lock();
-    const t=info();if(!t||!t.expired)return true;return lock();
+  function cleanupSettingsNav(){
+    document.querySelectorAll('.side .nav').forEach(function(btn){
+      const t=(btn.textContent||'').replace(/\s+/g,' ').trim();
+      if(t.includes('Settings') && t.startsWith('👑')) btn.remove();
+    });
   }
-  function lock(){if(document.getElementById('wezirTrialLock'))return false;const t=info();const x=document.createElement('div');x.id='wezirTrialLock';x.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:2147483646;display:flex;align-items:center;justify-content:center;padding:20px';x.innerHTML='<div style="background:#fff;border:2px solid #D4AF37;border-radius:18px;max-width:520px;padding:30px;text-align:center"><div style="font-size:46px">⏳</div><h2>WEZIR POS — Free Trial Expired</h2><p>Your 30-day free trial has ended.</p><p>Please contact the WEZIR POS Administrator to activate your subscription.</p><p><b>Email:</b> <a href="mailto:wezirumar1988@gmail.com">wezirumar1988@gmail.com</a><br><b>Phone:</b> <a href="tel:+966536690242">+966 536 690 242</a></p><button id="wezirTrialHelp" style="background:#111;color:#fff">🆘 Help & Contact</button><button id="wezirTrialLogout">Logout</button></div>';document.body.appendChild(x);x.querySelector('#wezirTrialHelp').onclick=()=>{x.remove();if(typeof window.qfFeature==='function')window.qfFeature('help')};x.querySelector('#wezirTrialLogout').onclick=()=>window.logout();return false;}
-  window.wezirCheckSubscription=check;
-  supabaseClient.auth.onAuthStateChange((event,session)=>{if(session)setTimeout(check,1200);else document.getElementById('wezirTrialLock')?.remove();});
+  window.addEventListener('load',cleanupSettingsNav);
+  const obs=new MutationObserver(cleanupSettingsNav);
+  window.addEventListener('load',function(){const side=document.querySelector('.side');if(side)obs.observe(side,{childList:true,subtree:true});});
+})();
+</script>
+
+
+<script>
+/* WEZIR POS — Admin Dashboard navigation hard-fix */
+(function(){
+  function ensureAdminButton(){
+    var side=document.querySelector('.side');
+    if(!side) return;
+    var btn=document.getElementById('adminNav');
+    if(!btn){
+      var reports=[].slice.call(side.querySelectorAll('.nav')).find(function(b){return (b.textContent||'').includes('Reports');});
+      btn=document.createElement('button');
+      btn.id='adminNav';
+      btn.className='nav';
+      btn.type='button';
+      btn.textContent='👑 Admin Dashboard';
+      btn.onclick=function(){ if(typeof showPage==='function') showPage('adminDashboard',btn); };
+      if(reports && reports.parentNode) reports.parentNode.insertBefore(btn,reports.nextSibling);
+      else side.appendChild(btn);
+    }
+    btn.classList.remove('hidden');
+    btn.style.setProperty('display','block','important');
+    btn.style.setProperty('visibility','visible','important');
+    btn.style.setProperty('opacity','1','important');
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ensureAdminButton);
+  else ensureAdminButton();
+  window.addEventListener('load',ensureAdminButton);
+  setTimeout(ensureAdminButton,500);
+  setTimeout(ensureAdminButton,1500);
 })();
 </script>
 
 <script>
-/* WEZIR POS — CLEAN SIDEBAR FINAL FIX */
+/* WEZIR POS — ALL FEATURES MENU HARD-FIX */
 (function(){
-  function cleanSidebar(){
+  function installAllFeatures(){
     var side=document.querySelector('.side');
-    if(!side)return;
+    if(!side) return;
+    var btn=document.getElementById('allFeaturesNav');
+    if(!btn){
+      btn=document.createElement('button');
+      btn.id='allFeaturesNav';
+      btn.className='nav';
+      btn.type='button';
+      btn.innerHTML='🧩 <span>All Features</span>';
+      btn.onclick=function(){
+        if(typeof openHub==='function') openHub();
+        else if(typeof show==='function') show('featurehub');
+      };
+      var settings=[].slice.call(side.querySelectorAll('.nav')).find(function(b){
+        return (b.textContent||'').replace(/\s+/g,' ').trim().includes('Settings');
+      });
+      if(settings) side.insertBefore(btn,settings);
+      else side.appendChild(btn);
+    }
+    btn.classList.remove('hidden');
+    btn.style.setProperty('display','block','important');
+    btn.style.setProperty('visibility','visible','important');
+    btn.style.setProperty('opacity','1','important');
+  }
+  function run(){installAllFeatures();}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run);
+  else run();
+  window.addEventListener('load',run);
+  setTimeout(run,500);
+  setTimeout(run,1500);
+  setTimeout(run,3000);
+})();
+</script>
 
-    var navs=[].slice.call(side.querySelectorAll('.nav'));
-    var settingsSeen=false;
-    navs.forEach(function(btn){
-      var t=(btn.textContent||'').replace(/\s+/g,' ').trim();
-      if(t.indexOf('Settings')!==-1){
-        if(settingsSeen) btn.remove();
-        else settingsSeen=true;
-      }
-    });
+
+<script>
+/* WEZIR POS — All Features click hard-fix */
+(function(){
+  function openAllFeatures(){
+    var page=document.getElementById('featurehubPage');
+    if(!page) return;
+    document.querySelectorAll('#app .page').forEach(function(x){ x.classList.add('hidden'); });
+    document.querySelectorAll('#app .container > div[id$="Page"]').forEach(function(x){ x.classList.add('hidden'); });
+    document.querySelectorAll('#app .page').forEach(function(x){ x.classList.remove('active'); x.style.display='none'; });
+    page.classList.remove('hidden');
+    page.classList.add('active');
+    page.style.display='block';
+    page.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  window.openHub=openAllFeatures;
+  window.openAllFeatures=openAllFeatures;
+
+  function fixButton(){
+    var side=document.querySelector('.side');
+    if(!side) return;
 
     var btn=document.getElementById('allFeaturesNav');
     if(!btn){
@@ -1056,90 +1055,304 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
       btn.className='nav';
       btn.type='button';
       btn.innerHTML='🧩 <span>All Features</span>';
-      btn.onclick=function(e){
-        if(e){e.preventDefault();e.stopPropagation();}
-        if(typeof window.openMenu==='function') window.openMenu();
-        else if(typeof window.openAllFeaturesFinal==='function') window.openAllFeaturesFinal();
-        else if(typeof window.openHub==='function') window.openHub();
-        return false;
-      };
+      side.appendChild(btn);
     }
 
-    var currentSettings=[].slice.call(side.querySelectorAll('.nav')).find(function(b){
-      return (b.textContent||'').replace(/\s+/g,' ').trim().indexOf('Settings')===0;
-    });
-    if(currentSettings && btn.parentNode!==side) side.insertBefore(btn,currentSettings);
-    else if(currentSettings) side.insertBefore(btn,currentSettings);
-    else if(btn.parentNode!==side) side.appendChild(btn);
-
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      openAllFeatures();
+    };
     btn.classList.remove('hidden');
     btn.style.setProperty('display','block','important');
     btn.style.setProperty('visibility','visible','important');
     btn.style.setProperty('opacity','1','important');
-
-    // Ensure exactly one Admin Dashboard button.
-    var admins=[].slice.call(side.querySelectorAll('.nav')).filter(function(b){
-      return (b.textContent||'').replace(/\s+/g,' ').trim().indexOf('Admin Dashboard')!==-1;
-    });
-    admins.forEach(function(b,i){
-      if(i>0)b.remove();
-    });
-    var admin=admins[0]||document.getElementById('adminNav');
-    if(!admin){
-      admin=document.createElement('button');
-      admin.id='adminNav';
-      admin.className='nav';
-      admin.type='button';
-      admin.textContent='👑 Admin Dashboard';
-      admin.onclick=function(){if(typeof showPage==='function')showPage('adminDashboard',admin);};
-      var reports=[].slice.call(side.querySelectorAll('.nav')).find(function(b){
-        return (b.textContent||'').indexOf('Reports')!==-1;
-      });
-      if(reports) side.insertBefore(admin,reports.nextSibling);
-      else side.appendChild(admin);
-    }
-    admin.classList.remove('hidden');
-    admin.style.setProperty('display','block','important');
   }
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',cleanSidebar);
-  else cleanSidebar();
-  window.addEventListener('load',cleanSidebar);
-  setTimeout(cleanSidebar,500);
-  setTimeout(cleanSidebar,1500);
-  setTimeout(cleanSidebar,3000);
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',fixButton);
+  }else{
+    fixButton();
+  }
+  window.addEventListener('load',fixButton);
+  setTimeout(fixButton,500);
+  setTimeout(fixButton,1500);
+})();
+</script>
+
+<script>
+/* WEZIR POS — ALL FEATURES CLICK FIX V3 */
+(function(){
+  function openAllFeaturesNow(){
+    var page=document.getElementById('featurehubPage');
+    if(!page) return;
+
+    /* Hide every normal app page */
+    document.querySelectorAll('#app .page').forEach(function(x){
+      x.classList.remove('active');
+      x.style.display='none';
+    });
+
+    /* Show the feature hub directly */
+    page.classList.add('active');
+    page.style.display='block';
+    page.style.visibility='visible';
+    page.style.opacity='1';
+
+    /* Make sure the hub is visible inside the main content area */
+    var main=page.closest('.main');
+    if(main){ main.style.display='block'; }
+  }
+
+  /* Make it globally callable by the menu button */
+  window.openHub=openAllFeaturesNow;
+  window.openAllFeaturesNow=openAllFeaturesNow;
+
+  function bindButton(){
+    var btn=document.getElementById('allFeaturesNav');
+    if(!btn) return;
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      openAllFeaturesNow();
+      return false;
+    };
+  }
+
+  function run(){
+    bindButton();
+    if(document.getElementById('allFeaturesNav')){
+      document.getElementById('allFeaturesNav').style.cursor='pointer';
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run);
+  else run();
+  window.addEventListener('load',run);
+  setTimeout(run,500);
+  setTimeout(run,1500);
+  setTimeout(run,3000);
 })();
 </script>
 
 
 <script>
-/* WEZIR POS — FINAL HELP FEATURE FIX */
+/* WEZIR POS — FINAL ALL FEATURES FIX
+   Opens the feature menu directly as a modal; does not depend on page/show navigation. */
 (function(){
-  window.help = window.help || async function(){
-    var old=document.querySelector('.qfmodal');
+  const WEZIR_ALL_FEATURES=[["🏠", "Dashboard", "dashboard"], ["📦", "Stock / Inventory", "products"], ["🛒", "POS / Gurgurtaa", "pos"], ["🧾", "Invoice", "invoicehub"], ["🖨️", "Invoice Print", "print"], ["📊", "Sales Reports", "reports"], ["🛍️", "Purchases", "purchases"], ["💰", "Expenses", "expenses"], ["👥", "Customers", "customers"], ["💳", "Customer Credit / Balance", "customercredit"], ["🏭", "Suppliers", "suppliers"], ["💵", "Supplier Balance", "supplierbalance"], ["🔄", "Stock Adjustment", "adjustment"], ["↩️", "Sales Return / Refund", "salesreturn"], ["↩️", "Purchase Return", "purchasereturn"], ["🔔", "Low Stock Alert", "lowstock"], ["🚫", "Out of Stock", "outstock"], ["📅", "Expiry Date", "expiry"], ["🏷️", "Batch / Lot", "batch"], ["👤", "Users & Permissions", "users"], ["💳", "Payment Methods", "payments"], ["⚙️", "Settings", "settings"], ["💾", "Backup / Restore", "backup"], ["☁️", "Cloud Account & Data Separation", "cloud"], ["📈", "Profit / Net Profit", "profit"], ["📊", "Export Report → Excel", "export"], ["🔐", "Forgot Password", "forgot"], ["🔄", "Change Password", "changepassword"], ["📱", "Barcode", "barcode"], ["🧾", "Automatic Invoice Number", "autoinvoice"], ["🆘", "Help / Contact", "help"], ["🌍", "Country + Currency", "currency"], ["🔑", "Email Login", "email"], ["💳", "Subscription / Business Management", "subscription"]];
+
+  function openAllFeaturesFinal(){
+    const old=document.getElementById('wezirAllFeaturesModal');
     if(old) old.remove();
 
-    var modal=document.createElement('div');
-    modal.className='qfmodal';
-    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    modal.innerHTML =
-      '<div style="background:#fff;border:2px solid #D4AF37;border-radius:18px;max-width:560px;width:100%;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.25)">'+
-      '<h2 style="margin-top:0">🆘 WEZIR POS Help & Contact</h2>'+
-      '<p><b>Administrator:</b> Wezir Umar</p>'+
+    const wrap=document.createElement('div');
+    wrap.id='wezirAllFeaturesModal';
+    wrap.className='qfmodal';
+    wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:999999;display:flex;align-items:center;justify-content:center;padding:18px;';
+
+    const cards=WEZIR_ALL_FEATURES.map(function(f){
+      const icon=f[0], name=f[1], key=f[2];
+      return '<button type="button" class="wezir-feature-card" data-key="'+key+'" style="background:#fff!important;color:#111!important;border:1px solid #e4dfcf!important;border-top:3px solid #D4AF37!important;border-radius:14px;padding:16px;text-align:left;cursor:pointer;min-height:105px;">'
+        +'<div style="font-size:27px">'+icon+'</div>'
+        +'<div style="font-weight:700;margin-top:7px">'+name+'</div>'
+        +'<div style="font-size:12px;color:#777;margin-top:4px">Open '+name+'</div>'
+        +'</button>';
+    }).join('');
+
+    wrap.innerHTML=
+      '<div style="background:#fff;width:min(1000px,96vw);max-height:90vh;overflow:auto;border:2px solid #D4AF37;border-radius:18px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.5);">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;">'
+      +'<div><h2 style="margin:0;color:#111;">🧩 WEZIR POS — All Features</h2><p style="margin:5px 0 0;color:#777;">34 business features</p></div>'
+      +'<button type="button" id="wezirCloseFeatures" style="width:auto;background:#111!important;color:#fff!important;padding:9px 14px;">✕ Close</button>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;">'+cards+'</div>'
+      +'</div>';
+
+    document.body.appendChild(wrap);
+    document.getElementById('wezirCloseFeatures').onclick=function(){wrap.remove();};
+
+    wrap.querySelectorAll('.wezir-feature-card').forEach(function(btn){
+      btn.onclick=function(){
+        const key=btn.getAttribute('data-key');
+        wrap.remove();
+        if(typeof window.qfFeature==='function') window.qfFeature(key);
+        else if(['dashboard','products','pos','purchases','expenses','reports','settings'].includes(key) && typeof window.showPage==='function') window.showPage(key);
+        else alert('Feature is not ready: '+key);
+      };
+    });
+  }
+
+  window.openAllFeaturesFinal=openAllFeaturesFinal;
+  window.openHub=openAllFeaturesFinal;
+
+  function bindFinal(){
+    const btn=document.getElementById('allFeaturesNav');
+    if(!btn) return;
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      openAllFeaturesFinal();
+      return false;
+    };
+    btn.setAttribute('type','button');
+    btn.style.cursor='pointer';
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindFinal);
+  else bindFinal();
+  window.addEventListener('load',bindFinal);
+  setTimeout(bindFinal,300);
+  setTimeout(bindFinal,1000);
+  setTimeout(bindFinal,2500);
+})();
+</script>
+
+
+<script>
+/* WEZIR POS — FINAL TRULY FIXED ALL FEATURES
+   Uses document-level click capture, so it works even if older handlers are broken. */
+(function(){
+  const FEATURES = [
+    ["🏠","Dashboard","dashboard"],["📦","Stock / Inventory","products"],
+    ["🛒","POS / Gurgurtaa","pos"],["🧾","Invoice","invoicehub"],
+    ["🖨️","Invoice Print","print"],["📊","Sales Reports","reports"],
+    ["🛍️","Purchases","purchases"],["💰","Expenses","expenses"],
+    ["👥","Customers","customers"],["💳","Customer Credit / Balance","customercredit"],
+    ["🏭","Suppliers","suppliers"],["💵","Supplier Balance","supplierbalance"],
+    ["🔄","Stock Adjustment","adjustment"],["↩️","Sales Return / Refund","salesreturn"],
+    ["↩️","Purchase Return","purchasereturn"],["🔔","Low Stock Alert","lowstock"],
+    ["🚫","Out of Stock","outstock"],["📅","Expiry Date","expiry"],
+    ["🏷️","Batch / Lot","batch"],["👤","Users & Permissions","users"],
+    ["💳","Payment Methods","payments"],["⚙️","Settings","settings"],
+    ["💾","Backup / Restore","backup"],["☁️","Cloud Account & Data Separation","cloud"],
+    ["📈","Profit / Net Profit","profit"],["📊","Export Report → Excel","export"],
+    ["🔐","Forgot Password","forgot"],["🔄","Change Password","changepassword"],
+    ["📱","Barcode","barcode"],["🧾","Automatic Invoice Number","autoinvoice"],
+    ["🆘","Help / Contact","help"],["🌍","Country + Currency","currency"],
+    ["🔑","Email Login","email"],["💳","Subscription / Business Management","subscription"]
+  ];
+
+  function openMenu(){
+    let old=document.getElementById("WEZIR_ALL_FEATURES_FINAL_MENU");
+    if(old) old.remove();
+
+    const overlay=document.createElement("div");
+    overlay.id="WEZIR_ALL_FEATURES_FINAL_MENU";
+    overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:18px;";
+
+    const cards=FEATURES.map(function(f){
+      return '<button type="button" data-wezir-key="'+f[2]+'" style="background:#fff;color:#111;border:1px solid #ddd;border-top:3px solid #d4af37;border-radius:14px;padding:15px;text-align:left;cursor:pointer;min-height:105px;">'
+        +'<div style="font-size:27px">'+f[0]+'</div>'
+        +'<div style="font-weight:700;margin-top:7px">'+f[1]+'</div>'
+        +'<div style="font-size:12px;color:#777;margin-top:4px">Open '+f[1]+'</div>'
+        +'</button>';
+    }).join("");
+
+    overlay.innerHTML=
+      '<div style="background:#fff;width:min(1050px,96vw);max-height:90vh;overflow:auto;border:2px solid #d4af37;border-radius:18px;padding:20px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">'
+      +'<div><h2 style="margin:0;color:#111;">🧩 WEZIR POS — All Features</h2><p style="margin:5px 0;color:#777;">34 business features</p></div>'
+      +'<button type="button" id="WEZIR_FEATURE_CLOSE" style="background:#111;color:#fff;padding:9px 14px;width:auto;">✕ Close</button>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;">'+cards+'</div>'
+      +'</div>';
+
+    document.body.appendChild(overlay);
+    document.getElementById("WEZIR_FEATURE_CLOSE").onclick=function(){overlay.remove();};
+
+    overlay.querySelectorAll("[data-wezir-key]").forEach(function(card){
+      card.onclick=function(){
+        const key=card.getAttribute("data-wezir-key");
+        overlay.remove();
+        /* Advanced modules have their real handlers in qfAdv.
+           Use qfAdv first; otherwise use the normal app feature handler. */
+        const advanced=["customers","customercredit","suppliers","supplierbalance","adjustment","salesreturn","purchasereturn","expiry","batch","users","payments","barcode","export"];
+        if(advanced.includes(key) && typeof window.qfAdv==="function"){
+          Promise.resolve(window.qfAdv(key)).catch(function(err){
+            console.error("Feature error:",err);
+            alert("This feature could not open: "+(err?.message||err));
+          });
+        }else if(typeof window.qfFeature==="function"){
+          Promise.resolve(window.qfFeature(key)).catch(function(err){
+            console.error("Feature error:",err);
+            alert("This feature could not open: "+(err?.message||err));
+          });
+        }else if(["dashboard","products","pos","purchases","expenses","reports","settings"].includes(key) && typeof window.showPage==="function"){
+          window.showPage(key);
+        }else{
+          alert("Feature is not connected yet: "+key);
+        }
+      };
+    });
+  }
+
+  /* Capture phase: stops every older broken All Features handler. */
+  document.addEventListener("click",function(e){
+    const el=e.target && e.target.closest ? e.target.closest("#allFeaturesNav, #allFeaturesNav *") : null;
+    if(!el) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    openMenu();
+  },true);
+
+  window.WEZIR_OPEN_ALL_FEATURES=openMenu;
+})();
+</script>
+
+
+<script>
+/* WEZIR POS — FEATURE ROUTING BRIDGE */
+(function(){
+  function install(){
+    if(typeof window.qfAdv!=="function" || typeof window.qfFeature!=="function") return;
+    if(window.__wezirFeatureRoutingInstalled) return;
+    window.__wezirFeatureRoutingInstalled=true;
+
+    const original=window.qfFeature;
+    const advanced=["customers","customercredit","suppliers","supplierbalance","adjustment","salesreturn","purchasereturn","expiry","batch","users","payments","barcode","export"];
+
+    window.qfFeature=function(key){
+      if(advanced.includes(key)) return window.qfAdv(key);
+      return original(key);
+    };
+  }
+
+  install();
+  setTimeout(install,500);
+  setTimeout(install,1500);
+  setTimeout(install,3000);
+})();
+</script>
+
+
+<script>
+/* WEZIR POS — Help & Admin network repair */
+(function(){
+  window.qfOpenHelpContact=function(){
+    document.querySelectorAll('.qfmodal,#wezirHelpContactModal').forEach(function(x){x.remove();});
+    var m=document.createElement('div');m.id='wezirHelpContactModal';m.className='qfmodal';
+    m.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.68);display:flex;align-items:center;justify-content:center;padding:18px;';
+    m.innerHTML='<div style="background:#fff;color:#111;width:min(650px,96vw);max-height:90vh;overflow:auto;border:2px solid #D4AF37;border-radius:18px;padding:22px;box-shadow:0 18px 60px #0005">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 style="margin:0">🆘 WEZIR POS Help &amp; Contact</h2><button type="button" id="wezirHelpClose" style="width:auto;background:#111;color:#fff;padding:8px 13px">✕</button></div>'+
+      '<p>For help with your account or POS, contact the administrator.</p><p><b>Administrator:</b> Wezir Umar</p>'+
       '<p><b>Email:</b> <a href="mailto:wezirumar1988@gmail.com?subject=WEZIR%20POS%20Support">wezirumar1988@gmail.com</a></p>'+
-      '<p><b>WhatsApp:</b> <a target="_blank" rel="noopener" href="https://wa.me/966536690242?text=Hello%20WEZIR%20POS%20Admin%2C%20I%20need%20help.">+966 536 690 242</a></p>'+
-      '<p class="qfmuted">For account, subscription, login, or POS support, contact the WEZIR POS Administrator.</p>'+
-      '<button type="button" onclick="this.closest(\\'.qfmodal\\').remove()">Close</button>'+
-      '</div>';
-    document.body.appendChild(modal);
+      '<p><b>Phone:</b> <a href="tel:+966536690242">+966 536 690 242</a></p>'+
+      '<p><b>WhatsApp:</b> <a href="https://wa.me/966536690242?text=Hello%20WEZIR%20POS%20Admin%2C%20I%20need%20help." target="_blank" rel="noopener">Chat on WhatsApp</a></p>'+
+      '<label for="wezirSupportMessage"><b>Your message</b></label><textarea id="wezirSupportMessage" rows="4" style="width:100%;box-sizing:border-box;margin:8px 0 12px" placeholder="Describe your problem..."></textarea>'+
+      '<button type="button" id="wezirSendSupport" style="background:#111;color:#fff;border:1px solid #D4AF37;padding:10px 16px;border-radius:9px">Send by Email</button></div>';
+    document.body.appendChild(m);
+    document.getElementById('wezirHelpClose').onclick=function(){m.remove();};
+    m.addEventListener('click',function(e){if(e.target===m)m.remove();});
+    document.getElementById('wezirSendSupport').onclick=function(){
+      var msg=(document.getElementById('wezirSupportMessage').value||'').trim();
+      var u=window.currentUser||{};var business=(u.user_metadata&&u.user_metadata.business_name)||'';
+      var subject=encodeURIComponent('WEZIR POS Support - '+business);
+      var body=encodeURIComponent('Business: '+business+'\nEmail: '+(u.email||'')+'\n\nMessage: '+msg);
+      window.location.href='mailto:wezirumar1988@gmail.com?subject='+subject+'&body='+body;
+    };
   };
-
-  // Also expose the feature-router callback expected by trial/subscription screens.
-  window.qfHelp = window.qfHelp || window.help;
-
-  // If a router calls help() as a bare identifier, globalThis is the global scope in browsers.
-  try { globalThis.help = window.help; } catch(e) {}
-
+  var previous=window.qfFeature;
+  window.qfFeature=function(key){if(key==='help')return window.qfOpenHelpContact();if(typeof previous==='function')return previous.apply(this,arguments);};
 })();
 </script>
 
