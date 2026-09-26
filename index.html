@@ -379,7 +379,22 @@ async function saveProductEdit(id){
  try{const name=document.getElementById("epName").value.trim();const stock=Number(document.getElementById("epStock").value||0);const cost=Number(document.getElementById("epCost").value||0);const price=Number(document.getElementById("epPrice").value||0);const profit=Number(document.getElementById("epProfit").value||0);if(!name)return alert("Product name required");const r=await supabaseClient.from("products").update({name,stock,cost,selling_price:price,profit_percent:profit}).eq("id",id).eq("user_id",currentUser.id);if(r.error)throw r.error;closeModal();await loadCloudData();alert("Product updated successfully.");}catch(e){alert("Update error: "+e.message)}}
 function productMore(id){const p=data.products.find(x=>String(x.id)===String(id));if(!p)return;document.getElementById("modalHost").innerHTML=`<div class="modal"><div class="modal-box"><h2>⋮ ${escapeHtml(p.name)}</h2><p><b>Stock:</b> ${Number(p.stock||0)}</p><p><b>Average Cost:</b> ${money(p.cost)}</p><p><b>Selling Price:</b> ${money(p.selling_price)}</p><p><b>Profit / Unit:</b> ${money(Number(p.selling_price||0)-Number(p.cost||0))}</p><p><b>Profit %:</b> ${Number(p.profit_percent||0)}%</p><div class="modal-actions"><button onclick="editProduct('${p.id}')">✏️ Edit</button><button class="btn-secondary" onclick="closeModal()">Close</button></div></div></div>`}
 function renderPosProductButtons(){const box=document.getElementById("posProductButtons");if(!box)return;const available=data.products.filter(p=>Number(p.stock||0)>0);box.innerHTML=available.length?available.map(p=>`<button type="button" class="pos-product-btn" onclick="addProductToCart(${JSON.stringify(String(p.id))})"><span class="pos-product-name">${escapeHtml(p.name)}</span><span class="pos-product-price">${money(p.selling_price)}</span><span class="pos-product-stock">${p.stock} available</span></button>`).join(""):`<p class="muted">No products in stock.</p>`}
-function addProductToCart(id){const select=document.getElementById("posProduct");if(select)select.value=String(id);addToCart()}
+function addProductToCart(id){
+  const product=data.products.find(p=>String(p.id)===String(id));
+  if(!product)return alert("Product hin argamne.");
+  if(Number(product.stock||0)<=0)return alert("Meeshaan stock hin qabu.");
+  const qtyInput=document.getElementById("posQty");
+  const qty=Number(qtyInput?.value||1);
+  if(!Number.isFinite(qty)||qty<=0)return alert("Baay'ina sirrii galchi.");
+  const existing=cart.find(x=>String(x.id)===String(product.id));
+  const totalQty=(existing?Number(existing.qty):0)+qty;
+  if(totalQty>Number(product.stock||0))return alert("Stock gahaa miti. Available: "+product.stock);
+  if(existing){existing.qty=totalQty;}
+  else{cart.push({id:product.id,name:product.name,qty,price:Number(product.selling_price||0),cost:Number(product.cost||0)});}
+  renderCart();
+  const cartBox=document.getElementById("cart");
+  if(cartBox)cartBox.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
 function renderProducts(){let h='<table><tr><th>Product</th><th>Stock</th><th>Average Cost</th><th>Selling Price</th><th>Profit / Unit</th><th>Status</th><th>More / Edit</th></tr>';data.products.forEach(p=>{const stock=Number(p.stock||0),cost=Number(p.cost||0),price=Number(p.selling_price||0),status=stock<=0?'<span class="badge out">OUT OF STOCK</span>':stock<=10?'<span class="badge low">LOW STOCK</span>':'<span class="badge good">IN STOCK</span>';h+=`<tr><td><b>${escapeHtml(p.name)}</b></td><td>${stock}</td><td>${money(cost)}</td><td>${money(price)}</td><td>${money(price-cost)}</td><td>${status}</td><td><button class="small-btn" onclick="editProduct('${p.id}')">✏️ Edit</button> <button class="small-btn" onclick="productMore('${p.id}')">⋮ More</button></td></tr>`});h+='</table>';document.getElementById("productTable").innerHTML=data.products.length?h:"No products yet.";document.getElementById("posProduct").innerHTML=data.products.filter(p=>Number(p.stock||0)>0).map(p=>`<option value="${p.id}">${escapeHtml(p.name)} — ${p.stock} available — ${money(p.selling_price)}</option>`).join("");renderPosProductButtons()}
 function renderPurchases(){let h='<table><tr><th>Date</th><th>Product</th><th>Qty</th><th>Purchase Cost</th><th>Transport</th><th>Loading</th><th>Total</th><th>Action</th></tr>';data.purchases.forEach(p=>h+=`<tr><td>${p.purchase_date||""}</td><td>${escapeHtml(p.product_name)}</td><td>${p.qty}</td><td>${money(p.purchase_cost)}</td><td>${money(p.transport)}</td><td>${money(p.loading)}</td><td>${money(p.total_cost)}</td><td><button class="small-btn" onclick="editPurchase('${p.id}')">✏️ Edit</button></td></tr>`);h+='</table>';document.getElementById("purchaseTable").innerHTML=data.purchases.length?h:"No purchases yet."}
 
