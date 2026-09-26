@@ -101,6 +101,14 @@ th{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border-b
 @media(max-width:600px){.pos-workspace{gap:10px}.pos-workspace>.panel{padding:13px}.pos-tools,.pos-payment{gap:8px}.pos-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.pos-product-btn{min-height:112px!important}.pos-actions{grid-template-columns:1fr 1.4fr}.pos-total .big{font-size:25px}}
 
 </style>
+<style>
+/* Compact, tidy admin account action buttons */
+.admin-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center;max-width:340px}
+.admin-actions .small-btn{width:auto!important;min-width:0!important;padding:6px 9px!important;margin:0!important;font-size:12px!important;line-height:1.2!important;border-radius:7px!important;white-space:nowrap!important;box-shadow:0 1px 3px #00000018!important}
+#adminUsersTable table{min-width:1050px}
+#adminUsersTable td:last-child{min-width:260px;max-width:360px}
+@media(max-width:850px){.admin-actions{max-width:280px}.admin-actions .small-btn{font-size:11px!important;padding:5px 7px!important}}
+</style>
 </head>
 <body>
 <div id="loginScreen" class="login"><div class="login-card"><div class="logo">QF</div><h2 class="center">WEZIR POS</h2><p class="center muted">POS & Inventory</p>
@@ -418,7 +426,7 @@ async function loadAdminUsers(){
       const self=String(u.email||'').toLowerCase()===String(ADMIN_EMAIL).toLowerCase();
       const actions=self
         ? '<span class="muted">Admin</span>'
-        : '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+        : '<div class="admin-actions">'+
           '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'stop\',1)" title="Stop for 1 Day">⏸️ Stop 1 Day</button>'+
           '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'stop\',7)" title="Stop for 7 Days">⏸️ Stop 7 Days</button>'+
           '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'stop\',30)" title="Stop for 30 Days">⏸️ Stop 30 Days</button>'+
