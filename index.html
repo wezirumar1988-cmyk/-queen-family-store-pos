@@ -1630,3 +1630,84 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
   window.addEventListener('load',start); setTimeout(start,300); setTimeout(start,1000); setTimeout(start,2500);
 })();
 </script>
+
+<script>
+/* WEZIR POS STAFF ACCESS: resolve the business role from Supabase and restrict the interface. */
+(function(){
+  'use strict';
+  const restrictedPages=new Set(['dashboard','purchases','products','expenses','reports','adminDashboard','settings','featurehubPage']);
+  let resolvedRole='checking';
+  function current(){
+    try { if(typeof currentUser!=='undefined' && currentUser) return currentUser; } catch(e) {}
+    return window.currentUser||null;
+  }
+  function isStaff(){
+    if(resolvedRole==='staff') return true;
+    if(resolvedRole==='owner') return false;
+    const u=current();
+    const meta=String(u?.app_metadata?.role||u?.app_metadata?.user_role||'').trim().toLowerCase();
+    return ['cashier','employee','staff'].includes(meta);
+  }
+  function apply(){
+    const staff=isStaff();
+    document.querySelectorAll('.side button.nav').forEach(b=>{
+      const label=(b.textContent||'').toLowerCase();
+      const allowed=/\bpos\b|sales|🛒|🧾/.test(label);
+      if(staff){b.style.setProperty('display',allowed?'block':'none','important');b.setAttribute('aria-hidden',allowed?'false':'true');}
+      else {b.style.removeProperty('display');b.removeAttribute('aria-hidden');}
+    });
+    if(staff){
+      const active=document.querySelector('.page.active');
+      if(!active||restrictedPages.has(active.id)){
+        document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+        document.getElementById('pos')?.classList.add('active');
+        document.querySelectorAll('.side button.nav').forEach(b=>b.classList.toggle('active',/\bpos\b|🛒/.test((b.textContent||'').toLowerCase())));
+      }
+      const admin=document.getElementById('adminNav');if(admin)admin.style.setProperty('display','none','important');
+    }
+  }
+  async function resolveRole(user){
+    resolvedRole='checking';
+    apply();
+    if(!user){resolvedRole='owner';apply();return;}
+    const meta=String(user?.app_metadata?.role||user?.app_metadata?.user_role||'').trim().toLowerCase();
+    try{
+      const client=(typeof supabaseClient!=='undefined'&&supabaseClient)?supabaseClient:window.__wpSupabaseClient||window.supabaseClient;
+      if(client?.rpc){
+        const {data,error}=await client.rpc('get_my_business_role');
+        if(!error){
+          const value=Array.isArray(data)?(data[0]?.role??data[0]):(data?.role??data);
+          const r=String(value||'').trim().toLowerCase();
+          if(r){resolvedRole=['cashier','employee','staff'].includes(r)?'staff':'owner';apply();return;}
+        }
+      }
+    }catch(e){console.warn('Could not resolve WEZIR POS business role:',e);}
+    // Fail closed for known staff metadata; otherwise retain owner access if role lookup is unavailable.
+    resolvedRole=['cashier','employee','staff'].includes(meta)?'staff':'owner';
+    apply();
+  }
+  const originalShow=window.showPage;
+  if(typeof originalShow==='function')window.showPage=function(id,btn){
+    if(isStaff()&&restrictedPages.has(String(id))){alert('Employee account: POS and Sales only.');return;}
+    const result=originalShow.apply(this,arguments);apply();return result;
+  };
+  const blocked={addPurchase:'Purchases',editProduct:'Stock editing',saveProductEdit:'Stock editing',deleteProduct:'Stock deletion',addExpense:'Expenses',clearAllData:'Cloud data deletion',editSale:'Sales editing',saveSaleEdit:'Sales editing',deleteSale:'Sales deletion',qfAdjust:'Stock adjustment',qfReturn:'Returns'};
+  Object.keys(blocked).forEach(name=>{
+    const fn=window[name];
+    if(typeof fn==='function')window[name]=function(){if(isStaff()){alert('Employee account: '+blocked[name]+' is not allowed.');return;}return fn.apply(this,arguments);};
+  });
+  function refresh(){apply();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh);else refresh();
+  window.addEventListener('load',refresh);
+  const observer=new MutationObserver(()=>{if(isStaff())apply();});
+  window.addEventListener('load',()=>{if(document.body)observer.observe(document.body,{childList:true,subtree:true});});
+  window.addEventListener('wezir-auth-ready',refresh);
+  try{
+    const client=(typeof supabaseClient!=='undefined'&&supabaseClient)?supabaseClient:window.__wpSupabaseClient||window.supabaseClient;
+    if(client?.auth){
+      client.auth.onAuthStateChange((event,session)=>{setTimeout(()=>resolveRole(session?.user||null),0);});
+      client.auth.getSession().then(({data})=>resolveRole(data?.session?.user||current())).catch(()=>resolveRole(current()));
+    }else setTimeout(()=>resolveRole(current()),0);
+  }catch(e){resolveRole(current());}
+})();
+</script>
