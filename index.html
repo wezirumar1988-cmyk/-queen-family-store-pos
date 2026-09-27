@@ -784,7 +784,21 @@ await loadCloudData(); alert("Backup restored successfully.");
 };
 reader.readAsText(file);
 }
-async function clearAllData(){if(!confirm("Data CLOUD hunda haqxuuf mirkaneessi."))return;if(!currentUser)return;await supabaseClient.from("sales").delete().eq("user_id",currentUser.id);await supabaseClient.from("purchases").delete().eq("user_id",currentUser.id);await supabaseClient.from("expenses").delete().eq("user_id",currentUser.id);await supabaseClient.from("products").delete().eq("user_id",currentUser.id);await loadCloudData();alert("Cloud data hundi haqameera.")}
+async function clearAllData(){
+ if(!currentUser)return alert("Please sign in first.");
+ if(!confirm("Daldala kee keessatti jiru SALES, PURCHASES, EXPENSES fi PRODUCTS hunda haquuf mirkaneessi. Kun deebifamuu hin danda'u."))return;
+ const {data:bid,error:be}=await supabaseClient.rpc("get_my_business_id");
+ if(be)return alert("Business ID argachuu hin dandeenye: "+be.message);
+ const businessId=Array.isArray(bid)?(bid[0]?.business_id??bid[0]):(bid?.business_id??bid);
+ if(!businessId)return alert("Business ID hin argamne. Daataa hin haqamne.");
+ const tables=["sales","purchases","expenses","products"];
+ for(const table of tables){
+   const {error}=await supabaseClient.from(table).delete().eq("business_id",businessId);
+   if(error)return alert("Haquun "+table+" irratti dhaabbate: "+error.message+". Daataan hafan hin haqamne; Supabase RLS/policy ilaali.");
+ }
+ await loadCloudData();
+ alert("Daataan daldala kee keessaa Sales, Purchases, Expenses fi Products haqameera. Galmeen business_id hin qabne adda durummaan hin haqamne.");
+}
 function renderAll(){updateBusinessDisplay();renderDashboard();renderPurchases();renderProducts();renderCart();renderSales();renderExpenses()}
 document.getElementById("buyDate").value=today();document.getElementById("invoiceNo").value=makeInvoice();syncLanguageSelectors();applyLanguage();
 (async()=>{const {data:{session}}=await supabaseClient.auth.getSession();if(session){currentUser=session.user;document.getElementById("loginScreen").style.display="none";document.getElementById("app").style.display="block";document.getElementById("currentUser").textContent=currentUser.email;updateProfileSummary();syncLanguageSelectors();applyLanguage();setupAdminNav();await loadCloudData()}else{setupAdminNav()}})();
@@ -1023,47 +1037,8 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
   async function adjustment(){M('🔄 Stock Adjustment',`<div class="row"><input id="qaSku" placeholder="SKU or product name"><input id="qaQty" type="number" step="0.01" placeholder="New stock"><input id="qaReason" placeholder="Reason"><button onclick="qfAdjustCloud()">Save</button></div><p class="qfmuted">The new stock is written to Supabase and an adjustment log is saved in the cloud.</p>`)}
   window.qfAdjustCloud=async()=>{try{let q=qaSku.value.trim().toLowerCase(),qty=Number(qaQty.value);if(!q||isNaN(qty))return alert('Enter product and stock');let {data:ps,error}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id);if(error)throw error;let p=(ps||[]).find(x=>String(x.sku||'').toLowerCase()===q||String(x.name||'').toLowerCase()===q);if(!p)return alert('Product not found');let old=p.stock;let r=await supabaseClient.from('products').update({stock:qty}).eq('id',p.id).eq('user_id',currentUser.id);if(r.error)throw r.error;await save(MOD.adjustments,crypto.randomUUID(),{product_id:p.id,product:p.name,old_stock:old,new_stock:qty,reason:qaReason.value,date:new Date().toISOString()});await loadCloudData();alert('Stock adjusted successfully');document.querySelector('.qfmodal')?.remove()}catch(e){alert(e.message)}};
 
-  async function returns(type){
-    const sales=Array.isArray(data?.sales)?data.sales:[];
-    const invoices=[...new Set(sales.map(s=>String(s.invoice_no||'').trim()).filter(Boolean))];
-    const options=invoices.map(inv=>`<option value="${esc(inv)}">${esc(inv)}</option>`).join('');
-    M('↩️ '+type,`<p>Choose an invoice, then choose a product from that invoice. Sale returns increase stock; purchase returns are recorded for review.</p><div class="row"><select id="qrInv" onchange="qfReturnInvoiceChanged()"><option value="">Select invoice</option>${options}</select><select id="qrProd" disabled><option value="">Select product</option></select><input id="qrQty" type="number" min="0.01" step="0.01" placeholder="Quantity"><input id="qrReason" placeholder="Reason"><button onclick="qfReturnCloud('${type}')">Save Return</button></div>${invoices.length?'':'<p class="qfmuted">No sales invoices are available. Load sales first.</p>'}`);
-    window.qfReturnInvoiceChanged=()=>{
-      const inv=document.getElementById('qrInv')?.value||'';
-      const select=document.getElementById('qrProd'); if(!select)return;
-      const lines=sales.filter(s=>String(s.invoice_no||'').trim()===inv);
-      const products=[...new Map(lines.map(s=>[String(s.product_id||s.product_name||''),s])).values()];
-      select.innerHTML='<option value="">Select product</option>'+products.map(s=>`<option value="${esc(s.product_id||s.product_name||'')}">${esc(s.product_name||'Product')} — sold: ${Number(s.qty||0)}</option>`).join('');
-      select.disabled=!products.length;
-    };
-  }
-  window.qfReturnCloud=async type=>{
-    try{
-      const inv=document.getElementById('qrInv')?.value||'';
-      const selected=document.getElementById('qrProd')?.value||'';
-      const qty=Number(document.getElementById('qrQty')?.value);
-      const reason=document.getElementById('qrReason')?.value.trim()||'';
-      if(!window.currentUser||!window.supabaseClient)throw new Error('Please sign in first.');
-      if(!inv||!selected||!Number.isFinite(qty)||qty<=0)return alert('Select invoice and product, and enter a quantity greater than zero.');
-      const sales=Array.isArray(data?.sales)?data.sales:[];
-      const line=sales.find(s=>String(s.invoice_no||'').trim()===inv&&(String(s.product_id||'')===selected||String(s.product_name||'')===selected));
-      if(type==='Sale Return'&&!line)return alert('This product is not in the selected invoice.');
-      if(type==='Sale Return'&&qty>Number(line.qty||0))return alert('Return quantity cannot exceed the quantity sold on this invoice.');
-      const {data:ps,error}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id);
-      if(error)throw error;
-      const p=(ps||[]).find(x=>String(x.id)===selected||String(x.name||'').toLowerCase()===selected.toLowerCase()||String(x.sku||'').toLowerCase()===selected.toLowerCase());
-      if(!p)return alert('Product not found or not accessible for this account.');
-      const delta=type==='Sale Return'?qty:-qty;
-      const newStock=Number(p.stock||0)+delta;
-      if(newStock<0)return alert('Stock gahaa miti');
-      const update=await supabaseClient.from('products').update({stock:newStock}).eq('id',p.id).eq('user_id',currentUser.id);
-      if(update.error)throw update.error;
-      await save(MOD.returns,crypto.randomUUID(),{type,invoice:inv,product:p.name,product_id:p.id,qty,reason,date:new Date().toISOString()});
-      await loadCloudData();
-      alert(type+' saved');
-      document.querySelector('.qfmodal')?.remove();
-    }catch(e){alert(e?.message||String(e))}
-  };
+  async function returns(type){M('↩️ '+type,`<div class="row"><input id="qrInv" placeholder="Invoice No."><input id="qrProd" placeholder="Product name or SKU"><input id="qrQty" type="number" step="0.01" placeholder="Quantity"><input id="qrReason" placeholder="Reason"><button onclick="qfReturnCloud('${type}')">Save Return</button></div>`)}
+  window.qfReturnCloud=async type=>{try{let inv=qrInv.value.trim(),q=qrProd.value.trim().toLowerCase(),qty=Number(qrQty.value);if(!inv||!q||!qty)return alert('Fill all required fields');let {data:ps,error}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id);if(error)throw error;let p=(ps||[]).find(x=>String(x.name||'').toLowerCase()===q||String(x.sku||'').toLowerCase()===q);if(!p)return alert('Product not found');let delta=type==='Sale Return'?qty:-qty;let newStock=Number(p.stock||0)+delta;if(newStock<0)return alert('Stock gahaa miti');let r=await supabaseClient.from('products').update({stock:newStock}).eq('id',p.id).eq('user_id',currentUser.id);if(r.error)throw r.error;await save(MOD.returns,crypto.randomUUID(),{type,invoice:inv,product:p.name,product_id:p.id,qty,reason:qrReason.value,date:new Date().toISOString()});await loadCloudData();alert(type+' saved');document.querySelector('.qfmodal')?.remove()}catch(e){alert(e.message)}};
 
   async function batch(){const a=await list(MOD.batches);M('🏷️ Batch / Lot + Expiry',`<div class="row"><input id="qbProd" placeholder="Product"><input id="qbLot" placeholder="Batch / Lot No."><input id="qbQty" type="number" placeholder="Qty"><input id="qbExp" type="date"><button onclick="qfBatchCloud()">Save</button></div><br>${rowsTable(a.map(x=>{let d=x.data||{};let ex=d.expiry||'';let status=ex?(ex<today()?'EXPIRED':'OK'):'';return `<tr><td>${esc(d.product)}</td><td>${esc(d.lot||'-')}</td><td>${d.qty||0}</td><td>${esc(ex)}</td><td>${status}</td></tr>`}),['Product','Lot','Qty','Expiry','Status'])}`)}
   window.qfBatchCloud=async()=>{try{let p=qbProd.value.trim();if(!p)return alert('Product required');await save(MOD.batches,crypto.randomUUID(),{product:p,lot:qbLot.value.trim(),qty:Number(qbQty.value||0),expiry:qbExp.value});batch()}catch(e){alert(e.message)}};
