@@ -1652,6 +1652,44 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
 
 
 
+
+<!-- WEZIR POS in-app notification: replaces browser alerts that display the GitHub hostname. -->
+<style>
+#wpNoticeOverlay{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.58)}
+#wpNoticeOverlay.show{display:flex}
+#wpNoticeBox{width:min(440px,100%);background:#fff;border:2px solid #D4AF37;border-radius:18px;box-shadow:0 18px 60px #0006;overflow:hidden;color:#171717;font-family:Arial,sans-serif}
+#wpNoticeHead{padding:15px 20px;background:#101010;color:#F4D76A;font-size:17px;font-weight:700;border-bottom:2px solid #D4AF37}
+#wpNoticeMessage{padding:22px 20px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;max-height:55vh;overflow:auto}
+#wpNoticeActions{display:flex;justify-content:flex-end;padding:0 20px 18px}
+#wpNoticeOK{min-width:95px;background:#D4AF37!important;color:#111!important;border:1px solid #a98517!important;border-radius:10px;padding:10px 18px;font-weight:700}
+</style>
+<div id="wpNoticeOverlay" role="alertdialog" aria-modal="true" aria-labelledby="wpNoticeHead" aria-describedby="wpNoticeMessage">
+ <div id="wpNoticeBox"><div id="wpNoticeHead">Notice</div><div id="wpNoticeMessage"></div><div id="wpNoticeActions"><button id="wpNoticeOK" type="button">OK</button></div></div>
+</div>
+<script>
+(function(){
+ const translations={
+  en:{'Notice':'Notice','OK':'OK','Invoice number already exists':'This invoice number already exists.','Product, quantity fi cost guuti.':'Enter the product, quantity, and cost.','Please sign in first.':'Please sign in first.','Please sign in.':'Please sign in.','Product hin argamne.':'Product not found.','Product hin argamne':'Product not found','Meeshaan stock hin qabu.':'This product is out of stock.','Baay\'ina sirrii galchi.':'Enter a valid quantity.','Stock gahaa miti.':'Insufficient stock.','Cart keessa item hin jiru.':'The cart is empty.','Sale hin xumuramne:':'Sale could not be completed:','Sale successfully completed!':'Sale completed successfully!','Purchase saved!':'Purchase saved successfully!','Product updated successfully.':'Product updated successfully.','Sale updated successfully.':'Sale updated successfully.','Purchase updated successfully.':'Purchase updated successfully.','Profile updated successfully.':'Profile updated successfully.','Password changed successfully.':'Password changed successfully.','Enter your email first.':'Enter your email first.','Password must be at least 6 characters.':'Password must be at least 6 characters.','Passwords do not match.':'Passwords do not match.','Admin only.':'Administrators only.','Invalid status.':'Invalid status.','Please enter one of:':'Please enter one of:'},
+  om:{'Notice':'Beeksisa','OK':'Tole','Invoice number already exists':'Lakkoofsi invoice kun duraan jira.','Product, quantity fi cost guuti.':'Maaloo maqaa meeshaa, baay’ina fi gatii bittaa guuti.','Please sign in first.':'Maaloo dura seeni.','Please sign in.':'Maaloo seeni.','Product hin argamne.':'Meeshaan hin argamne.','Product hin argamne':'Meeshaan hin argamne','Meeshaan stock hin qabu.':'Meeshaan kun kuusaa keessa hin jiru.','Baay\'ina sirrii galchi.':'Baay’ina sirrii galchi.','Stock gahaa miti.':'Kuusaan gahaan hin jiru.','Cart keessa item hin jiru.':'Meeshaan cart keessa hin jiru.','Sale hin xumuramne:':'Gurgurtaan hin xumuramne:','Sale successfully completed!':'Gurgurtaan milkaa’inaan xumurame!','Purchase saved!':'Bittaan milkaa’inaan olkaa’ame!','Product updated successfully.':'Meeshaan milkaa’inaan haaromfame.','Sale updated successfully.':'Gurgurtaan milkaa’inaan haaromfame.','Purchase updated successfully.':'Bittaan milkaa’inaan haaromfame.','Profile updated successfully.':'Profaayiliin milkaa’inaan haaromfame.','Password changed successfully.':'Jecha darbii milkaa’inaan jijjiirame.','Enter your email first.':'Maaloo dura imeelii kee galchi.','Password must be at least 6 characters.':'Jecha darbii yoo xiqqaate qubee 6 qabaachuu qaba.','Passwords do not match.':'Jechoonni darbii wal hin siman.','Admin only.':'Admin qofaaf hayyamama.','Invalid status.':'Haalli galfame sirrii miti.','Please enter one of:':'Maaloo kan keessaa tokko galchi:'},
+  am:{'Notice':'ማሳሰቢያ','OK':'እሺ','Invoice number already exists':'ይህ የደረሰኝ ቁጥር አስቀድሞ አለ።','Please sign in first.':'እባክዎ መጀመሪያ ይግቡ።','Please sign in.':'እባክዎ ይግቡ።','Product hin argamne.':'እቃው አልተገኘም።','Stock gahaa miti.':'በቂ እቃ የለም።','Cart keessa item hin jiru.':'በጋሪው ውስጥ እቃ የለም።','Sale hin xumuramne:':'ሽያጩ አልተጠናቀቀም፦','Sale successfully completed!':'ሽያጩ በተሳካ ሁኔታ ተጠናቋል።','Purchase saved!':'ግዢው በተሳካ ሁኔታ ተቀምጧል።','Product updated successfully.':'እቃው በተሳካ ሁኔታ ተዘምኗል።','Profile updated successfully.':'መገለጫው በተሳካ ሁኔታ ተዘምኗል።','Password changed successfully.':'የይለፍ ቃሉ ተቀይሯል።','Passwords do not match.':'የይለፍ ቃሎቹ አይዛመዱም።','Admin only.':'ለአስተዳዳሪ ብቻ።'},
+  ar:{'Notice':'تنبيه','OK':'حسنًا','Invoice number already exists':'رقم الفاتورة هذا موجود بالفعل.','Please sign in first.':'يرجى تسجيل الدخول أولاً.','Please sign in.':'يرجى تسجيل الدخول.','Product hin argamne.':'المنتج غير موجود.','Stock gahaa miti.':'المخزون غير كافٍ.','Cart keessa item hin jiru.':'السلة فارغة.','Sale hin xumuramne:':'تعذر إتمام البيع:','Sale successfully completed!':'تم إتمام البيع بنجاح.','Purchase saved!':'تم حفظ الشراء بنجاح.','Product updated successfully.':'تم تحديث المنتج بنجاح.','Profile updated successfully.':'تم تحديث الملف الشخصي بنجاح.','Password changed successfully.':'تم تغيير كلمة المرور بنجاح.','Passwords do not match.':'كلمتا المرور غير متطابقتين.','Admin only.':'للمسؤول فقط.'}
+ };
+ function currentLang(){try{return (typeof getLanguage==='function'?getLanguage():localStorage.getItem('qfs_language'))||'en'}catch(e){return 'en'}}
+ function localize(message){let s=String(message??'');const dict=translations[currentLang()]||translations.en;if(dict[s])return dict[s];
+  // Translate recognizable fragments while preserving dynamic values and technical backend details.
+  const keys=Object.keys(dict).filter(k=>k.length>5).sort((a,b)=>b.length-a.length);
+  for(const k of keys){if(s.includes(k))s=s.split(k).join(dict[k]);}
+  return s;
+ }
+ function show(message){const overlay=document.getElementById('wpNoticeOverlay');if(!overlay){return;}document.getElementById('wpNoticeHead').textContent=(translations[currentLang()]||translations.en).Notice||'Notice';document.getElementById('wpNoticeOK').textContent=(translations[currentLang()]||translations.en).OK||'OK';document.getElementById('wpNoticeMessage').textContent=localize(message);overlay.classList.add('show');document.getElementById('wpNoticeOK').focus();}
+ function close(){document.getElementById('wpNoticeOverlay')?.classList.remove('show');}
+ document.getElementById('wpNoticeOK').addEventListener('click',close);
+ document.getElementById('wpNoticeOverlay').addEventListener('click',e=>{if(e.target.id==='wpNoticeOverlay')close()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('wpNoticeOverlay')?.classList.contains('show'))close()});
+ window.alert=function(message){show(message);};
+})();
+</script>
+
 </body></html>
 
 <script>
