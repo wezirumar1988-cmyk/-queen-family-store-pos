@@ -117,7 +117,7 @@ th{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border-b
 <div id="signUpBox" class="hidden"><div class="notice">🌐 <b>Public Account:</b> Anyone can create their own account online and use WEZIR POS. Each account sees only its own business data.</div><label>Business Name</label><input id="signupBusinessName" placeholder="Your business name"><label>Full Name</label><input id="signupFullName" placeholder="Full name"><label>Phone Number</label><input id="signupPhone" type="tel" placeholder="Phone number"><label>Email</label><input id="signupEmail" type="email" placeholder="example@email.com"><label>Password</label><input id="signupPassword" type="password" placeholder="At least 6 characters"><label>Confirm Password</label><input id="signupPassword2" type="password" placeholder="Repeat password"><p id="signupError" class="error"></p><p id="signupSuccess" class="success"></p><button onclick="signUp()" style="width:100%">CREATE ACCOUNT</button><p class="center">Already have account? <button class="auth-switch" onclick="showSignIn()">Sign In</button></p></div>
 </div></div>
 <div id="app" class="app"><div class="top"><div id="businessBrand" class="brand">WEZIR POS</div><button class="logout" onclick="logout()">Logout</button></div><div class="layout"><aside class="side">
-<button class="nav active" onclick="showPage('dashboard',this)">📊 Dashboard</button><button class="nav" onclick="showPage('purchases',this)">📥 Purchases</button><button class="nav" onclick="showPage('products',this)">📦 Stock</button><button class="nav" onclick="showPage('pos',this)">🛒 POS</button><button class="nav" onclick="showPage('sales',this)">🧾 Sales</button><button class="nav" onclick="showPage('expenses',this)">💰 Expenses</button><button class="nav" onclick="showPage('reports',this)">📈 Reports</button><button id="adminNav" class="nav" onclick="showPage('adminDashboard',this)">👑 Admin Dashboard</button><button class="nav" onclick="showPage('settings',this)">⚙️ Settings</button>
+<button class="nav active" onclick="showPage('dashboard',this)">📊 Dashboard</button><button class="nav" onclick="showPage('purchases',this)">📥 Purchases</button><button class="nav" onclick="showPage('products',this)">📦 Stock</button><button class="nav" onclick="showPage('pos',this)">🛒 POS</button><button class="nav" onclick="showPage('sales',this)">🧾 Sales</button><button class="nav" onclick="showPage('expenses',this)">💰 Expenses</button><button class="nav" onclick="showPage('reports',this)">📈 Reports</button><button id="adminNav" class="nav" onclick="showPage('adminDashboard',this)">👑 Admin Dashboard</button><button id="cashierNav" class="nav" onclick="showPage('cashierManagement',this)">👤 Cashier</button><button class="nav" onclick="showPage('settings',this)">⚙️ Settings</button>
 </aside><main class="main">
 <section id="dashboard" class="page active"><h2>Dashboard</h2><div class="grid"><div class="stat"><div class="muted">Total Sales</div><div id="dSales" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Purchase Cost</div><div id="dPurchase" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Expenses</div><div id="dExpenses" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Net Profit</div><div id="dProfit" class="value">ETB 0.00</div></div></div><div class="grid" style="margin-top:15px"><div class="stat"><div class="muted">Stock Products</div><div id="dStock" class="value">0</div></div><div class="stat"><div class="muted">Stock Quantity</div><div id="dQty" class="value">0</div></div><div class="stat"><div class="muted">Stock Value</div><div id="dStockValue" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Invoices</div><div id="dInvoices" class="value">0</div></div></div><div class="panel"><h3>Recent Sales</h3><div id="recentSales">No sales yet.</div></div></section>
 <section id="purchases" class="page"><h2>Purchase / Stock Entry</h2><div class="panel"><div class="row"><div><label>Product</label><input id="buyProduct" placeholder="e.g. Sukkara"></div><div><label>Quantity</label><input id="buyQty" type="number" min="0" placeholder="10000"></div><div><label>Purchase Cost / Unit</label><input id="buyCost" type="number" min="0" placeholder="20"></div></div><div class="row"><div><label>Transport Cost</label><input id="buyTransport" type="number" min="0" value="0"></div><div><label>Loading / Unloading</label><input id="buyLoading" type="number" min="0" value="0"></div><div><label>Supplier</label><input id="buySupplier" placeholder="Supplier name"></div></div><div class="row"><div><label>Desired Profit %</label><input id="buyProfitPercent" type="number" min="0" value="10"></div><div><label>Selling Price / Unit</label><input id="buySellingPrice" type="number" min="0" placeholder="Automatic"></div><div><label>Purchase Date</label><input id="buyDate" type="date"></div></div><button onclick="addPurchase()">Save Purchase</button></div><div class="panel"><h3>Purchase History</h3><div id="purchaseTable"></div></div></section>
@@ -154,6 +154,20 @@ th{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border-b
 <section id="expenses" class="page"><h2>Expenses</h2><div class="panel"><div class="row"><input id="eName" placeholder="Expense name"><input id="eAmount" type="number" placeholder="Amount"><button class="small-btn" onclick="addExpense()">Add Expense</button></div></div><div class="panel"><div id="expenseTable"></div></div></section>
 <section id="reports" class="page"><h2>Reports</h2><div class="panel"><div id="reportBox"></div><hr><h3>Excel</h3><button onclick="exportExcelAll()">📊 Export All to Excel</button><button class="btn-secondary" onclick="document.getElementById('excelImport').click()">📥 Upload Excel</button><input id="excelImport" type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)"><p class="muted">Excel file keessatti Sales, Stock, Purchases, Expenses sheets ni qabaata.</p></div></section>
 <section id="adminDashboard" class="page"><h2>👑 Admin Dashboard</h2><div id="adminAccessBox" class="panel"><p class="muted">Loading admin information...</p></div><div id="adminStats" class="grid" style="margin-top:15px"></div><div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">Users / Accounts</h3><button class="small-btn" onclick="loadAdminUsers()">🔄 Refresh</button></div><div id="adminUsersTable" style="margin-top:15px;overflow:auto"></div></div></section>
+<section id="cashierManagement" class="page">
+<h2>👤 Cashier Management</h2>
+<div class="panel">
+  <p class="muted">Create one cashier account for your business. The cashier can sign in separately and use POS and Sales.</p>
+  <div class="row">
+    <div><label for="cashierFullName">Cashier Full Name</label><input id="cashierFullName" type="text" autocomplete="name" placeholder="Full name"></div>
+    <div><label for="cashierEmail">Cashier Email</label><input id="cashierEmail" type="email" autocomplete="off" placeholder="cashier@example.com"></div>
+  </div>
+  <label for="cashierPassword">Temporary Password (at least 8 characters)</label>
+  <input id="cashierPassword" type="password" autocomplete="new-password" placeholder="Enter a temporary password">
+  <p id="cashierMessage" class="notice" role="status" aria-live="polite">Only the business owner can create a cashier. Each business can have one cashier.</p>
+  <button id="createCashierButton" type="button" onclick="createWezirCashier()">＋ Create Cashier</button>
+</div>
+</section>
 <section id="settings" class="page"><h2>Settings</h2><div class="panel"><p><b>Business:</b> <span id="settingsBusinessName">WEZIR POS</span></p><p><b>Currency:</b> <span id="settingsCurrencyValue">ETB</span></p><hr><h3>Profile</h3><p id="profileSummary">Not signed in</p><button onclick="openProfile()">Edit Profile</button><button class="btn-secondary" onclick="openPasswordModal()">Change Password</button><button class="btn-secondary" onclick="forgotPassword()">Forgot Password</button><hr><h3>Language</h3><select id="settingsLanguage" onchange="setLanguage(this.value)"><option value="en">English</option><option value="om">Afaan Oromoo</option><option value="am">አማርኛ</option><option value="ar">العربية</option></select><hr><h3>Country + Currency</h3><select id="settingsCurrency" onchange="setAppCurrency(this.value)"><option value="ETB">ETB — Ethiopian Birr</option><option value="SAR">SAR — Saudi Riyal</option><option value="AED">AED — UAE Dirham</option><option value="USD">USD — US Dollar</option><option value="GBP">GBP — British Pound</option><option value="EUR">EUR — Euro</option><option value="CAD">CAD — Canadian Dollar</option><option value="AUD">AUD — Australian Dollar</option><option value="KES">KES — Kenyan Shilling</option><option value="TRY">TRY — Turkish Lira</option><option value="UGX">UGX — Ugandan Shilling</option><option value="TZS">TZS — Tanzanian Shilling</option><option value="RWF">RWF — Rwandan Franc</option><option value="SOS">SOS — Somali Shilling</option><option value="DJF">DJF — Djiboutian Franc</option><option value="QAR">QAR — Qatari Riyal</option><option value="KWD">KWD — Kuwaiti Dinar</option><option value="OMR">OMR — Omani Rial</option><option value="BHD">BHD — Bahraini Dinar</option><option value="EGP">EGP — Egyptian Pound</option></select><hr><h3>Cloud Account</h3><p id="currentUser">Not signed in</p><hr><h3>Excel</h3><button onclick="exportExcelAll()">📊 Export Excel</button><button class="btn-secondary" onclick="document.getElementById('excelImport').click()">📥 Upload Excel</button><hr><h3>Backup</h3><button onclick="backupData()">Download Backup</button><button class="btn-secondary" onclick="document.getElementById('restoreFile').click()">Restore Backup</button><input id="restoreFile" type="file" accept=".json" style="display:none" onchange="restoreData(event)"><hr><button class="btn-danger" onclick="clearAllData()">Delete All Cloud Data</button></div></section>
 </main></div></div><div id="printArea" class="hidden"></div><div id="modalHost"></div>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
@@ -201,7 +215,22 @@ if(error) err.textContent=error.message;
 async function logout(){
 await supabaseClient.auth.signOut();
 }
-async function loadCloudData(){if(!currentUser)return;const [p,pu,s,e]=await Promise.all([supabaseClient.from("products").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}),supabaseClient.from("purchases").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}),supabaseClient.from("sales").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}),supabaseClient.from("expenses").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false})]);for(const r of [p,pu,s,e])if(r.error){alert(r.error.message);return}data={products:p.data||[],purchases:pu.data||[],sales:s.data||[],expenses:e.data||[]};renderAll()}
+async function loadCloudData(){
+ if(!currentUser)return;
+ // Shared business data: members load rows by business_id, not their personal user_id.
+ let businessId=null;
+ try{const {data:bid,error:be}=await supabaseClient.rpc("get_my_business_id");if(!be)businessId=Array.isArray(bid)?(bid[0]?.business_id??bid[0]):(bid?.business_id??bid);}
+ catch(e){console.warn("Business lookup failed",e)}
+ const scope=q=>businessId?q.eq("business_id",businessId):q.eq("user_id",currentUser.id);
+ const [p,pu,s,e]=await Promise.all([
+ scope(supabaseClient.from("products").select("*")).order("created_at",{ascending:false}),
+ scope(supabaseClient.from("purchases").select("*")).order("created_at",{ascending:false}),
+ scope(supabaseClient.from("sales").select("*")).order("created_at",{ascending:false}),
+ scope(supabaseClient.from("expenses").select("*")).order("created_at",{ascending:false})
+ ]);
+ for(const r of [p,pu,s,e])if(r.error){alert(r.error.message);return}
+ data={products:p.data||[],purchases:pu.data||[],sales:s.data||[],expenses:e.data||[]};renderAll()
+}
 supabaseClient.auth.onAuthStateChange((event,session)=>{
 setTimeout(async()=>{
 if(event==="PASSWORD_RECOVERY"&&session){
@@ -995,56 +1024,45 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
   window.qfAdjustCloud=async()=>{try{let q=qaSku.value.trim().toLowerCase(),qty=Number(qaQty.value);if(!q||isNaN(qty))return alert('Enter product and stock');let {data:ps,error}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id);if(error)throw error;let p=(ps||[]).find(x=>String(x.sku||'').toLowerCase()===q||String(x.name||'').toLowerCase()===q);if(!p)return alert('Product not found');let old=p.stock;let r=await supabaseClient.from('products').update({stock:qty}).eq('id',p.id).eq('user_id',currentUser.id);if(r.error)throw r.error;await save(MOD.adjustments,crypto.randomUUID(),{product_id:p.id,product:p.name,old_stock:old,new_stock:qty,reason:qaReason.value,date:new Date().toISOString()});await loadCloudData();alert('Stock adjusted successfully');document.querySelector('.qfmodal')?.remove()}catch(e){alert(e.message)}};
 
   async function returns(type){
-    const isSale=type==='Sale Return';
-    const invoices=[...new Set((data.sales||[]).map(s=>String(s.invoice_no||'').trim()).filter(Boolean))];
-    const invoiceField=isSale
-      ? `<select id="qrInv" onchange="qfReturnInvoiceChanged()"><option value="">Choose invoice number</option>${invoices.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select>`
-      : `<input id="qrInv" placeholder="Invoice / Reference No.">`;
-    M('↩️ '+type,`<p>Choose the original sales invoice, product and returned quantity. Stock increases only after a valid sale return is saved.</p><div class="row">${invoiceField}<select id="qrProd" ${isSale?'disabled':''}><option value="">${isSale?'Choose invoice first':'Product name or SKU'}</option></select><input id="qrQty" type="number" min="0.01" step="0.01" placeholder="Quantity"><input id="qrReason" placeholder="Reason"><button type="button" onclick="qfReturnCloud('${type}')">Save Return</button></div>${isSale&&!invoices.length?'<p class="qfmuted">No sales invoices found for this account.</p>':''}`);
-    if(!isSale){
-      const prod=document.getElementById('qrProd');
-      const products=(data.products||[]);
-      prod.innerHTML='<option value="">Choose product</option>'+products.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}${p.sku?' ('+esc(p.sku)+')':''}</option>`).join('');
-    }
+    const sales=Array.isArray(data?.sales)?data.sales:[];
+    const invoices=[...new Set(sales.map(s=>String(s.invoice_no||'').trim()).filter(Boolean))];
+    const options=invoices.map(inv=>`<option value="${esc(inv)}">${esc(inv)}</option>`).join('');
+    M('↩️ '+type,`<p>Choose an invoice, then choose a product from that invoice. Sale returns increase stock; purchase returns are recorded for review.</p><div class="row"><select id="qrInv" onchange="qfReturnInvoiceChanged()"><option value="">Select invoice</option>${options}</select><select id="qrProd" disabled><option value="">Select product</option></select><input id="qrQty" type="number" min="0.01" step="0.01" placeholder="Quantity"><input id="qrReason" placeholder="Reason"><button onclick="qfReturnCloud('${type}')">Save Return</button></div>${invoices.length?'':'<p class="qfmuted">No sales invoices are available. Load sales first.</p>'}`);
+    window.qfReturnInvoiceChanged=()=>{
+      const inv=document.getElementById('qrInv')?.value||'';
+      const select=document.getElementById('qrProd'); if(!select)return;
+      const lines=sales.filter(s=>String(s.invoice_no||'').trim()===inv);
+      const products=[...new Map(lines.map(s=>[String(s.product_id||s.product_name||''),s])).values()];
+      select.innerHTML='<option value="">Select product</option>'+products.map(s=>`<option value="${esc(s.product_id||s.product_name||'')}">${esc(s.product_name||'Product')} — sold: ${Number(s.qty||0)}</option>`).join('');
+      select.disabled=!products.length;
+    };
   }
-  window.qfReturnInvoiceChanged=()=>{
-    const inv=document.getElementById('qrInv')?.value||'';
-    const prod=document.getElementById('qrProd');if(!prod)return;
-    const lines=(data.sales||[]).filter(s=>String(s.invoice_no||'')===inv);
-    const names=[...new Set(lines.map(s=>String(s.product_name||'')).filter(Boolean))];
-    prod.innerHTML='<option value="">Choose product</option>'+names.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join('');
-    prod.disabled=!names.length;
-  };
   window.qfReturnCloud=async type=>{
-    const $=id=>document.getElementById(id);
     try{
+      const inv=document.getElementById('qrInv')?.value||'';
+      const selected=document.getElementById('qrProd')?.value||'';
+      const qty=Number(document.getElementById('qrQty')?.value);
+      const reason=document.getElementById('qrReason')?.value.trim()||'';
       if(!window.currentUser||!window.supabaseClient)throw new Error('Please sign in first.');
-      const inv=$('qrInv')?.value.trim()||'',selected=$('qrProd')?.value||'',qty=Number($('qrQty')?.value),reason=$('qrReason')?.value.trim()||'';
-      if(!inv||!selected||!Number.isFinite(qty)||qty<=0)throw new Error('Choose invoice, product and a quantity greater than zero.');
-      let productName=selected,productId=null;
-      if(type==='Sale Return'){
-        const sold=(data.sales||[]).filter(s=>String(s.invoice_no||'')===inv&&String(s.product_name||'')===selected);
-        if(!sold.length)throw new Error('This product is not on the selected invoice.');
-        const already=await list(MOD.returns);
-        const returned=already.filter(x=>x.data?.type==='Sale Return'&&String(x.data?.invoice)===inv&&String(x.data?.product||'').toLowerCase()===selected.toLowerCase()).reduce((n,x)=>n+Number(x.data?.qty||0),0);
-        const soldQty=sold.reduce((n,x)=>n+Number(x.qty||0),0);
-        if(qty>soldQty-returned+1e-9)throw new Error(`Return quantity exceeds the remaining sold quantity (${Math.max(0,soldQty-returned)}).`);
-        const {data:ps,error}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id);
-        if(error)throw error;
-        const p=(ps||[]).find(x=>String(x.name||'').toLowerCase()===selected.toLowerCase());
-        if(!p)throw new Error('Product not found in stock.');
-        productName=p.name;productId=p.id;
-        const updated=await supabaseClient.from('products').update({stock:Number(p.stock||0)+qty}).eq('id',p.id).eq('user_id',currentUser.id);
-        if(updated.error)throw updated.error;
-        try{await save(MOD.returns,crypto.randomUUID(),{type,invoice:inv,product:productName,product_id:productId,qty,reason,date:new Date().toISOString()});}
-        catch(saveError){await supabaseClient.from('products').update({stock:Number(p.stock||0)}).eq('id',p.id).eq('user_id',currentUser.id);throw saveError;}
-      }else{
-        const p=(data.products||[]).find(x=>String(x.id)===selected);
-        productName=p?.name||selected;productId=p?.id||null;
-        await save(MOD.returns,crypto.randomUUID(),{type,invoice:inv,product:productName,product_id:productId,qty,reason,date:new Date().toISOString()});
-      }
-      await loadCloudData();alert(type+' saved successfully');document.querySelector('.qfmodal')?.remove();
-    }catch(e){alert('Return not saved: '+(e?.message||String(e)));}
+      if(!inv||!selected||!Number.isFinite(qty)||qty<=0)return alert('Select invoice and product, and enter a quantity greater than zero.');
+      const sales=Array.isArray(data?.sales)?data.sales:[];
+      const line=sales.find(s=>String(s.invoice_no||'').trim()===inv&&(String(s.product_id||'')===selected||String(s.product_name||'')===selected));
+      if(type==='Sale Return'&&!line)return alert('This product is not in the selected invoice.');
+      if(type==='Sale Return'&&qty>Number(line.qty||0))return alert('Return quantity cannot exceed the quantity sold on this invoice.');
+      const {data:ps,error}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id);
+      if(error)throw error;
+      const p=(ps||[]).find(x=>String(x.id)===selected||String(x.name||'').toLowerCase()===selected.toLowerCase()||String(x.sku||'').toLowerCase()===selected.toLowerCase());
+      if(!p)return alert('Product not found or not accessible for this account.');
+      const delta=type==='Sale Return'?qty:-qty;
+      const newStock=Number(p.stock||0)+delta;
+      if(newStock<0)return alert('Stock gahaa miti');
+      const update=await supabaseClient.from('products').update({stock:newStock}).eq('id',p.id).eq('user_id',currentUser.id);
+      if(update.error)throw update.error;
+      await save(MOD.returns,crypto.randomUUID(),{type,invoice:inv,product:p.name,product_id:p.id,qty,reason,date:new Date().toISOString()});
+      await loadCloudData();
+      alert(type+' saved');
+      document.querySelector('.qfmodal')?.remove();
+    }catch(e){alert(e?.message||String(e))}
   };
 
   async function batch(){const a=await list(MOD.batches);M('🏷️ Batch / Lot + Expiry',`<div class="row"><input id="qbProd" placeholder="Product"><input id="qbLot" placeholder="Batch / Lot No."><input id="qbQty" type="number" placeholder="Qty"><input id="qbExp" type="date"><button onclick="qfBatchCloud()">Save</button></div><br>${rowsTable(a.map(x=>{let d=x.data||{};let ex=d.expiry||'';let status=ex?(ex<today()?'EXPIRED':'OK'):'';return `<tr><td>${esc(d.product)}</td><td>${esc(d.lot||'-')}</td><td>${d.qty||0}</td><td>${esc(ex)}</td><td>${status}</td></tr>`}),['Product','Lot','Qty','Expiry','Status'])}`)}
@@ -1685,7 +1703,7 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
 /* WEZIR POS STAFF ACCESS: resolve the business role from Supabase and restrict the interface. */
 (function(){
   'use strict';
-  const restrictedPages=new Set(['dashboard','purchases','products','expenses','reports','adminDashboard','settings','featurehubPage']);
+  const restrictedPages=new Set(['dashboard','purchases','products','expenses','reports','adminDashboard','settings','featurehubPage','cashierManagement']);
   let resolvedRole='checking';
   function current(){
     try { if(typeof currentUser!=='undefined' && currentUser) return currentUser; } catch(e) {}
@@ -1761,3 +1779,47 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
   }catch(e){resolveRole(current());}
 })();
 </script>
+
+<script>
+/* WEZIR POS — owner cashier creation via the deployed Supabase Edge Function */
+async function createWezirCashier(){
+  const button=document.getElementById("createCashierButton");
+  const message=document.getElementById("cashierMessage");
+  const fullName=(document.getElementById("cashierFullName")?.value||"").trim();
+  const email=(document.getElementById("cashierEmail")?.value||"").trim().toLowerCase();
+  const password=document.getElementById("cashierPassword")?.value||"";
+  const say=(text,kind="notice")=>{
+    if(message){message.className=kind;message.textContent=text;}
+  };
+  if(!currentUser){say("Please sign in first.","error");return;}
+  if(!fullName){say("Please enter the cashier's full name.","error");return;}
+  if(!email||!email.includes("@")){say("Please enter a valid cashier email.","error");return;}
+  if(password.length<8){say("Password must be at least 8 characters.","error");return;}
+  const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+  if(sessionError||!session?.access_token){say("Your session is missing. Please sign in again.","error");return;}
+  if(button){button.disabled=true;button.textContent="Creating...";}
+  say("Creating cashier account...","notice");
+  try{
+    const response=await fetch(SUPABASE_URL+"/functions/v1/smoothcreate-cashier-responder",{
+      method:"POST",
+      headers:{
+        "Authorization":"Bearer "+session.access_token,
+        "apikey":SUPABASE_PUBLISHABLE_KEY,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({full_name:fullName,email,password})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||!result.success)throw new Error(result.error||("Request failed ("+response.status+")."));
+    say("Cashier account created successfully. The cashier can now sign in using the email and password you set.","success");
+    document.getElementById("cashierFullName").value="";
+    document.getElementById("cashierEmail").value="";
+    document.getElementById("cashierPassword").value="";
+  }catch(error){
+    say(error?.message||String(error),"error");
+  }finally{
+    if(button){button.disabled=false;button.textContent="＋ Create Cashier";}
+  }
+}
+</script>
+
