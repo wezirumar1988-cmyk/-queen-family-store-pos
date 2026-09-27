@@ -215,7 +215,22 @@ if(error) err.textContent=error.message;
 async function logout(){
 await supabaseClient.auth.signOut();
 }
-async function loadCloudData(){if(!currentUser)return;const [p,pu,s,e]=await Promise.all([supabaseClient.from("products").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}),supabaseClient.from("purchases").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}),supabaseClient.from("sales").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}),supabaseClient.from("expenses").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false})]);for(const r of [p,pu,s,e])if(r.error){alert(r.error.message);return}data={products:p.data||[],purchases:pu.data||[],sales:s.data||[],expenses:e.data||[]};renderAll()}
+async function loadCloudData(){
+ if(!currentUser)return;
+ // Shared business data: members load rows by business_id, not their personal user_id.
+ let businessId=null;
+ try{const {data:bid,error:be}=await supabaseClient.rpc("get_my_business_id");if(!be)businessId=Array.isArray(bid)?(bid[0]?.business_id??bid[0]):(bid?.business_id??bid);}
+ catch(e){console.warn("Business lookup failed",e)}
+ const scope=q=>businessId?q.eq("business_id",businessId):q.eq("user_id",currentUser.id);
+ const [p,pu,s,e]=await Promise.all([
+ scope(supabaseClient.from("products").select("*")).order("created_at",{ascending:false}),
+ scope(supabaseClient.from("purchases").select("*")).order("created_at",{ascending:false}),
+ scope(supabaseClient.from("sales").select("*")).order("created_at",{ascending:false}),
+ scope(supabaseClient.from("expenses").select("*")).order("created_at",{ascending:false})
+ ]);
+ for(const r of [p,pu,s,e])if(r.error){alert(r.error.message);return}
+ data={products:p.data||[],purchases:pu.data||[],sales:s.data||[],expenses:e.data||[]};renderAll()
+}
 supabaseClient.auth.onAuthStateChange((event,session)=>{
 setTimeout(async()=>{
 if(event==="PASSWORD_RECOVERY"&&session){
