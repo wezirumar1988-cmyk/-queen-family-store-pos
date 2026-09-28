@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>WEZIR POS</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#222}button,input,select{font:inherit}button{cursor:pointer;border:0;background:#111;color:#fff;padding:12px 16px;border-radius:10px;font-weight:bold}button:hover{opacity:.9}.btn-secondary{background:#666}.btn-danger{background:#b00020}.btn-success{background:#08752a}.small-btn{padding:8px 12px;width:auto}.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.login-card{background:#fff;width:min(430px,100%);padding:30px;border-radius:20px;box-shadow:0 10px 35px #0002}.logo{width:75px;height:75px;border-radius:20px;background:#111;color:#fff;display:grid;place-items:center;margin:auto auto 15px;font-size:25px;font-weight:bold}.center{text-align:center}.muted{color:#777}input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:6px 0 12px;background:#fff}.app{display:none;min-height:100vh}.top{height:64px;background:#111;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:10}.brand{font-weight:bold}.logout{background:#333;padding:9px 14px;width:auto}.layout{display:flex;min-height:calc(100vh - 64px)}.side{width:230px;background:#fff;border-right:1px solid #ddd;padding:14px}.nav{width:100%;text-align:left;background:#fff;color:#333;margin:4px 0}.nav.active{background:#111;color:#fff}.main{flex:1;padding:22px}.page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.stat{background:#fff;padding:18px;border-radius:15px;box-shadow:0 3px 15px #0001}.value{font-size:24px;font-weight:bold;margin-top:8px}.panel{background:#fff;padding:18px;margin-top:18px;border-radius:15px;box-shadow:0 3px 15px #0001}.row{display:flex;gap:10px}.row>*{flex:1}table{width:100%;border-collapse:collapse}th,td{padding:11px;border-bottom:1px solid #eee;text-align:left}th{color:#777;font-size:13px}.badge{display:inline-block;padding:5px 8px;border-radius:8px;background:#eee;font-size:12px}.low{background:#fff0d8;color:#9a6200}.out{background:#ffe0e0;color:#a00000}.good{background:#dff5e4;color:#08752a}.total-box{background:#111;color:#fff;padding:18px;border-radius:12px;margin-top:15px}.total-box .big{font-size:25px;font-weight:bold}.invoice{border:1px solid #ddd;padding:20px;border-radius:12px;background:#fff}.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000}.modal-box{background:#fff;width:min(520px,100%);max-height:90vh;overflow:auto;padding:25px;border-radius:18px}.modal-actions{display:flex;gap:10px;margin-top:18px}.modal-actions>*{flex:1}.invoice-header{display:flex;justify-content:space-between;gap:20px;margin-bottom:20px}.pos-products{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px;margin:14px 0}.pos-product-btn{background:#fff!important;color:#222!important;border:1px solid #d4af37!important;border-radius:14px!important;min-height:100px;padding:14px 10px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;box-shadow:0 3px 12px #00000012;white-space:normal}.pos-product-btn .pos-product-name{font-weight:700;font-size:15px}.pos-product-btn .pos-product-price{color:#967514;font-size:14px}.pos-product-btn .pos-product-stock{color:#777;font-size:12px}.pos-product-btn:active{transform:scale(.98)}.hidden{display:none!important}.notice{padding:12px;border-radius:10px;background:#eef4ff;margin:10px 0;font-size:14px}.error{color:#b00020}.success{color:#08752a}.auth-switch{background:none;color:#111;padding:5px;text-decoration:underline}@media(max-width:850px){.side{width:65px;padding:8px}.nav{font-size:0;text-align:center;padding:13px 5px}.nav:first-letter{font-size:20px}.grid{grid-template-columns:repeat(2,1fr)}.main{padding:14px}}@media(max-width:600px){.row{flex-direction:column}.grid{grid-template-columns:1fr 1fr}.main{padding:10px}table{font-size:12px}.panel{padding:12px}.invoice-header{flex-direction:column}}@media print{body *{visibility:hidden!important}#printArea,#printArea *{visibility:visible!important}#printArea{display:block!important;position:absolute;left:0;top:0;width:100%;background:#fff;color:#000}}
+
+/* WEZIR POS BLACK + GOLD + WHITE THEME */
+:root{--wp-black:#080808;--wp-black2:#151515;--wp-gold:#D4AF37;--wp-gold2:#F2D675;--wp-white:#fff;--wp-light:#f7f7f5;--wp-border:#d8c27a}
+body{background:var(--wp-light)!important;color:#171717!important}
+.login{background:linear-gradient(135deg,#050505 0%,#111 55%,#241f0d 100%)!important;position:relative}
+.login:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 15% 15%,rgba(212,175,55,.22),transparent 30%),radial-gradient(circle at 85% 85%,rgba(212,175,55,.14),transparent 30%);pointer-events:none}
+.login-card{position:relative;z-index:1;background:#fff!important;border:2px solid var(--wp-gold)!important;box-shadow:0 18px 55px rgba(0,0,0,.5)!important}
+.logo{background:linear-gradient(145deg,#050505,#202020)!important;color:var(--wp-gold)!important;border:2px solid var(--wp-gold)!important;box-shadow:0 6px 20px rgba(212,175,55,.25)}
+.login-card h1,.login-card h2,.login-card h3{color:#111!important}
+.login-card button:not(.auth-switch){background:linear-gradient(135deg,#b8860b,var(--wp-gold2))!important;color:#080808!important;border:1px solid #9f7b18!important}
+.login-card input,.login-card select{border:1px solid #cfcfcf!important;background:#fff!important;color:#111!important}
+.top{background:linear-gradient(90deg,#050505,#171717)!important;color:#fff!important;border-bottom:2px solid var(--wp-gold)!important}
+.brand{color:#fff!important}.brand::after{content:'  ◆';color:var(--wp-gold)!important}
+.logout{background:var(--wp-gold)!important;color:#111!important}
+.side{background:#fff!important;border-right:2px solid var(--wp-gold)!important}
+.nav{background:#fff!important;color:#171717!important;border-left:3px solid transparent!important}
+.nav:hover{background:#faf5e2!important;color:#111!important}
+.nav.active{background:#111!important;color:var(--wp-gold2)!important;border-left-color:var(--wp-gold)!important}
+.main{background:#f7f7f5!important}
+.stat,.panel{background:#fff!important;border:1px solid #e4dfcf!important;box-shadow:0 4px 18px rgba(0,0,0,.08)!important}
+.stat .value{color:#111!important}.total-box{background:linear-gradient(135deg,#080808,#1b1b1b)!important;color:#fff!important;border:1px solid var(--wp-gold)!important}.total-box .big{color:var(--wp-gold2)!important}
+button{background:#111!important;color:#fff!important}button:hover{background:#222!important}button.btn-success{background:#111!important;border:1px solid var(--wp-gold)!important}button.btn-danger{background:#111!important;border:1px solid #b00020!important}.small-btn{border:1px solid var(--wp-gold)!important}
+th{background:#111!important;color:var(--wp-gold2)!important}td{background:#fff!important;border-bottom:1px solid #eee!important}.good{background:#e9f5e9!important;color:#176b24!important}.low{background:#fff4d6!important;color:#8a6500!important}.out{background:#ffe7e7!important;color:#9a0000!important}
+.notice{background:#fffaf0!important;border-left:4px solid var(--wp-gold)!important}.modal-box{border:2px solid var(--wp-gold)!important}.invoice{border:2px solid var(--wp-gold)!important}
+@media print{body{background:#fff!important}.top,.side{display:none!important}#printArea{background:#fff!important;color:#000!important}}
+
+/* WEZIR POS — COMPLETE BLACK + GOLD + WHITE THEME */
+:root{--wp-black:#090909;--wp-black2:#151515;--wp-gold:#D4AF37;--wp-gold2:#F4D76A;--wp-white:#fff;--wp-bg:#f7f7f7;--wp-border:#ded7bd}
+body{background:var(--wp-bg)!important;color:#171717!important}
+button{background:var(--wp-black)!important;color:var(--wp-white)!important;border:1px solid var(--wp-black)!important}
+button:hover{background:var(--wp-gold)!important;color:#111!important;border-color:var(--wp-gold)!important}
+.btn-secondary{background:#333!important;color:#fff!important}.btn-danger{background:#8f1111!important}.btn-success{background:#111!important;border-color:var(--wp-gold)!important}
+.login{background:linear-gradient(135deg,#050505 0%,#171717 58%,#8d7220 100%)!important}
+.login-card{background:#fff!important;border:2px solid var(--wp-gold)!important;box-shadow:0 18px 55px #0008!important;position:relative;overflow:hidden}
+.login-card:before{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--wp-black),var(--wp-gold),var(--wp-black));position:absolute;left:0;right:0;top:0}
+.logo{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border:2px solid var(--wp-gold)!important;box-shadow:0 5px 20px #0004}
+.login-card h1,.login-card h2{color:#111!important}.login-card .muted{color:#777!important}
+input,select{background:#fff!important;color:#111!important;border:1px solid #cfcfcf!important}.login-card input:focus,.login-card select:focus{outline:2px solid #d4af3755;border-color:var(--wp-gold)!important}
+.app{background:var(--wp-bg)!important}
+.top{background:var(--wp-black)!important;color:#fff!important;border-bottom:3px solid var(--wp-gold)!important;box-shadow:0 4px 15px #0004}
+.brand{color:#fff!important}.brand::first-letter{color:var(--wp-gold)!important}.logout{background:#222!important;border:1px solid var(--wp-gold)!important}
+.side{background:#fff!important;border-right:2px solid var(--wp-gold)!important;box-shadow:3px 0 12px #0001}
+.nav{background:#fff!important;color:#222!important;border-left:4px solid transparent!important}.nav:hover{background:#f7f1df!important;color:#111!important}.nav.active{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border-left-color:var(--wp-gold)!important}
+.main{background:var(--wp-bg)!important}.page h1,.page h2,.page h3{color:#111!important}
+.grid{gap:16px}.stat{background:#fff!important;border:1px solid #e7e0c9!important;border-top:4px solid var(--wp-gold)!important;box-shadow:0 5px 18px #00000012!important}.stat .value{color:#111!important}
+.panel{background:#fff!important;border:1px solid #e7e0c9!important;border-top:3px solid var(--wp-gold)!important;box-shadow:0 5px 18px #00000012!important}
+th{background:var(--wp-black)!important;color:var(--wp-gold2)!important;border-bottom:2px solid var(--wp-gold)!important}td{background:#fff!important;border-bottom:1px solid #eee!important}tr:hover td{background:#fffaf0!important}
+.badge{border:1px solid #ddd!important}.good{background:#f0f8f1!important;color:#176b2a!important;border-color:#b9d8bd!important}.low{background:#fff8e7!important;color:#8a6200!important;border-color:#e3c46c!important}.out{background:#fff0f0!important;color:#a00000!important;border-color:#e3aaaa!important}
+.small-btn{background:var(--wp-black)!important;border-color:var(--wp-gold)!important}.small-btn:hover{background:var(--wp-gold)!important;color:#111!important}
+.qfhub{background:var(--wp-black)!important;color:#fff!important;border:2px solid var(--wp-gold)!important}.qfhub h2{color:var(--wp-gold2)!important}.qfstat{background:#fff!important;border:1px solid #e7e0c9!important;border-top:3px solid var(--wp-gold)!important}
+.qfmodal{background:#0009!important}.qfbox{background:#fff!important;border:2px solid var(--wp-gold)!important;box-shadow:0 15px 50px #0008!important}.qfbox h2{color:#111!important}
+.invoice{background:#fff!important;color:#111!important}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)!important}.side{width:190px!important}}
+@media(max-width:650px){.layout{display:block!important}.side{width:100%!important;border-right:0!important;border-bottom:2px solid var(--wp-gold)!important;display:flex!important;flex-wrap:wrap!important}.nav{width:auto!important;flex:1 1 45%!important;margin:3px!important}.main{padding:12px!important}.grid{grid-template-columns:1fr 1fr!important}.row{flex-direction:column!important}}
+@media print{body{background:#fff!important}.top,.side{display:none!important}.main{padding:0!important;background:#fff!important}.panel,.stat{box-shadow:none!important;border:0!important}}
+
+/* POS checkout workspace — clear, responsive and touch-friendly */
+.pos-workspace{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr);gap:18px;align-items:start}
+.pos-workspace>.panel{margin-top:0;padding:20px;min-width:0}
+.pos-section-title{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.pos-section-title h3{margin:0 0 4px;font-size:19px}
+.pos-section-title p{margin:0;color:#777;font-size:13px}
+.pos-step{display:grid;place-items:center;flex:0 0 36px;height:36px;border-radius:12px;background:#111;color:#f4d76a;border:1px solid #d4af37;font-weight:800}
+.pos-tools,.pos-payment{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pos-products{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.pos-product-btn{position:relative;min-height:125px!important;padding:16px 10px!important;border:1px solid #e7dfc5!important;box-shadow:0 4px 14px #0000000d!important;transition:transform .15s,box-shadow .15s,border-color .15s}
+.pos-product-btn:hover{transform:translateY(-2px);border-color:#d4af37!important;box-shadow:0 7px 18px #00000016!important}
+.pos-product-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#111;color:#f4d76a;font-size:19px;line-height:1}
+.pos-product-btn .pos-product-name{max-width:100%;overflow-wrap:anywhere}
+.pos-product-btn .pos-product-price{font-weight:800;font-size:15px}
+.pos-product-btn .pos-product-stock{font-size:11px}
+.pos-empty{padding:22px 12px;text-align:center;color:#777;background:#faf9f5;border:1px dashed #ded7bd;border-radius:12px;font-size:13px}
+.pos-cart-empty{display:flex;flex-direction:column;align-items:center;gap:7px;padding:35px 12px}
+.pos-empty-icon{font-size:28px}
+.pos-cart-table-wrap{width:100%;overflow-x:auto}
+.pos-cart-table{min-width:420px}
+.pos-cart-table th{font-size:12px}
+.pos-cart-table td{vertical-align:middle;padding:10px 7px}
+.qty-control{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.qty-control button{width:28px;height:28px;padding:0;border-radius:8px;background:#f5f1e3!important;color:#111!important;border:1px solid #d4af37!important;font-size:17px}
+.qty-control span{min-width:18px;text-align:center;font-weight:700}
+.pos-remove{min-width:30px;padding:4px 8px!important;font-size:18px}
+.pos-total{margin-top:14px;padding:17px;border-radius:13px}
+.pos-total-label{font-size:12px;letter-spacing:.08em;color:#ddd}
+.pos-total .big{font-size:30px;margin:3px 0}
+.pos-profit{font-size:12px;color:#e9e1c7}
+.pos-actions{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-top:14px}
+.pos-actions button{min-height:48px}
+.pos-checkout{background:linear-gradient(135deg,#d4af37,#f4d76a)!important;color:#111!important;border:1px solid #b18c1d!important}
+#posSearch{margin-bottom:14px}
+@media(max-width:1000px){.pos-workspace{grid-template-columns:1fr}.pos-right{order:2}.pos-left{order:1}}
+@media(max-width:600px){.pos-workspace{gap:10px}.pos-workspace>.panel{padding:13px}.pos-tools,.pos-payment{gap:8px}.pos-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.pos-product-btn{min-height:112px!important}.pos-actions{grid-template-columns:1fr 1.4fr}.pos-total .big{font-size:25px}}
+
+</style>
+<style>
+/* Compact, tidy admin account action buttons */
+.admin-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center;max-width:340px}
+.admin-actions .small-btn{width:auto!important;min-width:0!important;padding:6px 9px!important;margin:0!important;font-size:12px!important;line-height:1.2!important;border-radius:7px!important;white-space:nowrap!important;box-shadow:0 1px 3px #00000018!important}
+#adminUsersTable table{min-width:1050px}
+#adminUsersTable td:last-child{min-width:260px;max-width:360px}
+@media(max-width:850px){.admin-actions{max-width:280px}.admin-actions .small-btn{font-size:11px!important;padding:5px 7px!important}}
+</style>
+</head>
+<body>
+<div id="loginScreen" class="login"><div class="login-card"><div class="logo">QF</div><h2 class="center">WEZIR POS</h2><p class="center muted">POS & Inventory</p>
+<div style="margin-bottom:12px"><label>Language</label><select id="languageSelect" onchange="setLanguage(this.value)"><option value="en">English</option><option value="om">Afaan Oromoo</option><option value="am">አማርኛ</option><option value="ar">العربية</option></select></div>
+<div id="signInBox"><label>Email</label><input id="loginEmail" type="email" placeholder="example@email.com"><label>Password</label><input id="loginPassword" type="password" placeholder="Password"><p id="loginError" class="error"></p><button onclick="signIn()" style="width:100%">SIGN IN</button><p class="center"><button class="auth-switch" onclick="forgotPassword()">Forgot Password?</button></p><p class="center">New user? <button class="auth-switch" onclick="showSignUp()">Create Account</button></p></div>
+<div id="signUpBox" class="hidden"><div class="notice">🌐 <b>Public Account:</b> Anyone can create their own account online and use WEZIR POS. Each account sees only its own business data.</div><label>Business Name</label><input id="signupBusinessName" placeholder="Your business name"><label>Full Name</label><input id="signupFullName" placeholder="Full name"><label>Phone Number</label><input id="signupPhone" type="tel" placeholder="Phone number"><label>Email</label><input id="signupEmail" type="email" placeholder="example@email.com"><label>Password</label><input id="signupPassword" type="password" placeholder="At least 6 characters"><label>Confirm Password</label><input id="signupPassword2" type="password" placeholder="Repeat password"><p id="signupError" class="error"></p><p id="signupSuccess" class="success"></p><button onclick="signUp()" style="width:100%">CREATE ACCOUNT</button><p class="center">Already have account? <button class="auth-switch" onclick="showSignIn()">Sign In</button></p></div>
+</div></div>
+<div id="app" class="app"><div class="top"><div id="businessBrand" class="brand">WEZIR POS</div><button class="logout" onclick="logout()">Logout</button></div><div class="layout"><aside class="side">
+<button class="nav active" onclick="showPage('dashboard',this)">📊 Dashboard</button><button class="nav" onclick="showPage('purchases',this)">📥 Purchases</button><button class="nav" onclick="showPage('products',this)">📦 Stock</button><button class="nav" onclick="showPage('pos',this)">🛒 POS</button><button class="nav" onclick="showPage('sales',this)">🧾 Sales</button><button class="nav" onclick="showPage('expenses',this)">💰 Expenses</button><button class="nav" onclick="showPage('reports',this)">📈 Reports</button><button id="adminNav" class="nav" onclick="showPage('adminDashboard',this)">👑 Admin Dashboard</button><button id="cashierNav" class="nav" onclick="showPage('cashierManagement',this)">👤 Cashier</button><button class="nav" onclick="showPage('settings',this)">⚙️ Settings</button>
+</aside><main class="main">
+<section id="dashboard" class="page active"><h2>Dashboard</h2><div class="grid"><div class="stat"><div class="muted">Total Sales</div><div id="dSales" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Purchase Cost</div><div id="dPurchase" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Expenses</div><div id="dExpenses" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Net Profit</div><div id="dProfit" class="value">ETB 0.00</div></div></div><div class="grid" style="margin-top:15px"><div class="stat"><div class="muted">Stock Products</div><div id="dStock" class="value">0</div></div><div class="stat"><div class="muted">Stock Quantity</div><div id="dQty" class="value">0</div></div><div class="stat"><div class="muted">Stock Value</div><div id="dStockValue" class="value">ETB 0.00</div></div><div class="stat"><div class="muted">Invoices</div><div id="dInvoices" class="value">0</div></div></div><div class="panel"><h3>Recent Sales</h3><div id="recentSales">No sales yet.</div></div></section>
+<section id="purchases" class="page"><h2>Purchase / Stock Entry</h2><div class="panel"><div class="row"><div><label>Product</label><input id="buyProduct" placeholder="e.g. Sukkara"></div><div><label>Quantity</label><input id="buyQty" type="number" min="0" placeholder="10000"></div><div><label>Purchase Cost / Unit</label><input id="buyCost" type="number" min="0" placeholder="20"></div></div><div class="row"><div><label>Transport Cost</label><input id="buyTransport" type="number" min="0" value="0"></div><div><label>Loading / Unloading</label><input id="buyLoading" type="number" min="0" value="0"></div><div><label>Supplier</label><input id="buySupplier" placeholder="Supplier name"></div></div><div class="row"><div><label>Desired Profit %</label><input id="buyProfitPercent" type="number" min="0" value="10"></div><div><label>Selling Price / Unit</label><input id="buySellingPrice" type="number" min="0" placeholder="Automatic"></div><div><label>Purchase Date</label><input id="buyDate" type="date"></div></div><button onclick="addPurchase()">Save Purchase</button></div><div class="panel"><h3>Purchase History</h3><div id="purchaseTable"></div></div></section>
+<section id="products" class="page"><h2>Stock / Products</h2><div class="panel"><div id="productTable"></div></div></section>
+<section id="pos" class="page">
+<h2>Point of Sale</h2>
+<div class="pos-workspace">
+  <div class="panel pos-left">
+    <div class="pos-section-title"><span class="pos-step">1</span><div><h3>Choose Product</h3><p>Search or tap a product to add it to the invoice.</p></div></div>
+    <label for="posSearch">Search products</label>
+    <input id="posSearch" type="search" placeholder="Type product name..." oninput="renderPosProductButtons()" autocomplete="off">
+    <div class="pos-tools">
+      <div><label for="invoiceNo">Invoice No.</label><input id="invoiceNo" placeholder="INV-0001"></div>
+      <div><label for="posQty">Quantity to add</label><input id="posQty" type="number" value="1" min="0.01" step="any"></div>
+    </div>
+    <div id="posProductButtons" class="pos-products"></div>
+    <select id="posProduct" class="hidden"></select>
+  </div>
+  <div class="panel pos-right">
+    <div class="pos-section-title"><span class="pos-step">2</span><div><h3>Current Invoice</h3><p>Review items and quantities before payment.</p></div></div>
+    <div id="cart" class="pos-cart"></div>
+    <div class="pos-payment">
+      <div><label for="paymentMethod">Payment Method</label><select id="paymentMethod"><option>Cash</option><option>UPI</option><option>Credit</option></select></div>
+      <div><label for="customerName">Customer (optional)</label><input id="customerName" placeholder="Customer name"></div>
+    </div>
+    <div class="pos-actions">
+      <button class="btn-secondary" onclick="clearCart()">Clear Invoice</button>
+      <button class="pos-checkout" onclick="checkout()">Complete Sale&nbsp; →</button>
+    </div>
+  </div>
+</div>
+</section>
+<section id="sales" class="page"><h2>Sales History</h2><div class="panel"><div id="salesTable"></div></div></section>
+<section id="expenses" class="page"><h2>Expenses</h2><div class="panel"><div class="row"><input id="eName" placeholder="Expense name"><input id="eAmount" type="number" placeholder="Amount"><button class="small-btn" onclick="addExpense()">Add Expense</button></div></div><div class="panel"><div id="expenseTable"></div></div></section>
+<section id="reports" class="page"><h2>Reports</h2><div class="panel"><div id="reportBox"></div><hr><h3>Excel</h3><button onclick="exportExcelAll()">📊 Export All to Excel</button><button class="btn-secondary" onclick="document.getElementById('excelImport').click()">📥 Upload Excel</button><input id="excelImport" type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)"><p class="muted">Excel file keessatti Sales, Stock, Purchases, Expenses sheets ni qabaata.</p></div></section>
+<section id="adminDashboard" class="page"><h2>👑 Admin Dashboard</h2><div id="adminAccessBox" class="panel"><p class="muted">Loading admin information...</p></div><div id="adminStats" class="grid" style="margin-top:15px"></div><div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">Users / Accounts</h3><button class="small-btn" onclick="loadAdminUsers()">🔄 Refresh</button></div><div id="adminUsersTable" style="margin-top:15px;overflow:auto"></div></div></section>
+<section id="cashierManagement" class="page">
+<h2>👤 Cashier Management</h2>
+<div class="panel">
+  <p class="muted">Create one cashier account for your business. The cashier can sign in separately and use POS and Sales.</p>
+  <div class="row">
+    <div><label for="cashierFullName">Cashier Full Name</label><input id="cashierFullName" type="text" autocomplete="name" placeholder="Full name"></div>
+    <div><label for="cashierEmail">Cashier Email</label><input id="cashierEmail" type="email" autocomplete="off" placeholder="cashier@example.com"></div>
+  </div>
+  <label for="cashierPassword">Temporary Password (at least 8 characters)</label>
+  <input id="cashierPassword" type="password" autocomplete="new-password" placeholder="Enter a temporary password">
+  <p id="cashierMessage" class="notice" role="status" aria-live="polite">Only the business owner can create a cashier. Each business can have one cashier.</p>
+  <button id="createCashierButton" type="button" onclick="createWezirCashier()">＋ Create Cashier</button>
+</div>
+</section>
+<section id="settings" class="page"><h2>Settings</h2><div class="panel"><p><b>Business:</b> <span id="settingsBusinessName">WEZIR POS</span></p><p><b>Currency:</b> <span id="settingsCurrencyValue">ETB</span></p><hr><h3>Profile</h3><p id="profileSummary">Not signed in</p><button onclick="openProfile()">Edit Profile</button><button class="btn-secondary" onclick="openPasswordModal()">Change Password</button><button class="btn-secondary" onclick="forgotPassword()">Forgot Password</button><hr><h3>Language</h3><select id="settingsLanguage" onchange="setLanguage(this.value)"><option value="en">English</option><option value="om">Afaan Oromoo</option><option value="am">አማርኛ</option><option value="ar">العربية</option></select><hr><h3>Country + Currency</h3><select id="settingsCurrency" onchange="setAppCurrency(this.value)"><option value="ETB">ETB — Ethiopian Birr</option><option value="SAR">SAR — Saudi Riyal</option><option value="AED">AED — UAE Dirham</option><option value="USD">USD — US Dollar</option><option value="GBP">GBP — British Pound</option><option value="EUR">EUR — Euro</option><option value="CAD">CAD — Canadian Dollar</option><option value="AUD">AUD — Australian Dollar</option><option value="KES">KES — Kenyan Shilling</option><option value="TRY">TRY — Turkish Lira</option><option value="UGX">UGX — Ugandan Shilling</option><option value="TZS">TZS — Tanzanian Shilling</option><option value="RWF">RWF — Rwandan Franc</option><option value="SOS">SOS — Somali Shilling</option><option value="DJF">DJF — Djiboutian Franc</option><option value="QAR">QAR — Qatari Riyal</option><option value="KWD">KWD — Kuwaiti Dinar</option><option value="OMR">OMR — Omani Rial</option><option value="BHD">BHD — Bahraini Dinar</option><option value="EGP">EGP — Egyptian Pound</option></select><hr><h3>Cloud Account</h3><p id="currentUser">Not signed in</p><hr><h3>Excel</h3><button onclick="exportExcelAll()">📊 Export Excel</button><button class="btn-secondary" onclick="document.getElementById('excelImport').click()">📥 Upload Excel</button><hr><h3>Backup</h3><button onclick="backupData()">Download Backup</button><button class="btn-secondary" onclick="document.getElementById('restoreFile').click()">Restore Backup</button><input id="restoreFile" type="file" accept=".json" style="display:none" onchange="restoreData(event)"><hr><button class="btn-danger" onclick="clearAllData()">Delete All Cloud Data</button></div></section>
+</main></div></div><div id="printArea" class="hidden"></div><div id="modalHost"></div>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script>
+const SUPABASE_URL="https://qoxhhdxcezmwqeehqtvy.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_YbbcWEzxx2uqEYMZnR1XEg_CLApqkip";
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let data={products:[],purchases:[],sales:[],expenses:[]};let cart=[];let currentUser=null;
+function getCurrency(){return localStorage.getItem("qfs_currency")||"ETB";}
+function currencySymbol(c){return ({ETB:"ETB",SAR:"SAR",AED:"AED",USD:"USD",GBP:"GBP",EUR:"EUR",CAD:"CAD",AUD:"AUD",KES:"KES",TRY:"TRY",UGX:"UGX",TZS:"TZS",RWF:"RWF",SOS:"SOS",DJF:"DJF",QAR:"QAR",KWD:"KWD",OMR:"OMR",BHD:"BHD",EGP:"EGP"})[c]||c||"ETB";}
+function money(n){const c=getCurrency();return currencySymbol(c)+" "+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}function today(){return new Date().toISOString().slice(0,10)}function escapeHtml(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}function makeInvoice(){
+const nums=data.sales.map(s=>String(s.invoice_no||"").match(/^INV-(\d{4})$/)).filter(Boolean).map(m=>Number(m[1]));
+const next=(nums.length?Math.max(...nums):0)+1;
+return "INV-"+String(next).padStart(4,"0");
+}
+function showSignUp(){document.getElementById("signInBox").classList.add("hidden");document.getElementById("signUpBox").classList.remove("hidden")}function showSignIn(){document.getElementById("signUpBox").classList.add("hidden");document.getElementById("signInBox").classList.remove("hidden")}
+async function signUp(){
+const business=document.getElementById("signupBusinessName").value.trim();
+const fullName=document.getElementById("signupFullName").value.trim();
+const phone=document.getElementById("signupPhone").value.trim();
+const email=document.getElementById("signupEmail").value.trim();
+const password=document.getElementById("signupPassword").value;
+const password2=document.getElementById("signupPassword2").value;
+const err=document.getElementById("signupError"), ok=document.getElementById("signupSuccess");
+err.textContent=""; ok.textContent="";
+if(!business||!fullName||!phone||!email||!password) return err.textContent="Please fill all fields.";
+if(password.length<6) return err.textContent="Password must be at least 6 characters.";
+if(password!==password2) return err.textContent="Passwords do not match.";
+const {data:r,error}=await supabaseClient.auth.signUp({
+email,password,
+options:{data:{business_name:business,full_name:fullName,phone:phone,language:getLanguage()}}
+});
+if(error) return err.textContent=error.message;
+ok.textContent=r.session?"Account created successfully. Your business data is private to your account.":"Account created. If email confirmation is enabled, check your email.";
+if(r.session){setTimeout(()=>{document.getElementById("loginScreen").style.display="none";document.getElementById("app").style.display="block";},300);}else{setTimeout(()=>showSignIn(),900);}
+}
+async function signIn(){
+const email=document.getElementById("loginEmail").value.trim();
+const password=document.getElementById("loginPassword").value;
+const err=document.getElementById("loginError"); err.textContent="";
+if(!email||!password) return err.textContent="Email and password are required.";
+const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+if(error) err.textContent=error.message;
+}
+async function logout(){
+await supabaseClient.auth.signOut();
+}
+async function loadCloudData(){
+ if(!currentUser)return;
+ // Shared business data: members load rows by business_id, not their personal user_id.
+ let businessId=null;
+ try{const {data:bid,error:be}=await supabaseClient.rpc("get_my_business_id");if(!be)businessId=Array.isArray(bid)?(bid[0]?.business_id??bid[0]):(bid?.business_id??bid);}
+ catch(e){console.warn("Business lookup failed",e)}
+ const scope=q=>businessId?q.eq("business_id",businessId):q.eq("user_id",currentUser.id);
+ const [p,pu,s,e]=await Promise.all([
+ scope(supabaseClient.from("products").select("*")).order("created_at",{ascending:false}),
+ scope(supabaseClient.from("purchases").select("*")).order("created_at",{ascending:false}),
+ scope(supabaseClient.from("sales").select("*")).order("created_at",{ascending:false}),
+ scope(supabaseClient.from("expenses").select("*")).order("created_at",{ascending:false})
+ ]);
+ for(const r of [p,pu,s,e])if(r.error){alert(r.error.message);return}
+ data={products:p.data||[],purchases:pu.data||[],sales:s.data||[],expenses:e.data||[]};renderAll()
+}
+supabaseClient.auth.onAuthStateChange((event,session)=>{
+setTimeout(async()=>{
+if(event==="PASSWORD_RECOVERY"&&session){
+openPasswordModal(true);
+return;
+}
+if(session){
+currentUser=session.user;
+updateBusinessDisplay();
+document.getElementById("loginScreen").style.display="none";
+document.getElementById("app").style.display="block";
+document.getElementById("currentUser").textContent=currentUser.email||"";
+updateProfileSummary();
+syncLanguageSelectors();
+await loadCloudData();
+}else{
+currentUser=null;
+document.getElementById("loginScreen").style.display="flex";
+document.getElementById("app").style.display="none";
+}
+},0);
+});
+function getLanguage(){
+  const saved=localStorage.getItem("qfs_language");
+  if(saved)return saved;
+  return (currentUser&&currentUser.user_metadata&&currentUser.user_metadata.language)||"en";
+}
+async function setLanguage(lang){
+  localStorage.setItem("qfs_language",lang||"en");
+  if(currentUser){
+    try{await supabaseClient.auth.updateUser({data:{...(currentUser.user_metadata||{}),language:lang||"en"}})}catch(e){}
+  }
+  syncLanguageSelectors();
+  applyLanguage();
+}
+function syncLanguageSelectors(){
+  const lang=getLanguage();
+  ["languageSelect","settingsLanguage"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=lang;});
+  const c=document.getElementById("settingsCurrency");if(c)c.value=getCurrency();
+}
+function setAppCurrency(c){localStorage.setItem("qfs_currency",c||"ETB");const el=document.getElementById("settingsCurrency");if(el)el.value=getCurrency();const sv=document.getElementById("settingsCurrencyValue");if(sv)sv.textContent=getCurrency();renderAll();applyLanguage();}
+
+const I18N={
+  en:{"Dashboard":"Dashboard","Purchases":"Purchases","Stock":"Stock","POS":"POS","Sales":"Sales","Expenses":"Expenses","Reports":"Reports","Settings":"Settings","Total Sales":"Total Sales","Purchase Cost":"Purchase Cost","Net Profit":"Net Profit","Stock Products":"Stock Products","Stock Quantity":"Stock Quantity","Stock Value":"Stock Value","Invoices":"Invoices","Recent Sales":"Recent Sales","Purchase / Stock Entry":"Purchase / Stock Entry","Purchase History":"Purchase History","Product":"Product","Quantity":"Quantity","Purchase Cost / Unit":"Purchase Cost / Unit","Transport Cost":"Transport Cost","Loading / Unloading":"Loading / Unloading","Supplier":"Supplier","Desired Profit %":"Desired Profit %","Selling Price / Unit":"Selling Price / Unit","Purchase Date":"Purchase Date","Save Purchase":"Save Purchase","Stock / Products":"Stock / Products","Point of Sale":"Point of Sale","Invoice No.":"Invoice No.","Add Item to Invoice":"Add Item to Invoice","Clear Invoice Items":"Clear Invoice Items","Payment Method":"Payment Method","Customer":"Customer","Complete Sale":"Complete Sale","Sales History":"Sales History","Expense name":"Expense name","Amount":"Amount","Add Expense":"Add Expense","Excel":"Excel","Export All to Excel":"Export All to Excel","Upload Excel":"Upload Excel","Backup":"Backup","Download Backup":"Download Backup","Restore Backup":"Restore Backup","Delete All Cloud Data":"Delete All Cloud Data","Profile":"Profile","Edit Profile":"Edit Profile","Change Password":"Change Password","Forgot Password":"Forgot Password","Language":"Language","Cloud Account":"Cloud Account","Business":"Business","Currency":"Currency","Not signed in":"Not signed in","Cash":"Cash","Credit":"Credit","UPI":"UPI","Save":"Save","Cancel":"Cancel","Action":"Action","Edit":"Edit","Print":"Print","No sales yet.":"No sales yet.","No purchases yet.":"No purchases yet.","Cart is empty.":"Cart is empty.","Country + Currency":"Country + Currency","Country":"Country","ETB — Ethiopian Birr":"ETB — Ethiopian Birr","SAR — Saudi Riyal":"SAR — Saudi Riyal","USD — US Dollar":"USD — US Dollar","EUR — Euro":"EUR — Euro",},
+  om:{"Dashboard":"Daashboordii","Purchases":"Bittaa","Stock":"Kuusaa","POS":"POS","Sales":"Gurgurtaa","Expenses":"Baasii","Reports":"Gabaasa","Settings":"Qindaa'ina","Total Sales":"Gurgurtaa Waliigalaa","Purchase Cost":"Baasii Bittaa","Net Profit":"Bu'aa Qulqulluu","Stock Products":"Meeshaalee Kuusaa","Stock Quantity":"Baay'ina Kuusaa","Stock Value":"Gatii Kuusaa","Invoices":"Invoice","Recent Sales":"Gurgurtaa Dhihoo","Purchase / Stock Entry":"Galmee Bittaa / Kuusaa","Purchase History":"Seenaa Bittaa","Product":"Meeshaa","Quantity":"Baay'ina","Purchase Cost / Unit":"Gatii Bittaa / Unit","Transport Cost":"Baasii Geejjibaa","Loading / Unloading":"Baasii Fe'umsaa / Buusaa","Supplier":"Dhiyeessaa","Desired Profit %":"Bu'aa Barbaadame %","Selling Price / Unit":"Gatii Gurgurtaa / Unit","Purchase Date":"Guyyaa Bittaa","Save Purchase":"Bittaa Olkaa'i","Stock / Products":"Kuusaa / Meeshaalee","Point of Sale":"Bakka Gurgurtaa","Invoice No.":"Lakkoofsa Invoice","Add Item to Invoice":"Meeshaa Invoice'itti Dabali","Clear Invoice Items":"Meeshaalee Invoice Qulqulleessi","Payment Method":"Mala Kaffaltii","Customer":"Maamila","Complete Sale":"Gurgurtaa Xumuri","Sales History":"Seenaa Gurgurtaa","Expense name":"Maqaa Baasii","Amount":"Hanga","Add Expense":"Baasii Dabali","Excel":"Excel","Export All to Excel":"Hunda Excelitti Baasi","Upload Excel":"Excel Olkaa'i","Backup":"Backup","Download Backup":"Backup Buusi","Restore Backup":"Backup Deebisi","Delete All Cloud Data":"Data Cloud Hunda Haqi","Profile":"Profaayilii","Edit Profile":"Profaayilii Sirreessi","Change Password":"Password Jijjiiri","Forgot Password":"Password Dagatame","Language":"Afaan","Cloud Account":"Akkaawuntii Cloud","Business":"Daldala","Currency":"Maallaqa","Not signed in":"Hin seennne","Cash":"Maallaqa","Credit":"Liqii","UPI":"UPI","Save":"Olkaa'i","Cancel":"Haqi","Action":"Hojii","Edit":"Sirreessi","Print":"Maxxansi","No sales yet.":"Gurgurtaan hin jiru.","No purchases yet.":"Bittaan hin jiru.","Cart is empty.":"Cart duwwaa dha.","Country + Currency":"Biyya + Maallaqa","Country":"Biyya","ETB — Ethiopian Birr":"ETB — Birrii Itoophiyaa","SAR — Saudi Riyal":"SAR — Riyalii Saudi","USD — US Dollar":"USD — Doolaara Ameerikaa","EUR — Euro":"EUR — Euro","Add Product":"Meeshaa Dabali","Item Name":"Maqaa Meeshaa","Selling Price":"Gatii Gurgurtaa","Purchase Price":"Gatii Bittaa","In Stock":"Kuusaa Keessa","Reorder Point":"Daangaa Irra Deebii Bittaa","Unit":"Safartuu","Supplier":"Dhiyeessaa","Search":"Barbaadi","Search products":"Meeshaalee barbaadi","Date":"Guyyaa","Total":"Waliigala","Subtotal":"Ida’ama Xiqqaa","Discount":"Hir’ina Gatii","Tax":"Gibira","Paid":"Kaffalame","Balance":"Haftee","Status":"Haala","Active":"Hojiirra Jira","Inactive":"Hojiirra Hin Jiru","Add":"Dabali","Update":" haaromsi","Delete":"Haqi","Close":"Cufi","Back":"Duubatti","Next":"Itti Aanee","Previous":"Kan Duraa","Name":"Maqaa","Phone":"Bilbila","Email":"Imeelii","Address":"Teessoo","Description":"Ibsa","Barcode":"Baarkoodii","SKU":"SKU","Category":"Ramaddii","Brand":"Maqaa Daldalaa","Expiry Date":"Guyyaa Xumuraa","Manufacturing Date":"Guyyaa Omishaa","Stock History":"Seenaa Kuusaa","Inventory Logs":"Galmee Kuusaa","Admin Dashboard":"Daashboordii Admin","Users":"Fayyadamtoota","Subscription":"Kaffaltii Tajaajilaa","Plan":"Karoora","Trial":"Yaalii","Expires":"Xumurama","Support":"Deeggarsa","Sign In":"Seeni","Sign Up":"Galmaa’i","Log Out":"Ba’i","Password":"Jecha Darbii","Confirm Password":"Jecha Darbii Mirkaneessi","Welcome":"Baga Nagaan Dhuftan","Loading...":"Fe’amaa jira...","No data found":"Daataan hin argamne","Save Changes":"Jijjiirama Olkaa’i","Today":"Har’a","This Month":"Ji’a Kana","All":"Hunda"},
+  am:{"Dashboard":"ዳሽቦርድ","Purchases":"ግዢዎች","Stock":"እቃ ክምችት","POS":"POS","Sales":"ሽያጭ","Expenses":"ወጪዎች","Reports":"ሪፖርቶች","Settings":"ቅንብሮች","Total Sales":"ጠቅላላ ሽያጭ","Purchase Cost":"የግዢ ወጪ","Net Profit":"የተጣራ ትርፍ","Stock Products":"የእቃ ክምችት ምርቶች","Stock Quantity":"የእቃ ብዛት","Stock Value":"የእቃ ዋጋ","Invoices":"ደረሰኞች","Recent Sales":"የቅርብ ሽያጮች","Purchase / Stock Entry":"የግዢ / ክምችት መመዝገቢያ","Purchase History":"የግዢ ታሪክ","Product":"እቃ","Quantity":"ብዛት","Purchase Cost / Unit":"የግዢ ዋጋ / ክፍል","Transport Cost":"የመጓጓዣ ወጪ","Loading / Unloading":"የመጫኛ / ማውረጃ ወጪ","Supplier":"አቅራቢ","Desired Profit %":"የተፈለገ ትርፍ %","Selling Price / Unit":"የሽያጭ ዋጋ / ክፍል","Purchase Date":"የግዢ ቀን","Save Purchase":"ግዢ አስቀምጥ","Stock / Products":"ክምችት / እቃዎች","Point of Sale":"የሽያጭ ቦታ","Invoice No.":"ደረሰኝ ቁጥር","Add Item to Invoice":"እቃ ወደ ደረሰኝ ጨምር","Clear Invoice Items":"የደረሰኝ እቃዎችን አጽዳ","Payment Method":"የክፍያ ዘዴ","Customer":"ደንበኛ","Complete Sale":"ሽያጭ ጨርስ","Sales History":"የሽያጭ ታሪክ","Expense name":"የወጪ ስም","Amount":"መጠን","Add Expense":"ወጪ ጨምር","Excel":"Excel","Export All to Excel":"ሁሉንም ወደ Excel ላክ","Upload Excel":"Excel ስቀል","Backup":"ምትኬ","Download Backup":"ምትኬ አውርድ","Restore Backup":"ምትኬ መልስ","Delete All Cloud Data":"የCloud መረጃን ሁሉ ሰርዝ","Profile":"መገለጫ","Edit Profile":"መገለጫ አርም","Change Password":"የይለፍ ቃል ቀይር","Forgot Password":"የይለፍ ቃል ረሳሁ","Language":"ቋንቋ","Cloud Account":"Cloud መለያ","Business":"ንግድ","Currency":"ምንዛሬ","Not signed in":"አልገባም","Cash":"ጥሬ ገንዘብ","Credit":"ብድር","UPI":"UPI","Save":"አስቀምጥ","Cancel":"ሰርዝ","Action":"እርምጃ","Edit":"አርም","Print":"አትም","No sales yet.":"ምንም ሽያጭ የለም።","No purchases yet.":"ምንም ግዢ የለም።","Cart is empty.":"ጋሪው ባዶ ነው።","Country + Currency":"አገር + ምንዛሬ","Country":"አገር","ETB — Ethiopian Birr":"ETB — የኢትዮጵያ ብር","SAR — Saudi Riyal":"SAR — የሳውዲ ሪያል","USD — US Dollar":"USD — የአሜሪካ ዶላር","EUR — Euro":"EUR — ዩሮ","Add Product":"እቃ ጨምር","Item Name":"የእቃ ስም","Selling Price":"የሽያጭ ዋጋ","Purchase Price":"የግዢ ዋጋ","In Stock":"በክምችት ውስጥ","Reorder Point":"እንደገና የማዘዣ ደረጃ","Unit":"መለኪያ","Search":"ፈልግ","Search products":"እቃዎችን ፈልግ","Date":"ቀን","Total":"ጠቅላላ","Subtotal":"ንዑስ ድምር","Discount":"ቅናሽ","Tax":"ግብር","Paid":"ተከፍሏል","Balance":"ቀሪ","Status":"ሁኔታ","Active":"ንቁ","Inactive":"ንቁ አይደለም","Add":"ጨምር","Update":"አዘምን","Delete":"ሰርዝ","Close":"ዝጋ","Back":"ተመለስ","Next":"ቀጣይ","Previous":"ቀዳሚ","Name":"ስም","Phone":"ስልክ","Email":"ኢሜይል","Address":"አድራሻ","Description":"መግለጫ","Barcode":"ባርኮድ","SKU":"SKU","Category":"ምድብ","Brand":"ብራንድ","Expiry Date":"የማብቂያ ቀን","Manufacturing Date":"የምርት ቀን","Stock History":"የክምችት ታሪክ","Inventory Logs":"የክምችት መዝገቦች","Admin Dashboard":"የአስተዳዳሪ ዳሽቦርድ","Users":"ተጠቃሚዎች","Subscription":"ምዝገባ","Plan":"እቅድ","Trial":"ሙከራ","Expires":"ያበቃል","Support":"ድጋፍ","Sign In":"ግባ","Sign Up":"ተመዝገብ","Log Out":"ውጣ","Password":"የይለፍ ቃል","Confirm Password":"የይለፍ ቃል አረጋግጥ","Welcome":"እንኳን ደህና መጡ","Loading...":"በመጫን ላይ...","No data found":"መረጃ አልተገኘም","Save Changes":"ለውጦችን አስቀምጥ","Today":"ዛሬ","This Month":"በዚህ ወር","All":"ሁሉም"},
+  ar:{"Dashboard":"لوحة التحكم","Purchases":"المشتريات","Stock":"المخزون","POS":"نقطة البيع","Sales":"المبيعات","Expenses":"المصروفات","Reports":"التقارير","Settings":"الإعدادات","Total Sales":"إجمالي المبيعات","Purchase Cost":"تكلفة المشتريات","Net Profit":"صافي الربح","Stock Products":"منتجات المخزون","Stock Quantity":"كمية المخزون","Stock Value":"قيمة المخزون","Invoices":"الفواتير","Recent Sales":"المبيعات الأخيرة","Purchase / Stock Entry":"إدخال المشتريات / المخزون","Purchase History":"سجل المشتريات","Product":"المنتج","Quantity":"الكمية","Purchase Cost / Unit":"تكلفة الشراء / الوحدة","Transport Cost":"تكلفة النقل","Loading / Unloading":"تكلفة التحميل / التفريغ","Supplier":"المورد","Desired Profit %":"نسبة الربح المطلوبة %","Selling Price / Unit":"سعر البيع / الوحدة","Purchase Date":"تاريخ الشراء","Save Purchase":"حفظ الشراء","Stock / Products":"المخزون / المنتجات","Point of Sale":"نقطة البيع","Invoice No.":"رقم الفاتورة","Add Item to Invoice":"إضافة صنف إلى الفاتورة","Clear Invoice Items":"مسح أصناف الفاتورة","Payment Method":"طريقة الدفع","Customer":"العميل","Complete Sale":"إتمام البيع","Sales History":"سجل المبيعات","Expense name":"اسم المصروف","Amount":"المبلغ","Add Expense":"إضافة مصروف","Excel":"Excel","Export All to Excel":"تصدير الكل إلى Excel","Upload Excel":"رفع Excel","Backup":"نسخة احتياطية","Download Backup":"تنزيل النسخة الاحتياطية","Restore Backup":"استعادة النسخة الاحتياطية","Delete All Cloud Data":"حذف كل بيانات السحابة","Profile":"الملف الشخصي","Edit Profile":"تعديل الملف الشخصي","Change Password":"تغيير كلمة المرور","Forgot Password":"نسيت كلمة المرور","Language":"اللغة","Cloud Account":"حساب السحابة","Business":"النشاط التجاري","Currency":"العملة","Not signed in":"غير مسجل الدخول","Cash":"نقداً","Credit":"آجل","UPI":"UPI","Save":"حفظ","Cancel":"إلغاء","Action":"إجراء","Edit":"تعديل","Print":"طباعة","No sales yet.":"لا توجد مبيعات بعد.","No purchases yet.":"لا توجد مشتريات بعد.","Cart is empty.":"السلة فارغة.","Country + Currency":"الدولة + العملة","Country":"الدولة","ETB — Ethiopian Birr":"ETB — البِر الإثيوبي","SAR — Saudi Riyal":"SAR — الريال السعودي","USD — US Dollar":"USD — الدولار الأمريكي","EUR — Euro":"EUR — اليورو","Add Product":"إضافة منتج","Item Name":"اسم الصنف","Selling Price":"سعر البيع","Purchase Price":"سعر الشراء","In Stock":"في المخزون","Reorder Point":"حد إعادة الطلب","Unit":"الوحدة","Search":"بحث","Search products":"البحث عن المنتجات","Date":"التاريخ","Total":"الإجمالي","Subtotal":"المجموع الفرعي","Discount":"الخصم","Tax":"الضريبة","Paid":"مدفوع","Balance":"المتبقي","Status":"الحالة","Active":"نشط","Inactive":"غير نشط","Add":"إضافة","Update":"تحديث","Delete":"حذف","Close":"إغلاق","Back":"رجوع","Next":"التالي","Previous":"السابق","Name":"الاسم","Phone":"الهاتف","Email":"البريد الإلكتروني","Address":"العنوان","Description":"الوصف","Barcode":"الباركود","SKU":"SKU","Category":"الفئة","Brand":"العلامة التجارية","Expiry Date":"تاريخ الانتهاء","Manufacturing Date":"تاريخ التصنيع","Stock History":"سجل المخزون","Inventory Logs":"سجلات المخزون","Admin Dashboard":"لوحة تحكم المسؤول","Users":"المستخدمون","Subscription":"الاشتراك","Plan":"الخطة","Trial":"تجريبي","Expires":"ينتهي","Support":"الدعم","Sign In":"تسجيل الدخول","Sign Up":"إنشاء حساب","Log Out":"تسجيل الخروج","Password":"كلمة المرور","Confirm Password":"تأكيد كلمة المرور","Welcome":"مرحباً","Loading...":"جارٍ التحميل...","No data found":"لم يتم العثور على بيانات","Save Changes":"حفظ التغييرات","Today":"اليوم","This Month":"هذا الشهر","All":"الكل"}
+};
+
+// Additional translations for login, cashier, settings, and feature hub.
+Object.assign(I18N.om, {"POS & Inventory": "POS fi Kuusaa", "Email": "Imeelii", "Password": "Jecha darbii", "SIGN IN": "SEENI", "Forgot Password?": "Jecha darbii dagattee?", "New user?": "Fayyadamaa haaraa?", "Create Account": "Akkaawuntii Uumi", "CREATE ACCOUNT": "AKKAAWUNTII UUMI", "Public Account:": "Akkaawuntii Ummataa:", "Business Name": "Maqaa Daldalaa", "Full Name": "Maqaa Guutuu", "Phone Number": "Lakkoofsa Bilbilaa", "Confirm Password": "Jecha darbii mirkaneessi", "Already have account?": "Akkaawuntii qabdaa?", "Logout": "Ba’i", "Choose Product": "Meeshaa Filadhu", "Search or tap a product to add it to the invoice.": "Meeshaa barbaadi ykn tuqiitii invoice irratti dabali.", "Quantity to add": "Baay’ina dabaluuf", "Current Invoice": "Invoice Amma", "Review items and quantities before payment.": "Kaffaltii dura meeshaalee fi baay’ina isaanii ilaali.", "Customer (optional)": "Maamila (dirqama miti)", "Clear Invoice": "Invoice Qulqulleessi", "Complete Sale →": "Gurgurtaa Xumuri →", "Loading admin information...": "Odeeffannoo admin fe’aa jira...", "Users / Accounts": "Fayyadamtoota / Akkaawuntii", "🔄 Refresh": "🔄 Haaromsi", "👤 Cashier Management": "👤 Bulchiinsa Cashier", "Cashier Full Name": "Maqaa Guutuu Cashier", "Cashier Email": "Imeelii Cashier", "Temporary Password (at least 8 characters)": "Jecha darbii yeroo (qubee 8 yoo xiqqaate)", "Only the business owner can create a cashier. Each business can have one cashier.": "Abbaan daldalaa qofti cashier uumuu danda’a. Daldalli tokko cashier tokko qabaachuu danda’a.", "＋ Create Cashier": "＋ Cashier Uumi", "Business:": "Daldala:", "Currency:": "Maallaqa:", "Excel file keessatti Sales, Stock, Purchases, Expenses sheets ni qabaata.": "Faayilli Excel sheet Sales, Stock, Purchases fi Expenses qabaata.", "ETB — Ethiopian Birr": "ETB — Birrii Itoophiyaa", "SAR — Saudi Riyal": "SAR — Riyalii Saudi", "AED — UAE Dirham": "AED — Dirham UAE", "GBP — British Pound": "GBP — Paawundii Biriteen", "CAD — Canadian Dollar": "CAD — Doolaara Kanada", "AUD — Australian Dollar": "AUD — Doolaara Awustiraaliyaa", "KES — Kenyan Shilling": "KES — Shilingii Keeniyaa", "TRY — Turkish Lira": "TRY — Liiraa Turkii", "UGX — Ugandan Shilling": "UGX — Shilingii Ugaandaa", "TZS — Tanzanian Shilling": "TZS — Shilingii Taanzaaniyaa", "RWF — Rwandan Franc": "RWF — Firaankii Ruwaandaa", "SOS — Somali Shilling": "SOS — Shilingii Somaaliyaa", "DJF — Djiboutian Franc": "DJF — Firaankii Jibuutii", "QAR — Qatari Riyal": "QAR — Riyalii Qaxar", "KWD — Kuwaiti Dinar": "KWD — Dinaara Kuweet", "OMR — Omani Rial": "OMR — Riyalii Omaan", "BHD — Bahraini Dinar": "BHD — Dinaara Bahireen", "EGP — Egyptian Pound": "EGP — Paawundii Masrii", "Download Backup": "Backup Buusi", "Restore Backup": "Backup Deebisi", "Delete All Cloud Data": "Daataa Cloud Hunda Haqi", "Export Excel": "Excelitti Baasi", "Export All to Excel": "Hunda Excelitti Baasi", "Upload Excel": "Excel Olkaa’i", "Stock / Inventory": "Kuusaa", "POS / Gurgurtaa": "POS / Gurgurtaa", "Invoice Print": "Maxxansa Invoice", "Sales Reports": "Gabaasa Gurgurtaa", "Customer Credit / Balance": "Liqii / Haftee Maamila"});
+Object.assign(I18N.am, {"POS & Inventory": "POS እና ክምችት", "SIGN IN": "ግባ", "Forgot Password?": "የይለፍ ቃል ረሳህ?", "New user?": "አዲስ ተጠቃሚ?", "Create Account": "መለያ ፍጠር", "CREATE ACCOUNT": "መለያ ፍጠር", "Public Account:": "የህዝብ መለያ፡", "Business Name": "የንግድ ስም", "Full Name": "ሙሉ ስም", "Phone Number": "ስልክ ቁጥር", "Already have account?": "መለያ አለህ?", "Logout": "ውጣ", "Choose Product": "እቃ ምረጥ", "Search or tap a product to add it to the invoice.": "እቃ ፈልግ ወይም በመንካት ወደ ደረሰኙ ጨምር።", "Quantity to add": "የሚጨመር ብዛት", "Current Invoice": "የአሁኑ ደረሰኝ", "Review items and quantities before payment.": "ከመክፈልህ በፊት እቃዎችንና ብዛታቸውን አረጋግጥ።", "Customer (optional)": "ደንበኛ (አማራጭ)", "Clear Invoice": "ደረሰኙን አጽዳ", "Complete Sale →": "ሽያጩን ጨርስ →", "Loading admin information...": "የአስተዳዳሪ መረጃ በመጫን ላይ...", "Users / Accounts": "ተጠቃሚዎች / መለያዎች", "🔄 Refresh": "🔄 አድስ", "👤 Cashier Management": "👤 የካሺየር አስተዳደር", "Cashier Full Name": "የካሺየር ሙሉ ስም", "Cashier Email": "የካሺየር ኢሜይል", "Temporary Password (at least 8 characters)": "ጊዜያዊ የይለፍ ቃል (ቢያንስ 8 ቁምፊዎች)", "＋ Create Cashier": "＋ ካሺየር ፍጠር", "Business:": "ንግድ፡", "Currency:": "ምንዛሬ፡", "Download Backup": "ምትኬ አውርድ", "Restore Backup": "ምትኬ መልስ", "Delete All Cloud Data": "ሁሉንም የCloud መረጃ ሰርዝ", "Export Excel": "ወደ Excel ላክ", "Export All to Excel": "ሁሉንም ወደ Excel ላክ", "Upload Excel": "Excel ስቀል", "Stock / Inventory": "ክምችት", "POS / Gurgurtaa": "POS / ሽያጭ", "Invoice Print": "ደረሰኝ ማተሚያ", "Sales Reports": "የሽያጭ ሪፖርቶች", "Customer Credit / Balance": "የደንበኛ ብድር / ቀሪ"});
+Object.assign(I18N.ar, {"POS & Inventory": "نقطة البيع والمخزون", "SIGN IN": "تسجيل الدخول", "Forgot Password?": "هل نسيت كلمة المرور؟", "New user?": "مستخدم جديد؟", "Create Account": "إنشاء حساب", "CREATE ACCOUNT": "إنشاء حساب", "Public Account:": "حساب عام:", "Business Name": "اسم النشاط التجاري", "Full Name": "الاسم الكامل", "Phone Number": "رقم الهاتف", "Already have account?": "لديك حساب بالفعل؟", "Logout": "تسجيل الخروج", "Choose Product": "اختر المنتج", "Search or tap a product to add it to the invoice.": "ابحث عن منتج أو اضغط عليه لإضافته إلى الفاتورة.", "Quantity to add": "الكمية المراد إضافتها", "Current Invoice": "الفاتورة الحالية", "Review items and quantities before payment.": "راجع الأصناف والكميات قبل الدفع.", "Customer (optional)": "العميل (اختياري)", "Clear Invoice": "مسح الفاتورة", "Complete Sale →": "إتمام البيع →", "Loading admin information...": "جارٍ تحميل معلومات المسؤول...", "Users / Accounts": "المستخدمون / الحسابات", "🔄 Refresh": "🔄 تحديث", "👤 Cashier Management": "👤 إدارة أمين الصندوق", "Cashier Full Name": "الاسم الكامل لأمين الصندوق", "Cashier Email": "بريد أمين الصندوق", "Temporary Password (at least 8 characters)": "كلمة مرور مؤقتة (8 أحرف على الأقل)", "＋ Create Cashier": "＋ إنشاء أمين صندوق", "Business:": "النشاط التجاري:", "Currency:": "العملة:", "Download Backup": "تنزيل النسخة الاحتياطية", "Restore Backup": "استعادة النسخة الاحتياطية", "Delete All Cloud Data": "حذف جميع بيانات السحابة", "Export Excel": "تصدير إلى Excel", "Export All to Excel": "تصدير الكل إلى Excel", "Upload Excel": "رفع Excel", "Stock / Inventory": "المخزون", "POS / Gurgurtaa": "نقطة البيع / المبيعات", "Invoice Print": "طباعة الفاتورة", "Sales Reports": "تقارير المبيعات", "Customer Credit / Balance": "ائتمان العميل / الرصيد"});
+Object.assign(I18N.en, {"Invoice number already exists":"This invoice number already exists.","Notice":"Notice","OK":"OK"});
+Object.assign(I18N.om, {"Invoice number already exists":"Lakkoofsi invoice kun duraan jira.","Notice":"Beeksisa","OK":"Tole"});
+Object.assign(I18N.am, {"Invoice number already exists":"ይህ የደረሰኝ ቁጥር አስቀድሞ አለ።","Notice":"ማሳሰቢያ","OK":"እሺ"});
+Object.assign(I18N.ar, {"Invoice number already exists":"رقم الفاتورة هذا موجود بالفعل.","Notice":"تنبيه","OK":"حسنًا"});
+const __i18nOriginalText=new WeakMap();
+const __i18nOriginalPlaceholder=new WeakMap();
+const __i18nOriginalOption=new WeakMap();
+function translateUI(){
+  const lang=getLanguage(), dict=I18N[lang]||I18N.en;
+  document.documentElement.lang=lang==='om'?'om':lang;
+  document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+  nodes.forEach(n=>{
+    if(n.parentElement&&['SCRIPT','STYLE'].includes(n.parentElement.tagName))return;
+    if(!__i18nOriginalText.has(n))__i18nOriginalText.set(n,n.nodeValue);
+    const raw=__i18nOriginalText.get(n),t=raw.trim();
+    if(!t)return;
+    n.nodeValue=raw.replace(t,dict[t]||t);
+  });
+  document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(el=>{
+    if(!__i18nOriginalPlaceholder.has(el))__i18nOriginalPlaceholder.set(el,el.getAttribute('placeholder'));
+    const k=__i18nOriginalPlaceholder.get(el); if(k)el.setAttribute('placeholder',dict[k]||k);
+  });
+  document.querySelectorAll('option').forEach(el=>{
+    if(!__i18nOriginalOption.has(el))__i18nOriginalOption.set(el,el.textContent.trim());
+    const k=__i18nOriginalOption.get(el); if(k)el.textContent=dict[k]||k;
+  });
+  const sv=document.getElementById('settingsCurrencyValue');if(sv)sv.textContent=getCurrency();
+}
+function applyLanguage(){
+  const lang=getLanguage();
+  const t=I18N[lang]||I18N.en;
+  const nav=document.querySelectorAll(".nav");
+  const labels=["Dashboard","Purchases","Stock","POS","Sales","Expenses","Reports","Settings"];
+  nav.forEach((el,i)=>{if(i<labels.length)el.textContent=(el.textContent.match(/^\S+/)?.[0]||["📊","📥","📦","🛒","🧾","💰","📈","⚙️"][i])+" "+(t[labels[i]]||labels[i]);});
+  translateUI();
+  document.querySelectorAll('[data-currency-display]').forEach(el=>el.textContent=money(Number(el.dataset.amount||0)));
+}
+function updateBusinessDisplay(){
+const brand=document.getElementById("businessBrand");
+if(brand)brand.textContent="WEZIR POS";
+const business=String((currentUser?.user_metadata||{}).business_name||"").trim();
+const settingsBusiness=document.getElementById("settingsBusinessName");
+if(settingsBusiness)settingsBusiness.textContent=business||"Not set";
+}
+function updateProfileSummary(){
+if(!currentUser)return;
+const m=currentUser.user_metadata||{};
+const name=m.full_name||"";
+const business=m.business_name||"WEZIR POS";
+const phone=m.phone||"";
+const summary=document.getElementById("profileSummary");
+if(summary)summary.textContent=[name,business,phone,currentUser.email].filter(Boolean).join(" • ");
+}
+function openProfile(){
+if(!currentUser)return;
+const m=currentUser.user_metadata||{};
+document.getElementById("modalHost").innerHTML=`<div class="modal"><div class="modal-box"><h2>Profile</h2>
+<label>Business Name</label><input id="profileBusiness" value="${escapeHtml(m.business_name||"WEZIR POS")}">
+<label>Full Name</label><input id="profileFullName" value="${escapeHtml(m.full_name||"")}">
+<label>Phone Number</label><input id="profilePhone" value="${escapeHtml(m.phone||"")}">
+<label>Email</label><input value="${escapeHtml(currentUser.email||"")}" disabled>
+<div class="modal-actions"><button onclick="saveProfile()">Save</button><button class="btn-secondary" onclick="closeModal()">Close</button></div></div></div>`;
+}
+async function saveProfile(){
+const business=document.getElementById("profileBusiness").value.trim();
+const fullName=document.getElementById("profileFullName").value.trim();
+const phone=document.getElementById("profilePhone").value.trim();
+const {data,error}=await supabaseClient.auth.updateUser({data:{...(currentUser.user_metadata||{}),business_name:business,full_name:fullName,phone:phone}});
+if(error)return alert(error.message);
+currentUser=data.user; updateBusinessDisplay(); updateProfileSummary(); closeModal(); alert("Profile updated successfully.");
+}
+function openPasswordModal(recovery=false){
+document.getElementById("modalHost").innerHTML=`<div class="modal"><div class="modal-box"><h2>${recovery?"Set New Password":"Change Password"}</h2>
+<label>New Password</label><input id="newPassword" type="password" placeholder="At least 6 characters">
+<label>Confirm Password</label><input id="newPassword2" type="password" placeholder="Repeat password">
+<div class="modal-actions"><button onclick="saveNewPassword()">Save Password</button><button class="btn-secondary" onclick="closeModal()">Cancel</button></div></div></div>`;
+}
+async function saveNewPassword(){
+const p=document.getElementById("newPassword").value;
+const p2=document.getElementById("newPassword2").value;
+if(p.length<6)return alert("Password must be at least 6 characters.");
+if(p!==p2)return alert("Passwords do not match.");
+const {error}=await supabaseClient.auth.updateUser({password:p});
+if(error)return alert(error.message);
+closeModal(); alert("Password changed successfully.");
+}
+async function forgotPassword(){
+const email=(document.getElementById("loginEmail")?.value||currentUser?.email||"").trim();
+if(!email)return alert("Enter your email first.");
+const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});
+if(error)return alert(error.message);
+alert("Password reset link has been sent to your email.");
+}
+function closeModal(){const h=document.getElementById("modalHost");if(h)h.innerHTML="";}
+function showAppMessage(messageKey){
+  const lang=getLanguage(),dict=I18N[lang]||I18N.en;
+  const title=dict["Notice"]||"Notice",message=dict[messageKey]||messageKey,ok=dict["OK"]||"OK";
+  const host=document.getElementById("modalHost");
+  if(!host)return;
+  host.innerHTML=`<div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="appMessageTitle" aria-describedby="appMessageText"><div class="modal-box"><h3 id="appMessageTitle">${escapeHtml(title)}</h3><p id="appMessageText">${escapeHtml(message)}</p><div class="modal-actions"><button type="button" onclick="closeModal()">${escapeHtml(ok)}</button></div></div></div>`;
+  host.querySelector('button')?.focus();
+}
+
+async function adminUserAction(userId,action,hours){
+  if(!isAdmin())return alert("Admin only.");
+  if(String(userId||"")===String(currentUser?.id||""))return alert("You cannot stop or deactivate your own admin account.");
+  const labels={stop:(hours===1?"Stop for 1 Day":hours===7?"Stop for 7 Days":"Stop for 30 Days"),deactivate:"Deactivate until activated",activate:"Activate"};
+  const label=labels[action]||action;
+  if(!confirm(label+" for this user?"))return;
+  try{
+    const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+    if(sessionError)throw sessionError;
+    if(!session?.access_token)throw new Error("Admin session not found. Please sign in again.");
+    const response=await fetch(SUPER_ACTION_URL,{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({action,user_id:userId,hours})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||!result.success)throw new Error(result.error||"Action failed.");
+    alert(label+" completed successfully.");
+    await loadAdminUsers();
+  }catch(e){alert(e.message||String(e));}
+}
+
+const ADMIN_EMAIL="wezirumar1988@gmail.com";
+const SUPER_ACTION_URL="https://qoxhhdxcezmwqeehqtvy.supabase.co/functions/v1/super-action";
+function isAdmin(){
+  const u=(typeof currentUser!=="undefined"&&currentUser)?currentUser:(window.currentUser||null);
+  return String(u?.email||"").trim().toLowerCase()===ADMIN_EMAIL.toLowerCase();
+}
+function setupAdminNav(){
+  const nav=document.getElementById("adminNav");
+  if(!nav)return;
+  nav.classList.remove("hidden");
+}
+async function adminSetSubscription(userId){
+  if(!isAdmin())return alert("Admin only.");
+  if(String(userId||"")===String(currentUser?.id||""))return alert("Use the customer account row only; your admin account is not a customer.");
+  const plan=prompt("Subscription plan: 30-Day Free Trial, Monthly, Yearly, or Custom","Monthly");
+  if(plan===null)return;
+  const allowed=["30-Day Free Trial","Monthly","Yearly","Custom"];
+  if(!allowed.includes(plan.trim()))return alert("Please enter one of: 30-Day Free Trial, Monthly, Yearly, Custom.");
+  const status=prompt("Subscription status: Trial, Active, Pending, Expired, or Suspended","Active");
+  if(status===null)return;
+  const statuses=["Trial","Active","Pending","Expired","Suspended"];
+  if(!statuses.includes(status.trim()))return alert("Invalid status.");
+  let expires_at=null;
+  if(status.trim()==="Active" && plan.trim()==="Monthly")expires_at=new Date(Date.now()+30*86400000).toISOString();
+  else if(status.trim()==="Active" && plan.trim()==="Yearly")expires_at=new Date(Date.now()+365*86400000).toISOString();
+  else if(status.trim()==="Trial")expires_at=new Date(Date.now()+30*86400000).toISOString();
+  try{
+    const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+    if(sessionError)throw sessionError;
+    if(!session?.access_token)throw new Error("Admin session not found. Please sign in again.");
+    const response=await fetch(SUPER_ACTION_URL,{method:"POST",headers:{Authorization:"Bearer "+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({action:"subscription",user_id:userId,plan:plan.trim(),status:status.trim(),expires_at})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||!result.success)throw new Error(result.error||"Subscription update failed.");
+    alert("Subscription updated successfully.");
+    await loadAdminUsers();
+  }catch(e){alert(e.message||String(e));}
+}
+
+async function loadAdminUsers(){
+  const box=document.getElementById("adminAccessBox");
+  const table=document.getElementById("adminUsersTable");
+  const stats=document.getElementById("adminStats");
+  if(!box||!table||!stats)return;
+  if(!isAdmin()){
+    box.innerHTML='<p class="error"><b>Access denied.</b> Admin only.</p>';
+    stats.innerHTML=""; table.innerHTML=""; return;
+  }
+  box.innerHTML='<p>Admin: <b>'+escapeHtml(currentUser.email||ADMIN_EMAIL)+'</b></p>';
+  table.innerHTML='<p class="muted">Loading users...</p>';
+  try{
+    const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+    if(sessionError)throw sessionError;
+    if(!session?.access_token)throw new Error("Admin session not found. Please sign in again.");
+    const response=await fetch(SUPER_ACTION_URL,{method:"GET",headers:{Authorization:"Bearer "+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY}});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||!result.success)throw new Error(result.error||"Could not load users.");
+    const users=Array.isArray(result.users)?result.users:[];
+    const active=users.filter(u=>u.active).length;
+    const confirmed=users.filter(u=>u.email_confirmed).length;
+    stats.innerHTML='<div class="stat"><div class="muted">Total Users</div><div class="value">'+users.length+'</div></div><div class="stat"><div class="muted">Active</div><div class="value">'+active+'</div></div><div class="stat"><div class="muted">Email Confirmed</div><div class="value">'+confirmed+'</div></div><div class="stat"><div class="muted">Admin</div><div class="value">1</div></div>';
+    if(!users.length){table.innerHTML='<p class="muted">No users found.</p>';return;}
+    const rows=users.map((u,i)=>{
+      const self=String(u.email||'').toLowerCase()===String(ADMIN_EMAIL).toLowerCase();
+      const actions=self
+        ? '<span class="muted">Admin</span>'
+        : '<div class="admin-actions">'+
+          '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'stop\',1)" title="Stop for 1 Day">⏸️ Stop 1 Day</button>'+
+          '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'stop\',7)" title="Stop for 7 Days">⏸️ Stop 7 Days</button>'+
+          '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'stop\',30)" title="Stop for 30 Days">⏸️ Stop 30 Days</button>'+
+          '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'deactivate\')" title="Deactivate until activated">🔴 Deactivate</button>'+
+          '<button class="small-btn" onclick="adminUserAction(\''+u.id+'\',\'activate\')" title="Activate account">🟢 Activate</button>'+
+          '<button class="small-btn" onclick="adminSetSubscription(\''+u.id+'\')" title="Manage subscription">💳 Subscription</button>'+
+          '</div>';
+      return '<tr><td>'+(i+1)+'</td><td>'+escapeHtml(u.full_name||'—')+'</td><td>'+escapeHtml(u.business_name||'—')+'</td><td>'+escapeHtml(u.email||'—')+'</td><td>'+escapeHtml(u.phone||'—')+'</td><td>'+formatAdminDate(u.created_at)+'</td><td>'+formatAdminDate(u.last_login)+'</td><td><span class="badge '+(u.active?'good':'out')+'">'+(u.active?'Active':'Inactive')+'</span></td><td><span class="badge '+(u.email_confirmed?'good':'low')+'">'+(u.email_confirmed?'Confirmed':'Not confirmed')+'</span></td><td>'+actions+'</td></tr>';
+    }).join('');
+    table.innerHTML='<table><thead><tr><th>#</th><th>Full Name</th><th>Business</th><th>Email</th><th>Phone</th><th>Created</th><th>Last Login</th><th>Status</th><th>Email</th><th>Actions</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }catch(e){
+    table.innerHTML='<p class="error"><b>Could not load users:</b> '+escapeHtml(e.message||String(e))+'</p>';
+  }
+}
+function formatAdminDate(value){if(!value)return "—";const d=new Date(value);if(Number.isNaN(d.getTime()))return escapeHtml(value);return escapeHtml(d.toLocaleString());}
+function showPage(id,btn){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));const page=document.getElementById(id);if(!page)return;page.classList.add("active");document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));if(btn)btn.classList.add("active");if(id==="adminDashboard")loadAdminUsers();renderAll();}
+async function addPurchase(){if(!currentUser)return alert("Please sign in first.");const name=document.getElementById("buyProduct").value.trim(),qty=Number(document.getElementById("buyQty").value),cost=Number(document.getElementById("buyCost").value),transport=Number(document.getElementById("buyTransport").value)||0,loading=Number(document.getElementById("buyLoading").value)||0,supplier=document.getElementById("buySupplier").value.trim(),profitPercent=Number(document.getElementById("buyProfitPercent").value)||0,date=document.getElementById("buyDate").value||today();let selling=Number(document.getElementById("buySellingPrice").value)||0;if(!name||qty<=0||cost<0)return alert("Product, quantity fi cost guuti.");const landed=cost+(transport+loading)/qty;if(selling<=0)selling=landed*(1+profitPercent/100);const existing=data.products.find(p=>p.name.toLowerCase()===name.toLowerCase());if(existing){const oldQty=Number(existing.stock||0),oldCost=Number(existing.cost||0),avg=(oldQty*oldCost+qty*landed)/(oldQty+qty);const {error}=await supabaseClient.from("products").update({stock:oldQty+qty,cost:avg,selling_price:selling,profit_percent:profitPercent}).eq("id",existing.id).eq("user_id",currentUser.id);if(error)return alert(error.message)}else{const {error}=await supabaseClient.from("products").insert({user_id:currentUser.id,name,sku:"",unit:"kg",stock:qty,cost:landed,selling_price:selling,profit_percent:profitPercent});if(error)return alert(error.message)}const {error}=await supabaseClient.from("purchases").insert({user_id:currentUser.id,product_name:name,qty,purchase_cost:cost,transport,loading,total_cost:qty*cost+transport+loading,supplier,purchase_date:date});if(error)return alert(error.message);alert("Purchase saved!\nLanded Cost: "+money(landed)+" / unit\nSelling Price: "+money(selling)+" / unit");["buyProduct","buyQty","buyCost","buyTransport","buyLoading","buySupplier","buySellingPrice"].forEach(id=>document.getElementById(id).value="");document.getElementById("buyProfitPercent").value=10;await loadCloudData()}
+function editProduct(id){
+ const p=data.products.find(x=>String(x.id)===String(id)); if(!p)return alert("Product hin argamne.");
+ document.getElementById("modalHost").innerHTML=`<div class="modal"><div class="modal-box"><h2>✏️ Edit Product</h2><label>Product</label><input id="epName" value="${escapeHtml(p.name||"")}"><label>Stock</label><input id="epStock" type="number" step="0.01" value="${Number(p.stock||0)}"><label>Average Cost</label><input id="epCost" type="number" step="0.01" value="${Number(p.cost||0)}"><label>Selling Price</label><input id="epPrice" type="number" step="0.01" value="${Number(p.selling_price||0)}"><label>Profit %</label><input id="epProfit" type="number" step="0.01" value="${Number(p.profit_percent||0)}"><div class="modal-actions"><button onclick="saveProductEdit('${p.id}')">Save</button><button class="btn-secondary" onclick="closeModal()">Close</button></div></div></div>`;
+}
+async function saveProductEdit(id){
+ try{const name=document.getElementById("epName").value.trim();const stock=Number(document.getElementById("epStock").value||0);const cost=Number(document.getElementById("epCost").value||0);const price=Number(document.getElementById("epPrice").value||0);const profit=Number(document.getElementById("epProfit").value||0);if(!name)return alert("Product name required");const r=await supabaseClient.from("products").update({name,stock,cost,selling_price:price,profit_percent:profit}).eq("id",id).eq("user_id",currentUser.id);if(r.error)throw r.error;closeModal();await loadCloudData();alert("Product updated successfully.");}catch(e){alert("Update error: "+e.message)}}
+function productMore(id){
+  const p=data.products.find(x=>String(x.id)===String(id));
+  if(!p)return;
+  document.getElementById("modalHost").innerHTML=`<div class="modal"><div class="modal-box"><h2>⋮ ${escapeHtml(p.name)}</h2>
+    <p><b>Stock:</b> ${Number(p.stock||0)}</p>
+    <p><b>Average Cost:</b> ${money(p.cost)}</p>
+    <p><b>Selling Price:</b> ${money(p.selling_price)}</p>
+    <p><b>Profit / Unit:</b> ${money(Number(p.selling_price||0)-Number(p.cost||0))}</p>
+    <p><b>Profit %:</b> ${Number(p.profit_percent||0)}%</p>
+    <div class="modal-actions">
+      <button onclick="editProduct(${JSON.stringify(String(p.id))})">✏️ Edit</button>
+      <button class="small-btn" style="background:#b42318;color:#fff" onclick="deleteProduct(${JSON.stringify(String(p.id))})">🗑️ Delete</button>
+      <button class="btn-secondary" onclick="closeModal()">Close</button>
+    </div></div></div>`;
+}
+async function deleteProduct(id){
+  const p=data.products.find(x=>String(x.id)===String(id));
+  if(!p)return alert("Product hin argamne.");
+  if(!currentUser)return alert("Please sign in first.");
+  const yes=confirm(`Meeshaa "${p.name}" stock keessaa haquu barbaaddaa? Seenaa gurgurtaa fi bittaa duraanii hin haqamu.`);
+  if(!yes)return;
+  try{
+    const {error}=await supabaseClient.from("products").delete().eq("id",id).eq("user_id",currentUser.id);
+    if(error)throw error;
+    closeModal();
+    await loadCloudData();
+    alert("Product deleted from stock. Sales and purchase history were not deleted.");
+  }catch(e){alert("Delete error: "+(e.message||String(e))+"\nSupabase DELETE policy may be required.");}
+}
+
+function renderPosProductButtons(){
+  const box=document.getElementById("posProductButtons");
+  if(!box)return;
+  const query=(document.getElementById("posSearch")?.value||"").trim().toLowerCase();
+  const available=data.products.filter(p=>Number(p.stock||0)>0&&String(p.name||"").toLowerCase().includes(query));
+  box.innerHTML=available.length?available.map(p=>`<button type="button" class="pos-product-btn" data-product-id="${escapeHtml(String(p.id))}" aria-label="Add ${escapeHtml(p.name)} to invoice">
+    <span class="pos-product-icon">＋</span><span class="pos-product-name">${escapeHtml(p.name)}</span>
+    <span class="pos-product-price">${money(p.selling_price)}</span><span class="pos-product-stock">${Number(p.stock||0).toLocaleString()} available</span>
+  </button>`).join(""):`<div class="pos-empty">${query?"No matching products found.":"No products in stock yet."}</div>`;
+  // Bind clicks after rendering; avoids broken inline handlers when IDs contain quotes.
+  box.querySelectorAll(".pos-product-btn[data-product-id]").forEach(button=>{
+    button.addEventListener("click",()=>addProductToCart(button.getAttribute("data-product-id")));
+  });
+}
+
+function addProductToCart(id){
+  const product=data.products.find(p=>String(p.id)===String(id));
+  if(!product)return alert("Product hin argamne.");
+  if(Number(product.stock||0)<=0)return alert("Meeshaan stock hin qabu.");
+  const qtyInput=document.getElementById("posQty");
+  const qty=Number(qtyInput?.value||1);
+  if(!Number.isFinite(qty)||qty<=0)return alert("Baay'ina sirrii galchi.");
+  const existing=cart.find(x=>String(x.id)===String(product.id));
+  const totalQty=(existing?Number(existing.qty):0)+qty;
+  if(totalQty>Number(product.stock||0))return alert("Stock gahaa miti. Available: "+product.stock);
+  if(existing){existing.qty=totalQty;}
+  else{cart.push({id:product.id,name:product.name,qty,price:Number(product.selling_price||0),cost:Number(product.cost||0)});}
+  renderCart();
+  const cartBox=document.getElementById("cart");
+  if(cartBox)cartBox.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function renderProducts(){let h='<table><tr><th>Product</th><th>Stock</th><th>Average Cost</th><th>Selling Price</th><th>Profit / Unit</th><th>Status</th><th>More / Edit</th></tr>';data.products.forEach(p=>{const stock=Number(p.stock||0),cost=Number(p.cost||0),price=Number(p.selling_price||0),status=stock<=0?'<span class="badge out">OUT OF STOCK</span>':stock<=10?'<span class="badge low">LOW STOCK</span>':'<span class="badge good">IN STOCK</span>';h+=`<tr><td><b>${escapeHtml(p.name)}</b></td><td>${stock}</td><td>${money(cost)}</td><td>${money(price)}</td><td>${money(price-cost)}</td><td>${status}</td><td><button class="small-btn" onclick="editProduct('${p.id}')">✏️ Edit</button> <button class="small-btn" onclick="productMore('${p.id}')">⋮ More</button></td></tr>`});h+='</table>';document.getElementById("productTable").innerHTML=data.products.length?h:"No products yet.";document.getElementById("posProduct").innerHTML=data.products.filter(p=>Number(p.stock||0)>0).map(p=>`<option value="${p.id}">${escapeHtml(p.name)} — ${p.stock} available — ${money(p.selling_price)}</option>`).join("");renderPosProductButtons()}
+function renderPurchases(){let h='<table><tr><th>Date</th><th>Product</th><th>Qty</th><th>Purchase Cost</th><th>Transport</th><th>Loading</th><th>Total</th><th>Action</th></tr>';data.purchases.forEach(p=>h+=`<tr><td>${p.purchase_date||""}</td><td>${escapeHtml(p.product_name)}</td><td>${p.qty}</td><td>${money(p.purchase_cost)}</td><td>${money(p.transport)}</td><td>${money(p.loading)}</td><td>${money(p.total_cost)}</td><td><button class="small-btn" onclick="editPurchase('${p.id}')">✏️ Edit</button></td></tr>`);h+='</table>';document.getElementById("purchaseTable").innerHTML=data.purchases.length?h:"No purchases yet."}
+
+function editPurchase(id){
+  const p=data.purchases.find(x=>String(x.id)===String(id));
+  if(!p)return alert('Purchase not found.');
+  const host=document.getElementById('modalHost');
+  host.innerHTML=`<div class="modal"><div class="modal-box"><h2>✏️ Edit Purchase</h2>
+  <label>Product</label><input id="editPurchaseProduct" value="${escapeHtml(p.product_name||'')}" disabled>
+  <label>Quantity</label><input id="editPurchaseQty" type="number" min="0" step="0.01" value="${Number(p.qty||0)}">
+  <label>Purchase Cost / Unit</label><input id="editPurchaseCost" type="number" min="0" step="0.01" value="${Number(p.purchase_cost||0)}">
+  <label>Transport Cost</label><input id="editPurchaseTransport" type="number" min="0" step="0.01" value="${Number(p.transport||0)}">
+  <label>Loading / Unloading</label><input id="editPurchaseLoading" type="number" min="0" step="0.01" value="${Number(p.loading||0)}">
+  <label>Supplier</label><input id="editPurchaseSupplier" value="${escapeHtml(p.supplier||'')}">
+  <label>Purchase Date</label><input id="editPurchaseDate" type="date" value="${p.purchase_date||''}">
+  <div class="modal-actions"><button onclick="savePurchaseEdit('${p.id}')">Save Changes</button><button class="btn-secondary" onclick="closeModal()">Cancel</button></div></div></div>`;
+}
+
+async function savePurchaseEdit(id){
+  if(!currentUser)return alert('Please sign in first.');
+  const old=data.purchases.find(x=>String(x.id)===String(id));
+  if(!old)return alert('Purchase not found.');
+  const qty=Number(document.getElementById('editPurchaseQty').value), cost=Number(document.getElementById('editPurchaseCost').value), transport=Number(document.getElementById('editPurchaseTransport').value)||0, loading=Number(document.getElementById('editPurchaseLoading').value)||0;
+  const supplier=document.getElementById('editPurchaseSupplier').value.trim(), date=document.getElementById('editPurchaseDate').value||today();
+  if(qty<=0||cost<0)return alert('Quantity fi cost sirrii galchi.');
+  const totalCost=qty*cost+transport+loading;
+  const {error}=await supabaseClient.from('purchases').update({qty,purchase_cost:cost,transport,loading,total_cost:totalCost,supplier,purchase_date:date}).eq('id',old.id).eq('user_id',currentUser.id);
+  if(error)return alert(error.message);
+
+  const product=data.products.find(x=>String(x.name||'').toLowerCase()===String(old.product_name||'').toLowerCase());
+  if(product){
+    const newStock=Math.max(0,Number(product.stock||0)-Number(old.qty||0)+qty);
+    const {data:allPurchases,error:pe}=await supabaseClient.from('purchases').select('*').eq('user_id',currentUser.id).eq('product_name',old.product_name);
+    if(pe)return alert(pe.message);
+    let totalQty=0,totalLanded=0;
+    (allPurchases||[]).forEach(x=>{const q=Number(x.qty||0), landed=Number(x.purchase_cost||0)+(Number(x.transport||0)+Number(x.loading||0))/Math.max(q,1); totalQty+=q; totalLanded+=q*landed;});
+    const avgCost=totalQty?totalLanded/totalQty:Number(product.cost||0);
+    const {error:ue}=await supabaseClient.from('products').update({stock:newStock,cost:avgCost}).eq('id',product.id).eq('user_id',currentUser.id);
+    if(ue)return alert(ue.message);
+  }
+  closeModal(); await loadCloudData(); alert('Purchase updated successfully.');
+}
+function addToCart(){const id=document.getElementById("posProduct").value,qty=Number(document.getElementById("posQty").value),p=data.products.find(x=>String(x.id)===String(id));if(!p||qty<=0)return alert("Product fi quantity sirrii galchi.");const existing=cart.find(x=>String(x.id)===String(id)),totalQty=(existing?existing.qty:0)+qty;if(totalQty>Number(p.stock||0))return alert("Stock gahaa miti. Available: "+p.stock);if(existing)existing.qty+=qty;else cart.push({id:p.id,name:p.name,qty,price:Number(p.selling_price||0),cost:Number(p.cost||0)});renderCart()}
+function removeFromCart(i){cart.splice(i,1);renderCart()}
+function clearCart(){cart=[];renderCart()}
+
+function updateCartQty(index,delta){
+  const item=cart[index];if(!item)return;
+  const product=data.products.find(p=>String(p.id)===String(item.id));
+  const next=Number(item.qty)+delta;
+  if(next<=0){removeFromCart(index);return;}
+  if(product&&next>Number(product.stock||0))return alert("Stock gahaa miti. Available: "+product.stock);
+  item.qty=Number(next.toFixed(4));renderCart();
+}
+function renderCart(){
+  const box=document.getElementById("cart");if(!box)return;
+  if(!cart.length){box.innerHTML='<div class="pos-empty pos-cart-empty"><div class="pos-empty-icon">🧾</div><b>Invoice is empty</b><span>Choose a product to get started.</span></div>';return;}
+  let total=0,cost=0;
+  let h='<div class="pos-cart-table-wrap"><table class="pos-cart-table"><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th><th></th></tr></thead><tbody>';
+  cart.forEach((x,i)=>{
+    const line=Number(x.qty)*Number(x.price);total+=line;cost+=Number(x.qty)*Number(x.cost);
+    h+=`<tr><td><b>${escapeHtml(x.name)}</b></td><td><div class="qty-control"><button type="button" aria-label="Decrease quantity" onclick="updateCartQty(${i},-1)">−</button><span>${Number(x.qty).toLocaleString()}</span><button type="button" aria-label="Increase quantity" onclick="updateCartQty(${i},1)">+</button></div></td><td>${money(x.price)}</td><td><b>${money(line)}</b></td><td><button class="small-btn btn-danger pos-remove" onclick="removeFromCart(${i})" aria-label="Remove item">×</button></td></tr>`;
+  });
+  h+='</tbody></table></div><div class="total-box pos-total"><div class="pos-total-label">TOTAL SALE</div><div class="big">'+money(total)+'</div><div class="pos-profit">Estimated gross profit: '+money(total-cost)+'</div></div>';
+  box.innerHTML=h;
+}
+let checkoutInProgress=false;
+async function checkout(){
+  if(checkoutInProgress)return;
+  if(!cart.length)return alert("Cart keessa item hin jiru.");
+  if(!currentUser)return alert("Please sign in.");
+  const invoice=document.getElementById("invoiceNo").value.trim()||makeInvoice();
+  if(data.sales.some(s=>String(s.invoice_no)===String(invoice)))return showAppMessage("Invoice number already exists");
+  const payment=document.getElementById("paymentMethod").value;
+  const customer=document.getElementById("customerName").value.trim();
+  // Validate the entire invoice before writing anything.
+  const lines=[];
+  for(const x of cart){
+    const p=data.products.find(p=>String(p.id)===String(x.id));
+    const qty=Number(x.qty), price=Number(x.price), unitCost=Number(x.cost);
+    if(!p)return alert("Product hin argamne: "+x.name);
+    if(!Number.isFinite(qty)||qty<=0||!Number.isFinite(price)||price<0)return alert("Quantity ykn gatiin sirrii miti: "+x.name);
+    if(qty>Number(p.stock||0))return alert("Stock gahaa miti: "+x.name+". Available: "+p.stock);
+    lines.push({product:p,item:x,qty,price,unitCost,total:qty*price,cost:qty*unitCost});
+  }
+  checkoutInProgress=true;
+  const checkoutBtn=document.querySelector(".pos-checkout");
+  if(checkoutBtn){checkoutBtn.disabled=true;checkoutBtn.textContent="Processing...";}
+  try{
+    const rows=lines.map(({item,qty,price,cost,total})=>({user_id:currentUser.id,invoice_no:invoice,product_name:item.name,qty,selling_price:price,total,cost,profit:total-cost,payment_method:payment,customer,sale_date:today()}));
+    const {error:salesError}=await supabaseClient.from("sales").insert(rows);
+    if(salesError)throw salesError;
+    for(const line of lines){
+      const {error:updateError}=await supabaseClient.from("products").update({stock:Number(line.product.stock)-line.qty}).eq("id",line.product.id).eq("user_id",currentUser.id);
+      if(updateError)throw updateError;
+    }
+    const total=lines.reduce((sum,x)=>sum+x.total,0),cost=lines.reduce((sum,x)=>sum+x.cost,0);
+    const sale={invoice,date:new Date().toLocaleString(),customer,payment,items:cart.map(x=>({...x})),total,cost,profit:total-cost};
+    cart=[];
+    document.getElementById("customerName").value="";
+    document.getElementById("invoiceNo").value=makeInvoice();
+    await loadCloudData();
+    alert(invoice+" successfully completed!\\nProfit: "+money(sale.profit));
+    printInvoice(sale);
+  }catch(error){
+    alert("Sale hin xumuramne: "+(error?.message||String(error))+"\\nYoo sale galmaa'e ta'e, invoice history fi stock ilaali; irra deebi'anii hin cuqaasinaa.");
+  }finally{
+    checkoutInProgress=false;
+    if(checkoutBtn){checkoutBtn.disabled=false;checkoutBtn.innerHTML="Complete Sale&nbsp; →";}
+  }
+}
+function renderSales(){let groups={};data.sales.forEach(s=>{const k=s.invoice_no||"NO-INVOICE";if(!groups[k])groups[k]={invoice:k,date:s.sale_date,customer:s.customer,payment:s.payment_method,total:0,profit:0,items:[]};groups[k].total+=Number(s.total||0);groups[k].profit+=Number(s.profit||0);groups[k].items.push({name:s.product_name,qty:Number(s.qty||0),price:Number(s.selling_price||0),cost:Number(s.cost||0)})});let arr=Object.values(groups),h='<table><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Payment</th><th>Total</th><th>Profit</th><th>Action</th></tr>';arr.forEach((s,i)=>h+=`<tr><td><b>${escapeHtml(s.invoice)}</b></td><td>${s.date||""}</td><td>${escapeHtml(s.customer||"-")}</td><td>${escapeHtml(s.payment||"")}</td><td>${money(s.total)}</td><td>${money(s.profit)}</td><td><button class="small-btn" onclick='printInvoice(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Print</button> <button class="small-btn" onclick="editSale('${String(s.invoice).replace(/'/g,"\\'")}')">✏️ Edit</button></td></tr>`);h+='</table>';document.getElementById("salesTable").innerHTML=arr.length?h:"No sales yet.";document.getElementById("recentSales").innerHTML=arr.slice(0,5).map(s=>`<div style="padding:8px 0;border-bottom:1px solid #eee"><b>${escapeHtml(s.invoice)}</b> — ${money(s.total)} — Profit ${money(s.profit)} <button class="small-btn" style="float:right" onclick="editSale('${String(s.invoice).replace(/'/g,"\\'")}')">✏️ Edit</button></div>`).join("")||"No sales yet."}
+function editSale(invoice){
+  const items=data.sales.filter(s=>String(s.invoice_no)===String(invoice));
+  if(!items.length)return alert('Sale not found.');
+  const host=document.getElementById('modalHost');
+  let rows=items.map((s,i)=>`<div style="border:1px solid #ddd;border-radius:10px;padding:10px;margin:8px 0">
+    <b>${escapeHtml(s.product_name)}</b>
+    <label>Quantity</label><input id="editSaleQty${i}" type="number" min="0" step="0.01" value="${Number(s.qty||0)}">
+    <label>Selling Price / Unit</label><input id="editSalePrice${i}" type="number" min="0" step="0.01" value="${Number(s.selling_price||0)}">
+  </div>`).join('');
+  host.innerHTML=`<div class="modal"><div class="modal-box"><h2>✏️ Edit Sale — ${escapeHtml(invoice)}</h2>${rows}
+  <label>Payment Method</label><select id="editSalePayment"><option value="Cash">Cash</option><option value="Credit">Credit</option><option value="Bank">Bank</option><option value="UPI">UPI</option></select>
+  <label>Customer</label><input id="editSaleCustomer" value="${escapeHtml(items[0].customer||'')}">
+  <div class="modal-actions"><button onclick="saveSaleEdit('${String(invoice).replace(/'/g,"\\'")}')">Save Changes</button><button class="btn-secondary" onclick="closeModal()">Cancel</button></div></div></div>`;
+  document.getElementById('editSalePayment').value=items[0].payment_method||'Cash';
+}
+
+async function saveSaleEdit(invoice){
+  if(!currentUser)return alert('Please sign in first.');
+  const items=data.sales.filter(s=>String(s.invoice_no)===String(invoice));
+  if(!items.length)return alert('Sale not found.');
+  let oldQtyTotal=0,newQtyTotal=0;
+  const updates=[];
+  for(let i=0;i<items.length;i++){
+    const s=items[i];
+    const qty=Number(document.getElementById('editSaleQty'+i).value);
+    const price=Number(document.getElementById('editSalePrice'+i).value);
+    if(qty<=0||price<0)return alert('Quantity fi selling price sirrii galchi.');
+    oldQtyTotal+=Number(s.qty||0); newQtyTotal+=qty;
+    updates.push({row:s,qty,price});
+  }
+  const payment=document.getElementById('editSalePayment').value;
+  const customer=document.getElementById('editSaleCustomer').value.trim();
+  for(const u of updates){
+    const s=u.row;
+    const total=u.qty*u.price;
+    const cost=u.qty*Number(s.cost||0)/Math.max(Number(s.qty||0),1);
+    const profit=total-cost;
+    const {error}=await supabaseClient.from('sales').update({qty:u.qty,selling_price:u.price,total,cost,profit,payment_method:payment,customer}).eq('id',s.id).eq('user_id',currentUser.id);
+    if(error)return alert(error.message);
+    const p=data.products.find(x=>String(x.name||'').toLowerCase()===String(s.product_name||'').toLowerCase());
+    if(p){
+      const stock=Number(p.stock||0)+Number(s.qty||0)-u.qty;
+      const {error:ue}=await supabaseClient.from('products').update({stock:Math.max(0,stock)}).eq('id',p.id).eq('user_id',currentUser.id);
+      if(ue)return alert(ue.message);
+    }
+  }
+  closeModal();
+  await loadCloudData();
+  alert('Sale updated successfully.');
+}
+
+async function addExpense(){if(!currentUser)return alert("Please sign in.");const description=document.getElementById("eName").value.trim(),amount=Number(document.getElementById("eAmount").value);if(!description||amount<=0)return alert("Expense fi amount guuti.");const {error}=await supabaseClient.from("expenses").insert({user_id:currentUser.id,description,amount,expense_date:today()});if(error)return alert(error.message);document.getElementById("eName").value="";document.getElementById("eAmount").value="";await loadCloudData()}
+function renderExpenses(){let h='<table><tr><th>Expense</th><th>Date</th><th>Amount</th></tr>';data.expenses.forEach(e=>h+=`<tr><td>${escapeHtml(e.description)}</td><td>${e.expense_date||""}</td><td>${money(e.amount)}</td></tr>`);h+='</table>';document.getElementById("expenseTable").innerHTML=data.expenses.length?h:"No expenses yet."}
+function renderDashboard(){const sales=data.sales.reduce((a,s)=>a+Number(s.total||0),0),cogs=data.sales.reduce((a,s)=>a+Number(s.cost||0),0),expenses=data.expenses.reduce((a,e)=>a+Number(e.amount||0),0),purchase=data.purchases.reduce((a,p)=>a+Number(p.total_cost||0),0),profit=sales-cogs-expenses,stockProducts=data.products.filter(p=>Number(p.stock||0)>0).length,stockQty=data.products.reduce((a,p)=>a+Number(p.stock||0),0),stockValue=data.products.reduce((a,p)=>a+Number(p.stock||0)*Number(p.cost||0),0),invoices=new Set(data.sales.map(s=>s.invoice_no)).size;document.getElementById("dSales").textContent=money(sales);document.getElementById("dPurchase").textContent=money(purchase);document.getElementById("dExpenses").textContent=money(expenses);document.getElementById("dProfit").textContent=money(profit);document.getElementById("dStock").textContent=stockProducts;document.getElementById("dQty").textContent=stockQty;document.getElementById("dStockValue").textContent=money(stockValue);document.getElementById("dInvoices").textContent=invoices;document.getElementById("reportBox").innerHTML=`<h3>Business Report</h3><p>Total Sales: <b>${money(sales)}</b></p><p>Total Purchases: <b>${money(purchase)}</b></p><p>Cost of Goods Sold: <b>${money(cogs)}</b></p><p>Total Expenses: <b>${money(expenses)}</b></p><hr><h2>Net Profit: ${money(profit)}</h2><p>Current Stock Value: <b>${money(stockValue)}</b></p>`}
+function getBusinessName(){
+  const name=(currentUser&&currentUser.user_metadata&&currentUser.user_metadata.business_name)||"WEZIR POS";
+  return String(name).trim()||"WEZIR POS";
+}
+function printInvoice(sale){
+ try{
+  if(!sale)return alert("Invoice hin argamne.");
+  let items=(sale.items||[]).map(x=>`<tr><td>${escapeHtml(x.name)}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(x.qty*x.price)}</td></tr>`).join("");
+  const area=document.getElementById("printArea");
+  if(!area)throw new Error("Print area hin jiru.");
+  area.innerHTML=`<div class="invoice"><div class="invoice-header"><div><h1>${escapeHtml(getBusinessName())}</h1><p>Point of Sale & Inventory</p></div><div><b>INVOICE</b><p>${escapeHtml(sale.invoice||sale.invoice_no||"")}</p><p>${escapeHtml(sale.date||today())}</p></div></div><p><b>Customer:</b> ${escapeHtml(sale.customer||"Walk-in Customer")}</p><p><b>Payment:</b> ${escapeHtml(sale.payment||"Cash")}</p><table><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>${items}</table><h2 style="text-align:right">TOTAL: ${money(sale.total)}</h2><p style="text-align:center">Thank you for shopping with us!</p></div>`;
+  area.classList.remove("hidden");
+  window.print();
+  setTimeout(()=>area.classList.add("hidden"),500);
+ }catch(err){alert("Print error: "+err.message)}
+}
+function exportExcelSheet(rows,name){
+if(typeof XLSX==="undefined")return alert("Excel library hin banamne.");
+const ws=XLSX.utils.json_to_sheet(rows);
+const wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,name.slice(0,31));
+XLSX.writeFile(wb,getBusinessName().replace(/\s+/g,"_")+"_"+name+".xlsx");
+}
+function exportExcelAll(){
+if(typeof XLSX==="undefined")return alert("Excel library hin banamne.");
+const wb=XLSX.utils.book_new();
+const sheets={Sales:data.sales,Stock:data.products,Purchases:data.purchases,Expenses:data.expenses,Report:[{total_sales:data.sales.reduce((a,x)=>a+Number(x.total||0),0),total_purchase:data.purchases.reduce((a,x)=>a+Number(x.total_cost||0),0),total_expenses:data.expenses.reduce((a,x)=>a+Number(x.amount||0),0),net_profit:data.sales.reduce((a,x)=>a+Number(x.profit||0),0)-data.expenses.reduce((a,x)=>a+Number(x.amount||0),0)}]};
+Object.entries(sheets).forEach(([name,rows])=>{const ws=XLSX.utils.json_to_sheet(rows||[]);XLSX.utils.book_append_sheet(wb,ws,name)});
+XLSX.writeFile(wb,getBusinessName().replace(/\s+/g,"_")+"_REPORT_"+today()+".xlsx");
+}
+async function importExcel(event){
+const file=event.target.files?.[0];if(!file)return;
+if(typeof XLSX==="undefined")return alert("Excel library hin banamne.");
+if(!currentUser)return alert("Please sign in.");
+try{
+const wb=XLSX.read(await file.arrayBuffer(),{type:"array"});
+let imported=0;
+const stockSheet=wb.Sheets["Stock"]||wb.Sheets["Products"];
+if(stockSheet){
+const rows=XLSX.utils.sheet_to_json(stockSheet,{defval:""});
+for(const r of rows){const name=String(r.name||r.Name||r.product_name||r.Product||"").trim();if(!name)continue;const qty=Number(r.stock??r.Stock??r.qty??0),cost=Number(r.cost??r.Cost??0),price=Number(r.selling_price??r.Selling_Price??r.price??0);const sku=String(r.sku??r.SKU??"");const existing=data.products.find(p=>p.name.toLowerCase()===name.toLowerCase()|| (sku&&p.sku===sku));if(existing){await supabaseClient.from("products").update({stock:qty,cost,selling_price:price,sku}).eq("id",existing.id).eq("user_id",currentUser.id)}else{await supabaseClient.from("products").insert({user_id:currentUser.id,name,sku,unit:String(r.unit||r.Unit||"kg"),stock:qty,cost,selling_price:price,profit_percent:Number(r.profit_percent??r.Profit_Percent??0)})}imported++;}}
+await loadCloudData();
+event.target.value="";
+alert("Excel irraa Stock import xumurame. Rows: "+imported);
+}catch(err){console.error(err);alert("Excel file sirrii miti ykn format isaa hin beekamne.");event.target.value="";}
+}
+function backupData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="QUEEN_FAMILY_STORE_BACKUP.json";a.click();URL.revokeObjectURL(url)}
+function restoreData(event){
+const file=event.target.files[0]; if(!file)return;
+const reader=new FileReader();
+reader.onload=async e=>{
+try{
+const r=JSON.parse(e.target.result);
+if(!currentUser)return alert("Please sign in.");
+if(!r.products||!r.sales||!r.expenses)return alert("Backup file sirrii miti.");
+for(const p of r.products||[])await supabaseClient.from("products").upsert({
+user_id:currentUser.id,name:p.name,sku:p.sku||"",unit:p.unit||"kg",
+stock:Number(p.stock??p.qty??0),cost:Number(p.cost||0),
+selling_price:Number(p.selling_price??p.price??0),profit_percent:Number(p.profit_percent||0)
+},{onConflict:"id"});
+for(const p of r.purchases||[])await supabaseClient.from("purchases").insert({
+user_id:currentUser.id,product_name:p.product_name||p.name||"",qty:Number(p.qty||0),
+purchase_cost:Number(p.purchase_cost||0),transport:Number(p.transport||0),loading:Number(p.loading||0),
+total_cost:Number(p.total_cost||0),supplier:p.supplier||"",purchase_date:p.purchase_date||today()
+});
+for(const s of r.sales||[])await supabaseClient.from("sales").insert({
+user_id:currentUser.id,invoice_no:s.invoice_no||"",product_name:s.product_name||"",qty:Number(s.qty||0),
+selling_price:Number(s.selling_price||0),total:Number(s.total||0),cost:Number(s.cost||0),profit:Number(s.profit||0),
+payment_method:s.payment_method||"Cash",customer:s.customer||"",sale_date:s.sale_date||today()
+});
+for(const x of r.expenses||[])await supabaseClient.from("expenses").insert({
+user_id:currentUser.id,description:x.description||"",amount:Number(x.amount||0),expense_date:x.expense_date||today()
+});
+await loadCloudData(); alert("Backup restored successfully.");
+}catch(err){alert("Backup file sirrii miti: "+err.message);}
+};
+reader.readAsText(file);
+}
+async function clearAllData(){
+ if(!currentUser)return alert("Please sign in first.");
+ if(!confirm("Daldala kee keessatti jiru SALES, PURCHASES, EXPENSES fi PRODUCTS hunda haquuf mirkaneessi. Kun deebifamuu hin danda'u."))return;
+ const {data:bid,error:be}=await supabaseClient.rpc("get_my_business_id");
+ if(be)return alert("Business ID argachuu hin dandeenye: "+be.message);
+ const businessId=Array.isArray(bid)?(bid[0]?.business_id??bid[0]):(bid?.business_id??bid);
+ if(!businessId)return alert("Business ID hin argamne. Daataa hin haqamne.");
+ const tables=["sales","purchases","expenses","products"];
+ for(const table of tables){
+   const {error}=await supabaseClient.from(table).delete().eq("business_id",businessId);
+   if(error)return alert("Haquun "+table+" irratti dhaabbate: "+error.message+". Daataan hafan hin haqamne; Supabase RLS/policy ilaali.");
+ }
+ await loadCloudData();
+ alert("Daataan daldala kee keessaa Sales, Purchases, Expenses fi Products haqameera. Galmeen business_id hin qabne adda durummaan hin haqamne.");
+}
+function renderAll(){updateBusinessDisplay();renderDashboard();renderPurchases();renderProducts();renderCart();renderSales();renderExpenses()}
+document.getElementById("buyDate").value=today();document.getElementById("invoiceNo").value=makeInvoice();syncLanguageSelectors();applyLanguage();
+(async()=>{const {data:{session}}=await supabaseClient.auth.getSession();if(session){currentUser=session.user;document.getElementById("loginScreen").style.display="none";document.getElementById("app").style.display="block";document.getElementById("currentUser").textContent=currentUser.email;updateProfileSummary();syncLanguageSelectors();applyLanguage();setupAdminNav();await loadCloudData()}else{setupAdminNav()}})();
+supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;setupAdminNav();if(currentUser){const cu=document.getElementById("currentUser");if(cu)cu.textContent=currentUser.email||"";updateProfileSummary();updateBusinessDisplay();}});
+</script>
+<script>
+/* WEZIR POS — CLEAN 34 FEATURE HUB */
+(function(){
+  const features=[
+    ["🏠","Dashboard","dashboard"],["📦","Stock / Inventory","products"],
+    ["🛒","POS / Gurgurtaa","pos"],["🧾","Invoice","invoicehub"],
+    ["🖨️","Invoice Print","print"],["📊","Sales Reports","reports"],
+    ["🛍️","Purchases","purchases"],["💰","Expenses","expenses"],
+    ["👥","Customers","customers"],["💳","Customer Credit / Balance","customercredit"],
+    ["🏭","Suppliers","suppliers"],["💵","Supplier Balance","supplierbalance"],
+    ["🔄","Stock Adjustment","adjustment"],["↩️","Sales Return / Refund","salesreturn"],
+    ["↩️","Purchase Return","purchasereturn"],["🔔","Low Stock Alert","lowstock"],
+    ["🚫","Out of Stock","outstock"],["📅","Expiry Date","expiry"],
+    ["🏷️","Batch / Lot","batch"],["👤","Users & Permissions","users"],
+    ["💳","Payment Methods","payments"],["⚙️","Settings","settings"],
+    ["💾","Backup / Restore","backup"],["☁️","Cloud Account & Data Separation","cloud"],
+    ["📈","Profit / Net Profit","profit"],["📊","Export Report → Excel","export"],
+    ["🔐","Forgot Password","forgot"],["🔄","Change Password","changepassword"],
+    ["📱","Barcode","barcode"],["🧾","Automatic Invoice Number","autoinvoice"],
+    ["🆘","Help / Contact","help"],["🌍","Country + Currency","currency"],
+    ["🔑","Email Login","email"],["💳","Subscription / Business Management","subscription"]
+  ];
+  function addStyle(){
+    if(document.getElementById("wezirFeatureHubStyle")) return;
+    const st=document.createElement("style");st.id="wezirFeatureHubStyle";
+    st.textContent=".qf34{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.qf34 .f{background:#fff;border:1px solid #eee;border-radius:16px;padding:18px;cursor:pointer;box-shadow:0 3px 14px #0001}.qf34 .f:hover{transform:translateY(-2px)}.qfhub{background:#111;color:#fff;border:2px solid #D4AF37;border-radius:16px;padding:20px;margin-bottom:20px}.qfhub h2{color:#F4D76A}.qfmodal{position:fixed;inset:0;background:#0008;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.qfbox{background:#fff;border:2px solid #D4AF37;border-radius:18px;width:min(720px,100%);max-height:90vh;overflow:auto;padding:24px}.qfgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.qfstat{padding:15px;border-radius:12px;background:#f5f5f5}.qfmuted{color:#777}";
+    document.head.appendChild(st);
+  }
+  function modal(title,html){
+    document.querySelector(".qfmodal")?.remove();
+    const m=document.createElement("div");m.className="qfmodal";
+    m.innerHTML='<div class="qfbox"><div style="display:flex;justify-content:space-between;align-items:center"><h2>'+title+'</h2><button type="button" onclick="this.closest(\'.qfmodal\').remove()">✕</button></div>'+html+"</div>";
+    document.body.appendChild(m);return m;
+  }
+  function exportCSV(){
+    const rows=[["Product","Stock","Cost","Selling Price"]].concat((window.products||[]).map(p=>[p.name,p.stock,p.cost,p.selling_price]));
+    const csv=rows.map(r=>r.map(v=>'"'+String(v??"").replaceAll('"','""')+'"').join(",")).join("\n");
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="wezir-pos-stock-report.csv";a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }
+  window.exportCSV=exportCSV;
+  window.qfFeature=function(key){
+    if(["dashboard","products","pos","purchases","expenses","reports","settings"].includes(key)){
+      if(typeof window.showPage==="function") return window.showPage(key); return;
+    }
+    if(key==="forgot") return typeof window.forgotPassword==="function" ? window.forgotPassword() : modal("🔐 Forgot Password","<p>Use Forgot Password on the login screen.</p>");
+    if(key==="changepassword") return typeof window.openPasswordModal==="function" ? window.openPasswordModal() : modal("🔄 Change Password","<p>Use Settings → Change Password.</p>");
+    if(key==="backup") return typeof window.backupData==="function" ? window.backupData() : modal("💾 Backup / Restore","<p>Use Settings → Backup.</p>");
+    if(key==="cloud") return typeof window.showPage==="function" ? window.showPage("settings") : null;
+    if(key==="print") return window.print();
+    if(key==="invoicehub") return typeof window.showPage==="function" ? window.showPage("pos") : null;
+    if(key==="autoinvoice") return modal("🧾 Automatic Invoice Number","<p>The POS generates invoice numbers such as <b>INV-0001</b> automatically.</p>");
+    if(key==="email") return modal("🔑 Email Login","<p>WEZIR POS uses your Supabase email account for login.</p>");
+    if(key==="lowstock" || key==="outstock"){
+      const rows=(window.products||[]).filter(p=>key==="outstock"?Number(p.stock||0)<=0:Number(p.stock||0)<=10);
+      return modal(key==="outstock"?"🚫 Out of Stock":"🔔 Low Stock Alert",rows.length?'<div class="qfgrid">'+rows.map(p=>'<div class="qfstat"><b>'+String(p.name||"")+'</b><br>Stock: '+Number(p.stock||0)+'</div>').join("")+"</div>":"<p>No matching products.</p>");
+    }
+    if(key==="profit"){
+      const s=(window.sales||[]).reduce((a,b)=>a+Number(b.profit||0),0),e=(window.expenses||[]).reduce((a,b)=>a+Number(b.amount||0),0);
+      return modal("📈 Profit / Net Profit",'<div class="qfgrid"><div class="qfstat">Sales Profit<br><b>'+money(s)+'</b></div><div class="qfstat">Expenses<br><b>'+money(e)+'</b></div><div class="qfstat">Net Profit<br><b>'+money(s-e)+'</b></div></div>');
+    }
+    if(["customers","customercredit","suppliers","supplierbalance","adjustment","salesreturn","purchasereturn","expiry","batch","users","payments","barcode","export","help","currency","subscription"].includes(key)){
+      if(typeof window.qfAdv==="function") return window.qfAdv(key);
+    }
+    return modal("WEZIR POS","<p>This feature is connected to the WEZIR POS feature system.</p>");
+  };
+  function openHub(){
+    const page=document.getElementById("featurehubPage");if(!page)return;
+    document.querySelectorAll("#app .page").forEach(x=>{x.classList.remove("active");x.style.display="none";});
+    page.classList.add("active");page.style.display="block";
+  }
+  window.openHub=openHub;
+  function createHub(){
+    addStyle();const app=document.getElementById("app"),main=app?.querySelector(".main");
+    if(!main||document.getElementById("featurehubPage"))return;
+    const page=document.createElement("section");page.id="featurehubPage";page.className="page";page.style.display="none";
+    page.innerHTML='<div class="qfhub"><h2>🧩 WEZIR POS — All Features</h2><p>34 business features</p></div><div class="qf34">'+features.map(f=>'<div class="f" data-key="'+f[2]+'"><div class="ico" style="font-size:28px">'+f[0]+'</div><h3>'+f[1]+'</h3><p>Open '+f[1]+'</p></div>').join("")+"</div>";
+    main.appendChild(page);page.querySelectorAll(".f").forEach(card=>card.addEventListener("click",()=>window.qfFeature(card.dataset.key)));
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",createHub);else createHub();
+  window.addEventListener("load",createHub);setTimeout(createHub,500);
+})();
+</script>\n<script>
+/* WEZIR POS 34 FEATURES - FUNCTIONAL MODULE PACK */
+(function(){
+ const K={customers:'qf_customers',suppliers:'qf_suppliers',returns:'qf_returns',adjustments:'qf_adjustments',batches:'qf_batches',payments:'qf_payments',users:'qf_users'};
+ const get=(k)=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(e){return[]}};
+ const put=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+ const esc=(v)=>String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
+ function M(title,body){const old=document.querySelector('.qfmodal');if(old)old.remove();const m=document.createElement('div');m.className='qfmodal';m.innerHTML='<div class="qfbox"><div style="display:flex;justify-content:space-between;align-items:center"><h2>'+title+'</h2><button onclick="this.closest(\'.qfmodal\').remove()">✕</button></div>'+body+'</div>';document.body.appendChild(m);return m}
+ function table(rows,heads){return '<div style="overflow:auto"><table><tr>'+heads.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+rows.join('')+'</table></div>'}
+ window.qfAdv=function(key){
+  if(key==='customers') return customers();
+  if(key==='customercredit') return credit();
+  if(key==='suppliers') return suppliers();
+  if(key==='supplierbalance') return supplierBalance();
+  if(key==='adjustment') return adjustment();
+  if(key==='salesreturn') return returns('Sale Return');
+  if(key==='purchasereturn') return returns('Purchase Return');
+  if(key==='expiry') return expiry();
+  if(key==='batch') return batch();
+  if(key==='users') return users();
+  if(key==='payments') return payments();
+  if(key==='barcode') return barcode();
+  if(key==='export') return exportXlsxLike();
+ };
+ function customers(){let a=get(K.customers);M('👥 Customers',`<div class="row"><input id="qcName" placeholder="Customer name"><input id="qcPhone" placeholder="Phone"><input id="qcAddr" placeholder="Address"><button onclick="qfAddCustomer()">Add</button></div><br>${table(a.map((x,i)=>`<tr><td>${esc(x.name)}</td><td>${esc(x.phone)}</td><td>${esc(x.address)}</td><td><button onclick="qfDelCustomer(${i})">Delete</button></td></tr>`),['Name','Phone','Address',''])||'<p>No customers.</p>'}`);}
+ window.qfAddCustomer=()=>{let a=get(K.customers);let n=document.getElementById('qcName').value.trim();if(!n)return alert('Customer name required');a.push({id:crypto.randomUUID(),name:n,phone:document.getElementById('qcPhone').value.trim(),address:document.getElementById('qcAddr').value.trim(),credit:0});put(K.customers,a);customers()};window.qfDelCustomer=i=>{let a=get(K.customers);a.splice(i,1);put(K.customers,a);customers()};
+ function credit(){let a=get(K.customers);M('💳 Customer Credit / Balance',`<p>Add or reduce customer balance.</p><div class="row"><select id="qcrCustomer">${a.map((x,i)=>`<option value="${i}">${esc(x.name)}</option>`).join('')}</select><input id="qcrAmount" type="number" step="0.01" placeholder="Amount"><select id="qcrType"><option value="add">Credit / Due</option><option value="pay">Payment Received</option></select><button onclick="qfCredit()">Save</button></div><br>${table(a.map(x=>`<tr><td>${esc(x.name)}</td><td>${Number(x.credit||0).toFixed(2)}</td></tr>`),['Customer','Balance'])}`)}
+ window.qfCredit=()=>{let a=get(K.customers),i=Number(document.getElementById('qcrCustomer').value),v=Number(document.getElementById('qcrAmount').value||0);if(!a[i])return;if(document.getElementById('qcrType').value==='add')a[i].credit=Number(a[i].credit||0)+v;else a[i].credit=Number(a[i].credit||0)-v;put(K.customers,a);credit()};
+ function suppliers(){let a=get(K.suppliers);M('🏭 Suppliers',`<div class="row"><input id="qsName" placeholder="Supplier name"><input id="qsPhone" placeholder="Phone"><input id="qsAddr" placeholder="Address"><button onclick="qfAddSupplier()">Add</button></div><br>${table(a.map((x,i)=>`<tr><td>${esc(x.name)}</td><td>${esc(x.phone)}</td><td>${esc(x.address)}</td><td><button onclick="qfDelSupplier(${i})">Delete</button></td></tr>`),['Name','Phone','Address',''])}`)}
+ window.qfAddSupplier=()=>{let a=get(K.suppliers),n=document.getElementById('qsName').value.trim();if(!n)return alert('Supplier name required');a.push({id:crypto.randomUUID(),name:n,phone:document.getElementById('qsPhone').value.trim(),address:document.getElementById('qsAddr').value.trim(),balance:0});put(K.suppliers,a);suppliers()};window.qfDelSupplier=i=>{let a=get(K.suppliers);a.splice(i,1);put(K.suppliers,a);suppliers()};
+ function supplierBalance(){let a=get(K.suppliers);M('💵 Supplier Balance',`<div class="row"><select id="qsbSupplier">${a.map((x,i)=>`<option value="${i}">${esc(x.name)}</option>`).join('')}</select><input id="qsbAmount" type="number" step="0.01" placeholder="Amount"><select id="qsbType"><option value="add">Amount Owed</option><option value="pay">Payment</option></select><button onclick="qfSupplierBal()">Save</button></div><br>${table(a.map(x=>`<tr><td>${esc(x.name)}</td><td>${Number(x.balance||0).toFixed(2)}</td></tr>`),['Supplier','Balance'])}`)}
+ window.qfSupplierBal=()=>{let a=get(K.suppliers),i=Number(document.getElementById('qsbSupplier').value),v=Number(document.getElementById('qsbAmount').value||0);if(!a[i])return;if(document.getElementById('qsbType').value==='add')a[i].balance=Number(a[i].balance||0)+v;else a[i].balance=Number(a[i].balance||0)-v;put(K.suppliers,a);supplierBalance()};
+ function adjustment(){M('🔄 Stock Adjustment',`<p>Adjust stock quantity for an existing product.</p><div class="row"><input id="qaSku" placeholder="SKU or product name"><input id="qaQty" type="number" step="0.01" placeholder="New stock"><input id="qaReason" placeholder="Reason"><button onclick="qfAdjust()">Save</button></div><p class="qfmuted">The product is found in your Supabase stock. A log is saved locally.</p>`)}
+ window.qfAdjust=async()=>{let q=document.getElementById('qaSku').value.trim().toLowerCase(),qty=Number(document.getElementById('qaQty').value);if(!q||isNaN(qty))return alert('Enter product and stock');if(!window.supabaseClient||!window.currentUser)return alert('Please sign in');let {data:ps,error}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id);if(error)return alert(error.message);let p=ps.find(x=>String(x.sku||'').toLowerCase()===q||String(x.name||'').toLowerCase()===q);if(!p)return alert('Product not found');let r=await supabaseClient.from('products').update({stock:qty}).eq('id',p.id).eq('user_id',currentUser.id);if(r.error)return alert(r.error.message);let a=get(K.adjustments);a.push({date:new Date().toISOString(),product:p.name,old:p.stock,new:qty,reason:document.getElementById('qaReason').value});put(K.adjustments,a);if(typeof loadCloudData==='function')await loadCloudData();alert('Stock adjusted successfully');document.querySelector('.qfmodal')?.remove()};
+ function returns(type){M('↩️ '+type,`<p>Enter invoice, product and quantity. Stock is updated for a sale return; purchase return is recorded for review.</p><div class="row"><input id="qrInv" placeholder="Invoice No."><input id="qrProd" placeholder="Product name or SKU"><input id="qrQty" type="number" step="0.01" placeholder="Quantity"><input id="qrReason" placeholder="Reason"><button onclick="qfReturn(${JSON.stringify(type)})">Save Return</button></div>`)}
+ window.qfReturn=async type=>{let inv=document.getElementById('qrInv').value.trim(),q=document.getElementById('qrProd').value.trim().toLowerCase(),qty=Number(document.getElementById('qrQty').value);if(!inv||!q||!qty)return alert('Fill all required fields');let rec={id:crypto.randomUUID(),type,invoice:inv,product:q,qty,reason:document.getElementById('qrReason').value,date:new Date().toISOString()};let a=get(K.returns);a.push(rec);put(K.returns,a);if(type==='Sale Return'&&window.supabaseClient&&window.currentUser){let {data:ps}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id);let p=(ps||[]).find(x=>String(x.name||'').toLowerCase()===q||String(x.sku||'').toLowerCase()===q);if(p)await supabaseClient.from('products').update({stock:Number(p.stock||0)+qty}).eq('id',p.id).eq('user_id',currentUser.id);if(typeof loadCloudData==='function')await loadCloudData()}alert(type+' saved');document.querySelector('.qfmodal')?.remove()};
+ function expiry(){let a=get(K.batches);M('📅 Expiry Date',`<div class="row"><input id="qeProd" placeholder="Product"><input id="qeDate" type="date"><input id="qeQty" type="number" placeholder="Qty"><button onclick="qfExpiry()">Save</button></div><br>${table(a.filter(x=>x.expiry).map(x=>`<tr><td>${esc(x.product)}</td><td>${esc(x.expiry)}</td><td>${x.qty||0}</td><td>${x.expiry<new Date().toISOString().slice(0,10)?'EXPIRED':'OK'}</td></tr>`),['Product','Expiry','Qty','Status'])}`)}
+ window.qfExpiry=()=>{let a=get(K.batches),p=document.getElementById('qeProd').value.trim(),d=document.getElementById('qeDate').value;if(!p||!d)return alert('Product and expiry required');a.push({id:crypto.randomUUID(),product:p,expiry:d,qty:Number(document.getElementById('qeQty').value||0)});put(K.batches,a);expiry()};
+ function batch(){let a=get(K.batches);M('🏷️ Batch / Lot',`<div class="row"><input id="qbProd" placeholder="Product"><input id="qbLot" placeholder="Batch / Lot No."><input id="qbQty" type="number" placeholder="Qty"><input id="qbExp" type="date"><button onclick="qfBatch()">Save</button></div><br>${table(a.map(x=>`<tr><td>${esc(x.product)}</td><td>${esc(x.lot||'-')}</td><td>${x.qty||0}</td><td>${x.expiry||'-'}</td></tr>`),['Product','Lot','Qty','Expiry'])}`)}
+ window.qfBatch=()=>{let a=get(K.batches),p=document.getElementById('qbProd').value.trim();if(!p)return alert('Product required');a.push({id:crypto.randomUUID(),product:p,lot:document.getElementById('qbLot').value.trim(),qty:Number(document.getElementById('qbQty').value||0),expiry:document.getElementById('qbExp').value});put(K.batches,a);batch()};
+ function users(){let a=get(K.users);M('👤 Users & Permissions',`<p class="qfmuted">This is a business-user permission list. Supabase Auth remains the real login/security layer.</p><div class="row"><input id="quEmail" placeholder="User email"><select id="quRole"><option>Admin</option><option>Manager</option><option>Cashier</option><option>Viewer</option></select><button onclick="qfUser()">Add</button></div><br>${table(a.map((x,i)=>`<tr><td>${esc(x.email)}</td><td>${esc(x.role)}</td><td><button onclick="qfDelUser(${i})">Delete</button></td></tr>`),['Email','Role',''])}`)}
+ window.qfUser=()=>{let a=get(K.users),e=document.getElementById('quEmail').value.trim();if(!e)return; a.push({email:e,role:document.getElementById('quRole').value});put(K.users,a);users()};window.qfDelUser=i=>{let a=get(K.users);a.splice(i,1);put(K.users,a);users()};
+ function payments(){let a=get(K.payments);M('💳 Payment Methods',`<div class="row"><input id="qpName" placeholder="Payment method"><button onclick="qfPayment()">Add</button></div><br>${table(a.map((x,i)=>`<tr><td>${esc(x.name)}</td><td><button onclick="qfDelPayment(${i})">Delete</button></td></tr>`),['Method',''])}<p>POS currently supports Cash, UPI and Credit.</p>`)}
+ window.qfPayment=()=>{let a=get(K.payments),n=document.getElementById('qpName').value.trim();if(!n)return;a.push({name:n});put(K.payments,a);payments()};window.qfDelPayment=i=>{let a=get(K.payments);a.splice(i,1);put(K.payments,a);payments()};
+ function barcode(){M('📱 Barcode / SKU',`<p>Use the existing <b>SKU</b> field as the barcode value.</p><input id="qbar" placeholder="Scan or type barcode/SKU"><button onclick="qfBarcode()">Find Product</button><div id="qbarResult" style="margin-top:15px"></div>`)}
+ window.qfBarcode=async()=>{let q=document.getElementById('qbar').value.trim();if(!q||!window.supabaseClient||!window.currentUser)return;let {data:p}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id).eq('sku',q).limit(1);document.getElementById('qbarResult').innerHTML=p&&p[0]?`<b>${esc(p[0].name)}</b><br>Stock: ${p[0].stock}<br>Selling: ${p[0].selling_price}`:'Product not found'};
+ function exportXlsxLike(){if(typeof window.exportCSV==='function')window.exportCSV();else alert('Export function unavailable')}
+ // Redirect selected feature cards from old hub to functional modules.
+ const old=window.qfFeature;window.qfFeature=function(k){if(['customers','customercredit','suppliers','supplierbalance','adjustment','salesreturn','purchasereturn','expiry','batch','users','payments','barcode','export'].includes(k))return window.qfAdv(k);return old?old(k):null};
+})();
+</script>
+<script>
+/* WEZIR POS - CLOUD COMPLETION PACK
+   Requires one Supabase table: qf_records (SQL supplied separately).
+*/
+(function(){
+  const MOD={customers:'customers',suppliers:'suppliers',adjustments:'stock_adjustments',returns:'returns',batches:'batches',payments:'payments',users:'user_permissions',subscription:'subscription'};
+  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const money2=n=>currencySymbol(getCurrency())+' '+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  async function list(module){
+    if(!window.currentUser) return [];
+    const {data,error}=await supabaseClient.from('qf_records').select('*').eq('user_id',currentUser.id).eq('module',module).order('created_at',{ascending:true});
+    if(error){alert(error.message);return []} return data||[];
+  }
+  async function save(module,key,payload){
+    const row={user_id:currentUser.id,module,record_key:String(key),data:payload};
+    const {error}=await supabaseClient.from('qf_records').upsert(row,{onConflict:'user_id,module,record_key'});
+    if(error) throw error; return row;
+  }
+  async function del(id){const {error}=await supabaseClient.from('qf_records').delete().eq('id',id).eq('user_id',currentUser.id);if(error)throw error}
+  function M(title,body){document.querySelector('.qfmodal')?.remove();const m=document.createElement('div');m.className='qfmodal';m.innerHTML=`<div class="qfbox"><div style="display:flex;justify-content:space-between;align-items:center"><h2>${title}</h2><button onclick="this.closest('.qfmodal').remove()">✕</button></div>${body}</div>`;document.body.appendChild(m);return m}
+  const rowsTable=(rows,heads)=>`<div style="overflow:auto"><table><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr>${rows.join('')}</table></div>`;
+
+  async function customers(){
+    const a=await list(MOD.customers);
+    M('👥 Customers',`
+      <div class="row">
+        <input id="qcName" placeholder="Customer name">
+        <input id="qcPhone" placeholder="Phone">
+        <input id="qcAddr" placeholder="Address">
+        <button onclick="qfAddCustomerCloud()">Add Customer</button>
+      </div>
+      <br>
+      ${rowsTable(a.map(x=>{
+        let d=x.data||{};
+        return `<tr>
+          <td>${esc(d.name)}</td>
+          <td>${esc(d.phone)}</td>
+          <td>${esc(d.address)}</td>
+          <td>${money2(d.credit||0)}</td>
+          <td style="white-space:nowrap">
+            <button onclick="qfEditCustomerCloud('${x.id}')">✏️ Edit</button>
+            <button onclick="qfDeleteCloud('${x.id}','customers')">Delete</button>
+          </td>
+        </tr>`;
+      }),['Name','Phone','Address','Balance','Actions'])}
+    `);
+  }
+
+  window.qfEditCustomerCloud=async(id)=>{
+    try{
+      const a=await list(MOD.customers);
+      const x=a.find(r=>r.id===id);
+      if(!x)return;
+      const d={...(x.data||{})};
+      M('✏️ Edit Customer',`
+        <label>Customer Name</label>
+        <input id="qecName" value="${esc(d.name||'')}">
+        <label>Phone</label>
+        <input id="qecPhone" value="${esc(d.phone||'')}">
+        <label>Address</label>
+        <input id="qecAddr" value="${esc(d.address||'')}">
+        <label>Current Credit / Balance</label>
+        <input id="qecCredit" type="number" step="0.01" value="${Number(d.credit||0)}">
+        <br><br>
+        <button onclick="qfSaveCustomerEditCloud('${id}')">Save Changes</button>
+      `);
+    }catch(e){alert(e.message)}
+  };
+
+  window.qfSaveCustomerEditCloud=async(id)=>{
+    try{
+      const a=await list(MOD.customers);
+      const x=a.find(r=>r.id===id);
+      if(!x)return;
+      const d={...(x.data||{})};
+      const name=document.getElementById('qecName').value.trim();
+      if(!name)return alert('Customer name required');
+      d.name=name;
+      d.phone=document.getElementById('qecPhone').value.trim();
+      d.address=document.getElementById('qecAddr').value.trim();
+      d.credit=Number(document.getElementById('qecCredit').value||0);
+      await save(MOD.customers,x.record_key,d);
+      document.querySelector('.qfmodal')?.remove();
+      customers();
+    }catch(e){alert(e.message)}
+  };
+  window.qfAddCustomerCloud=async()=>{try{const n=qcName.value.trim();if(!n)return alert('Customer name required');await save(MOD.customers,crypto.randomUUID(),{name:n,phone:qcPhone.value.trim(),address:qcAddr.value.trim(),credit:0});customers()}catch(e){alert(e.message)}};
+  window.qfDeleteCloud=async(id,mod)=>{try{await del(id);if(mod==='customers')customers();else if(mod==='suppliers')suppliers();else if(mod==='payments')payments();else if(mod==='users')users();}catch(e){alert(e.message)}};
+
+  async function credit(){const a=await list(MOD.customers);M('💳 Customer Credit / Balance',`<div class="row"><select id="qcrCustomer">${a.map(x=>`<option value="${x.id}">${esc(x.data?.name)}</option>`).join('')}</select><input id="qcrAmount" type="number" step="0.01" placeholder="Amount"><select id="qcrType"><option value="add">Credit / Due</option><option value="pay">Payment Received</option></select><button onclick="qfCreditCloud()">Save</button></div><br>${rowsTable(a.map(x=>`<tr><td>${esc(x.data?.name)}</td><td>${money2(x.data?.credit||0)}</td></tr>`),['Customer','Balance'])}`)}
+  window.qfCreditCloud=async()=>{try{const id=qcrCustomer.value,v=Number(qcrAmount.value||0);const x=(await list(MOD.customers)).find(r=>r.id===id);if(!x)return;let d={...(x.data||{})};d.credit=Number(d.credit||0)+(qcrType.value==='add'?v:-v);await save(MOD.customers,x.record_key,d);credit()}catch(e){alert(e.message)}};
+
+  async function suppliers(){const a=await list(MOD.suppliers);M('🏭 Suppliers',`<div class="row"><input id="qsName" placeholder="Supplier name"><input id="qsPhone" placeholder="Phone"><input id="qsAddr" placeholder="Address"><button onclick="qfAddSupplierCloud()">Add</button></div><br>${rowsTable(a.map(x=>{let d=x.data||{};return `<tr><td>${esc(d.name)}</td><td>${esc(d.phone)}</td><td>${esc(d.address)}</td><td>${money2(d.balance||0)}</td><td><button onclick="qfDeleteCloud('${x.id}','suppliers')">Delete</button></td></tr>`}),['Name','Phone','Address','Balance',''])}`)}
+  window.qfAddSupplierCloud=async()=>{try{const n=qsName.value.trim();if(!n)return alert('Supplier name required');await save(MOD.suppliers,crypto.randomUUID(),{name:n,phone:qsPhone.value.trim(),address:qsAddr.value.trim(),balance:0});suppliers()}catch(e){alert(e.message)}};
+  async function supplierBalance(){const a=await list(MOD.suppliers);M('💵 Supplier Balance',`<div class="row"><select id="qsbSupplier">${a.map(x=>`<option value="${x.id}">${esc(x.data?.name)}</option>`).join('')}</select><input id="qsbAmount" type="number" step="0.01" placeholder="Amount"><select id="qsbType"><option value="add">Amount Owed</option><option value="pay">Payment</option></select><button onclick="qfSupplierBalCloud()">Save</button></div><br>${rowsTable(a.map(x=>`<tr><td>${esc(x.data?.name)}</td><td>${money2(x.data?.balance||0)}</td></tr>`),['Supplier','Balance'])}`)}
+  window.qfSupplierBalCloud=async()=>{try{const id=qsbSupplier.value,v=Number(qsbAmount.value||0);const x=(await list(MOD.suppliers)).find(r=>r.id===id);if(!x)return;let d={...(x.data||{})};d.balance=Number(d.balance||0)+(qsbType.value==='add'?v:-v);await save(MOD.suppliers,x.record_key,d);supplierBalance()}catch(e){alert(e.message)}};
+
+  async function adjustment(){M('🔄 Stock Adjustment',`<div class="row"><input id="qaSku" placeholder="SKU or product name"><input id="qaQty" type="number" step="0.01" placeholder="New stock"><input id="qaReason" placeholder="Reason"><button onclick="qfAdjustCloud()">Save</button></div><p class="qfmuted">The new stock is written to Supabase and an adjustment log is saved in the cloud.</p>`)}
+  window.qfAdjustCloud=async()=>{try{let q=qaSku.value.trim().toLowerCase(),qty=Number(qaQty.value);if(!q||isNaN(qty))return alert('Enter product and stock');let {data:ps,error}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id);if(error)throw error;let p=(ps||[]).find(x=>String(x.sku||'').toLowerCase()===q||String(x.name||'').toLowerCase()===q);if(!p)return alert('Product not found');let old=p.stock;let r=await supabaseClient.from('products').update({stock:qty}).eq('id',p.id).eq('user_id',currentUser.id);if(r.error)throw r.error;await save(MOD.adjustments,crypto.randomUUID(),{product_id:p.id,product:p.name,old_stock:old,new_stock:qty,reason:qaReason.value,date:new Date().toISOString()});await loadCloudData();alert('Stock adjusted successfully');document.querySelector('.qfmodal')?.remove()}catch(e){alert(e.message)}};
+
+  async function returns(type){M('↩️ '+type,`<div class="row"><input id="qrInv" placeholder="Invoice No."><input id="qrProd" placeholder="Product name or SKU"><input id="qrQty" type="number" step="0.01" placeholder="Quantity"><input id="qrReason" placeholder="Reason"><button onclick="qfReturnCloud('${type}')">Save Return</button></div>`)}
+  window.qfReturnCloud=async type=>{try{let inv=qrInv.value.trim(),q=qrProd.value.trim().toLowerCase(),qty=Number(qrQty.value);if(!inv||!q||!qty)return alert('Fill all required fields');let {data:ps,error}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id);if(error)throw error;let p=(ps||[]).find(x=>String(x.name||'').toLowerCase()===q||String(x.sku||'').toLowerCase()===q);if(!p)return alert('Product not found');let delta=type==='Sale Return'?qty:-qty;let newStock=Number(p.stock||0)+delta;if(newStock<0)return alert('Stock gahaa miti');let r=await supabaseClient.from('products').update({stock:newStock}).eq('id',p.id).eq('user_id',currentUser.id);if(r.error)throw r.error;await save(MOD.returns,crypto.randomUUID(),{type,invoice:inv,product:p.name,product_id:p.id,qty,reason:qrReason.value,date:new Date().toISOString()});await loadCloudData();alert(type+' saved');document.querySelector('.qfmodal')?.remove()}catch(e){alert(e.message)}};
+
+  async function batch(){const a=await list(MOD.batches);M('🏷️ Batch / Lot + Expiry',`<div class="row"><input id="qbProd" placeholder="Product"><input id="qbLot" placeholder="Batch / Lot No."><input id="qbQty" type="number" placeholder="Qty"><input id="qbExp" type="date"><button onclick="qfBatchCloud()">Save</button></div><br>${rowsTable(a.map(x=>{let d=x.data||{};let ex=d.expiry||'';let status=ex?(ex<today()?'EXPIRED':'OK'):'';return `<tr><td>${esc(d.product)}</td><td>${esc(d.lot||'-')}</td><td>${d.qty||0}</td><td>${esc(ex)}</td><td>${status}</td></tr>`}),['Product','Lot','Qty','Expiry','Status'])}`)}
+  window.qfBatchCloud=async()=>{try{let p=qbProd.value.trim();if(!p)return alert('Product required');await save(MOD.batches,crypto.randomUUID(),{product:p,lot:qbLot.value.trim(),qty:Number(qbQty.value||0),expiry:qbExp.value});batch()}catch(e){alert(e.message)}};
+
+  async function users(){const a=await list(MOD.users);M('👤 Users & Permissions',`<p class="qfmuted">This records business roles. Supabase Auth/RLS remains the security layer.</p><div class="row"><input id="quEmail" placeholder="User email"><select id="quRole"><option>Admin</option><option>Manager</option><option>Cashier</option><option>Viewer</option></select><button onclick="qfUserCloud()">Add</button></div><br>${rowsTable(a.map(x=>`<tr><td>${esc(x.data?.email)}</td><td>${esc(x.data?.role)}</td><td><button onclick="qfDeleteCloud('${x.id}','users')">Delete</button></td></tr>`),['Email','Role',''])}`)}
+  window.qfUserCloud=async()=>{try{let e=quEmail.value.trim();if(!e)return;await save(MOD.users,crypto.randomUUID(),{email:e,role:quRole.value});users()}catch(e){alert(e.message)}};
+
+  async function payments(){const a=await list(MOD.payments);M('💳 Payment Methods',`<div class="row"><input id="qpName" placeholder="Payment method"><button onclick="qfPaymentCloud()">Add</button></div><br>${rowsTable(a.map(x=>`<tr><td>${esc(x.data?.name)}</td><td><button onclick="qfDeleteCloud('${x.id}','payments')">Delete</button></td></tr>`),['Method',''])}<p>Built-in POS methods: Cash, UPI and Credit.</p>`)}
+  window.qfPaymentCloud=async()=>{try{let n=qpName.value.trim();if(!n)return;await save(MOD.payments,crypto.randomUUID(),{name:n});payments()}catch(e){alert(e.message)}};
+
+  async function barcode(){M('📱 Barcode / SKU',`<p>Scan/type a barcode or SKU. Product SKU is stored in Supabase.</p><input id="qbar" placeholder="Scan or type barcode/SKU"><button onclick="qfBarcodeCloud()">Find Product</button><div id="qbarResult" style="margin-top:15px"></div>`)}
+  window.qfBarcodeCloud=async()=>{try{let q=qbar.value.trim();if(!q)return;let {data:p,error}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id).eq('sku',q).limit(1);if(error)throw error;qbarResult.innerHTML=p&&p[0]?`<b>${esc(p[0].name)}</b><br>Stock: ${p[0].stock}<br>Selling: ${money2(p[0].selling_price)}`:'Product not found'}catch(e){alert(e.message)}};
+
+  const WEZIR_COUNTRIES=[
+    ['ET','Ethiopia','ETB','Ethiopian Birr'],['SA','Saudi Arabia','SAR','Saudi Riyal'],['AE','United Arab Emirates','AED','UAE Dirham'],['US','United States','USD','US Dollar'],['GB','United Kingdom','GBP','British Pound'],['EU','European Union','EUR','Euro'],['CA','Canada','CAD','Canadian Dollar'],['AU','Australia','AUD','Australian Dollar'],['KE','Kenya','KES','Kenyan Shilling'],['TR','Turkey','TRY','Turkish Lira'],['UG','Uganda','UGX','Ugandan Shilling'],['TZ','Tanzania','TZS','Tanzanian Shilling'],['RW','Rwanda','RWF','Rwandan Franc'],['SO','Somalia','SOS','Somali Shilling'],['DJ','Djibouti','DJF','Djiboutian Franc'],['QA','Qatar','QAR','Qatari Riyal'],['KW','Kuwait','KWD','Kuwaiti Dinar'],['OM','Oman','OMR','Omani Rial'],['BH','Bahrain','BHD','Bahraini Dinar'],['EG','Egypt','EGP','Egyptian Pound']
+  ];
+  function trialInfo(){
+    const created=new Date(currentUser?.created_at||Date.now());
+    const expiry=new Date(created.getTime()+30*24*60*60*1000);
+    const now=new Date();
+    const remaining=Math.max(0,Math.ceil((expiry-now)/86400000));
+    return {created,expiry,remaining,expired:now>=expiry};
+  }
+  async function subscription(){
+    const a=await list(MOD.subscription);
+    const legacy=a[0]?.data||{};
+    const accountSub=currentUser?.app_metadata?.subscription||{};
+    const t=trialInfo();
+    const plan=accountSub.plan||legacy.plan||((t.expired)?'Free Trial Expired':'30-Day Free Trial');
+    const status=accountSub.status||legacy.status||((t.expired)?'Expired':'Trial');
+    const admin=String(currentUser?.email||'').trim().toLowerCase()==='wezirumar1988@gmail.com';
+    const details=`<div class="qfgrid"><div class="qfstat"><b>Business</b><br>${esc(currentUser?.user_metadata?.business_name||'WEZIR POS')}</div><div class="qfstat"><b>Plan</b><br>${esc(plan)}</div><div class="qfstat"><b>Status</b><br>${esc(status)}</div><div class="qfstat"><b>Trial</b><br>${t.expired?'Expired':t.remaining+' days remaining'}</div></div><br><p><b>Free Trial:</b> 30 days from account creation.</p><p class="qfmuted">After the trial ends, contact WEZIR POS Administrator to activate a paid plan. Your business data is kept; access is controlled by subscription status.</p>`;
+    const controls=admin
+      ? `<hr><p><b>Admin account:</b> You can manage customer subscriptions from Admin Dashboard → Users / Accounts.</p>`
+      : `<hr><p class="qfmuted"><b>Subscription is read-only.</b> Contact WEZIR POS Administrator to change or activate a plan.</p><p><b>Email:</b> wezirumar1988@gmail.com</p><p><b>WhatsApp:</b> +966 536 690 242</p>`;
+    M('💳 Subscription / Business Management',details+controls);
+  }
+  window.qfSubscriptionSave=async()=>{alert('Subscription can only be changed by WEZIR POS Administrator from Admin Dashboard.');};
+
+  async function help(){M('🆘 Help & Contact',`<div class="qfgrid"><div class="qfstat"><b>WEZIR POS Support</b><br>We are here to help.</div></div><br><p><b>Administrator:</b> Wezir Umar</p><p><b>Email:</b> <a href="mailto:wezirumar1988@gmail.com?subject=WEZIR%20POS%20Support">wezirumar1988@gmail.com</a></p><p><b>Phone:</b> <a href="tel:+966536690242">+966 536 690 242</a></p><p><b>WhatsApp:</b> <a href="https://wa.me/966536690242?text=Hello%20WEZIR%20POS%20Admin%2C%20I%20need%20help." target="_blank">Chat on WhatsApp</a></p><hr><label>Your message</label><textarea id="qhMessage" rows="4" placeholder="Describe your problem..."></textarea><button onclick="qfHelpSave()">Send Support Request</button>`)}
+  window.qfHelpSave=async()=>{try{const msg=document.getElementById('qhMessage')?.value.trim()||'';const subject=encodeURIComponent('WEZIR POS Support - '+(currentUser?.user_metadata?.business_name||'Business'));const body=encodeURIComponent('Business: '+(currentUser?.user_metadata?.business_name||'')+'\nEmail: '+(currentUser?.email||'')+'\n\nMessage: '+msg);window.location.href='mailto:wezirumar1988@gmail.com?subject='+subject+'&body='+body;await save('business_help',crypto.randomUUID(),{message:msg,email:currentUser?.email||'',business:currentUser?.user_metadata?.business_name||'',date:new Date().toISOString()});}catch(e){alert(e.message)}};
+  async function currency(){
+    const savedCountry=localStorage.getItem('qf_country')||'ET';const savedCurrency=localStorage.getItem('qf_currency')||'ETB';
+    const rows=WEZIR_COUNTRIES.map(x=>`<option value="${x[0]}" data-currency="${x[2]}">${x[1]} — ${x[2]} (${x[3]})</option>`).join('');
+    M('🌍 '+((I18N[getLanguage()]||I18N.en)['Country + Currency']||'Country + Currency'),`<label>${((I18N[getLanguage()]||I18N.en).Country||'Country')}</label><select id="qfCountry" onchange="qfCountryChanged()">${rows}</select><label>${((I18N[getLanguage()]||I18N.en).Currency||'Currency')}</label><select id="qfCurrency"></select><p class="qfmuted">Country and currency are saved for this business. Existing amounts are not converted automatically.</p><button onclick="qfCurrencySave()">${((I18N[getLanguage()]||I18N.en).Save||'Save')}</button>`);
+    const c=document.getElementById('qfCountry');if(c)c.value=WEZIR_COUNTRIES.some(x=>x[0]===savedCountry)?savedCountry:'ET';window.qfCountryChanged();const cur=document.getElementById('qfCurrency');if(cur&&savedCurrency)cur.value=savedCurrency;
+  }
+  window.qfCountryChanged=()=>{const code=document.getElementById('qfCountry')?.value||'ET';const found=WEZIR_COUNTRIES.find(x=>x[0]===code)||WEZIR_COUNTRIES[0];const cur=document.getElementById('qfCurrency');if(cur)cur.innerHTML=`<option value="${found[2]}">${found[2]} — ${found[3]}</option>`;};
+  window.qfCurrencySave=async()=>{try{const country=WEZIR_COUNTRIES.find(x=>x[0]===qfCountry.value)||WEZIR_COUNTRIES[0];const currency=qfCurrency.value||country[2];await save('business_settings','currency',{country_code:country[0],country:country[1],currency,updated_at:new Date().toISOString()});localStorage.setItem('qf_country',country[0]);localStorage.setItem('qf_currency',currency);localStorage.setItem('qfs_currency',currency);const el=document.getElementById('settingsCurrency');if(el)el.value=currency;const sv=document.getElementById('settingsCurrencyValue');if(sv)sv.textContent=currency;await loadCloudData();document.querySelector('.qfmodal')?.remove();renderAll();applyLanguage();alert('Country and currency saved');}catch(e){alert(e.message)}};
+
+  async function exportExcel(){
+    const dataRows=[['Product','SKU','Stock','Cost','Selling Price','Profit/Unit']].concat((data.products||[]).map(p=>[p.name,p.sku||'',p.stock,p.cost,p.selling_price,Number(p.selling_price||0)-Number(p.cost||0)]));
+    if(!window.XLSX){const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';document.head.appendChild(s);await new Promise((res,rej)=>{s.onload=res;s.onerror=rej});}
+    const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet(dataRows);XLSX.utils.book_append_sheet(wb,ws,'Stock');XLSX.writeFile(wb,'WEZIR_POS_REPORT.xlsx');
+  }
+
+  // Keep globals updated so low-stock/profit tools use live cloud data.
+  const oldRenderAll=window.renderAll; if(typeof oldRenderAll==='function'){window.renderAll=function(){oldRenderAll();window.products=data.products;window.sales=data.sales;window.expenses=data.expenses;}}
+  window.products=data.products;window.sales=data.sales;window.expenses=data.expenses;
+  const oldLoad=window.loadCloudData; if(typeof oldLoad==='function'){window.loadCloudData=async function(){await oldLoad();window.products=data.products;window.sales=data.sales;window.expenses=data.expenses;}}
+
+  // Credit on Credit sale; supplier balance on purchase.
+  const oldCheckout=window.checkout; if(typeof oldCheckout==='function'){window.checkout=async function(){const customer=document.getElementById('customerName')?.value.trim();const payment=document.getElementById('paymentMethod')?.value;await oldCheckout();if(customer&&payment==='Credit'){const a=await list(MOD.customers);let x=a.find(r=>String(r.data?.name||'').toLowerCase()===customer.toLowerCase());if(x){let d={...(x.data||{})};const amount=(data.sales||[]).filter(s=>String(s.customer||'').toLowerCase()===customer.toLowerCase()&&s.payment_method==='Credit').reduce((sum,s)=>sum+Number(s.total||0),0);d.credit=amount;await save(MOD.customers,x.record_key,d)}}}}
+  const oldPurchase=window.addPurchase; if(typeof oldPurchase==='function'){window.addPurchase=async function(){const supplier=document.getElementById('buySupplier')?.value.trim();const qty=Number(document.getElementById('buyQty')?.value||0),cost=Number(document.getElementById('buyCost')?.value||0),transport=Number(document.getElementById('buyTransport')?.value||0),loading=Number(document.getElementById('buyLoading')?.value||0);const total=qty*cost+transport+loading;await oldPurchase();if(supplier){const a=await list(MOD.suppliers);let x=a.find(r=>String(r.data?.name||'').toLowerCase()===supplier.toLowerCase());if(x){let d={...(x.data||{})};d.balance=Number(d.balance||0)+total;await save(MOD.suppliers,x.record_key,d)}}}}
+
+  const oldQfFeature=window.qfFeature;
+  window.qfFeature=async function(k){
+    if(k==='customers')return customers();if(k==='customercredit')return credit();if(k==='suppliers')return suppliers();if(k==='supplierbalance')return supplierBalance();if(k==='adjustment')return adjustment();if(k==='salesreturn')return returns('Sale Return');if(k==='purchasereturn')return returns('Purchase Return');if(k==='expiry'||k==='batch')return batch();if(k==='users')return users();if(k==='payments')return payments();if(k==='barcode')return barcode();if(k==='export')return exportExcel();if(k==='subscription')return subscription();if(k==='help')return help();if(k==='currency')return currency();
+    if(k==='lowstock'||k==='outstock'){window.products=data.products;return oldQfFeature(k)}
+    if(k==='profit'){window.sales=data.sales;window.expenses=data.expenses;return oldQfFeature(k)}
+    return oldQfFeature(k);
+  };
+})();
+</script>
+
+<script>
+(function(){
+  let scheduled=false;
+  let obs;
+  function runTranslation(){
+    if(!document.body) return;
+    if(obs) obs.disconnect();
+    try {
+      syncLanguageSelectors();
+      translateUI();
+    } finally {
+      if(obs) obs.observe(document.body,{subtree:true,childList:true});
+    }
+  }
+  obs=new MutationObserver(function(){
+    if(scheduled) return;
+    scheduled=true;
+    setTimeout(function(){
+      scheduled=false;
+      runTranslation();
+    },100);
+  });
+  window.addEventListener('load',function(){
+    runTranslation();
+    obs.observe(document.body,{subtree:true,childList:true});
+  },{once:true});
+})();
+</script>
+
+<script>
+/* WEZIR POS LOGIN REPAIR — keeps existing UI/data and restores auth buttons */
+(function(){
+  function client(){
+    try{
+      if(typeof supabaseClient!=='undefined' && supabaseClient) return supabaseClient;
+    }catch(e){}
+    if(window.__wpSupabaseClient) return window.__wpSupabaseClient;
+    if(window.supabase && window.supabase.createClient){
+      window.__wpSupabaseClient=window.supabase.createClient(
+        "https://qoxhhdxcezmwqeehqtvy.supabase.co",
+        "sb_publishable_YbbcWEzxx2uqEYMZnR1XEg_CLApqkip"
+      );
+      return window.__wpSupabaseClient;
+    }
+    throw new Error("Supabase library hin banamne. Page refresh godhi yaada deebi'i.");
+  }
+  function showApp(user){
+    try{
+      window.currentUser=user;
+      const login=document.getElementById('loginScreen'), app=document.getElementById('app');
+      if(login)login.style.display='none';
+      if(app)app.style.display='block';
+      const cu=document.getElementById('currentUser'); if(cu)cu.textContent=user?.email||'';
+      if(typeof updateBusinessDisplay==='function')updateBusinessDisplay();
+      if(typeof updateProfileSummary==='function')updateProfileSummary();
+      if(typeof syncLanguageSelectors==='function')syncLanguageSelectors();
+      if(typeof setupAdminNav==='function')setupAdminNav();
+      if(typeof loadCloudData==='function')loadCloudData();
+    }catch(e){console.error(e)}
+  }
+  function showLogin(){
+    const login=document.getElementById('loginScreen'), app=document.getElementById('app');
+    if(login)login.style.display='flex';
+    if(app)app.style.display='none';
+  }
+  window.signIn=async function(){
+    const email=(document.getElementById('loginEmail')?.value||'').trim();
+    const password=document.getElementById('loginPassword')?.value||'';
+    const err=document.getElementById('loginError'); if(err)err.textContent='';
+    if(!email||!password){if(err)err.textContent='Email and password are required.';return;}
+    try{
+      const {data,error}=await client().auth.signInWithPassword({email,password});
+      if(error)throw error;
+      if(!data?.user)throw new Error('Login hin milkoofne. Mee email fi password kee mirkaneessi.');
+      showApp(data.user);
+    }catch(e){
+      console.error('Sign in error:',e);
+      if(err)err.textContent=e?.message||'Sign in failed.';
+    }
+  };
+  window.signUp=async function(){
+    const business=(document.getElementById('signupBusinessName')?.value||'').trim();
+    const fullName=(document.getElementById('signupFullName')?.value||'').trim();
+    const phone=(document.getElementById('signupPhone')?.value||'').trim();
+    const email=(document.getElementById('signupEmail')?.value||'').trim();
+    const password=document.getElementById('signupPassword')?.value||'';
+    const password2=document.getElementById('signupPassword2')?.value||'';
+    const err=document.getElementById('signupError'),ok=document.getElementById('signupSuccess');
+    if(err)err.textContent=''; if(ok)ok.textContent='';
+    if(!business||!fullName||!phone||!email||!password){if(err)err.textContent='Please fill all fields.';return;}
+    if(password.length<6){if(err)err.textContent='Password must be at least 6 characters.';return;}
+    if(password!==password2){if(err)err.textContent='Passwords do not match.';return;}
+    try{
+      const {data,error}=await client().auth.signUp({email,password,options:{data:{business_name:business,full_name:fullName,phone:phone,language:(typeof getLanguage==='function'?getLanguage():'en')}}});
+      if(error)throw error;
+      if(data?.session && data?.user){
+        if(ok)ok.textContent='Account created successfully.';
+        showApp(data.user);
+      }else{
+        if(ok)ok.textContent='Account created. Please sign in.';
+        setTimeout(()=>{if(typeof showSignIn==='function')showSignIn();},700);
+      }
+    }catch(e){
+      console.error('Sign up error:',e);
+      if(err)err.textContent=e?.message||'Account creation failed.';
+    }
+  };
+  window.forgotPassword=async function(){
+    const email=(document.getElementById('loginEmail')?.value||'').trim();
+    const err=document.getElementById('loginError'); if(err)err.textContent='';
+    if(!email){if(err)err.textContent='Enter your email first.';return;}
+    try{
+      const redirect=window.location.origin+window.location.pathname;
+      const {error}=await client().auth.resetPasswordForEmail(email,{redirectTo:redirect});
+      if(error)throw error;
+      alert('Password reset link has been sent to your email.');
+    }catch(e){
+      console.error('Reset password error:',e);
+      if(err)err.textContent=e?.message||'Password reset failed.';
+    }
+  };
+  window.showSignUp=function(){document.getElementById('signInBox')?.classList.add('hidden');document.getElementById('signUpBox')?.classList.remove('hidden');};
+  window.showSignIn=function(){document.getElementById('signUpBox')?.classList.add('hidden');document.getElementById('signInBox')?.classList.remove('hidden');};
+  window.logout=async function(){try{await client().auth.signOut();window.currentUser=null;showLogin();}catch(e){alert(e.message||String(e));}};
+})();
+</script>
+
+<script>
+/* WEZIR POS — remove accidental duplicate Settings nav item */
+(function(){
+  function cleanupSettingsNav(){
+    document.querySelectorAll('.side .nav').forEach(function(btn){
+      const t=(btn.textContent||'').replace(/\s+/g,' ').trim();
+      if(t.includes('Settings') && t.startsWith('👑')) btn.remove();
+    });
+  }
+  window.addEventListener('load',cleanupSettingsNav);
+  const obs=new MutationObserver(cleanupSettingsNav);
+  window.addEventListener('load',function(){const side=document.querySelector('.side');if(side)obs.observe(side,{childList:true,subtree:true});});
+})();
+</script>
+
+
+<script>
+/* WEZIR POS — Admin Dashboard navigation hard-fix */
+(function(){
+  function ensureAdminButton(){
+    var side=document.querySelector('.side');
+    if(!side) return;
+    var btn=document.getElementById('adminNav');
+    if(!btn){
+      var reports=[].slice.call(side.querySelectorAll('.nav')).find(function(b){return (b.textContent||'').includes('Reports');});
+      btn=document.createElement('button');
+      btn.id='adminNav';
+      btn.className='nav';
+      btn.type='button';
+      btn.textContent='👑 Admin Dashboard';
+      btn.onclick=function(){ if(typeof showPage==='function') showPage('adminDashboard',btn); };
+      if(reports && reports.parentNode) reports.parentNode.insertBefore(btn,reports.nextSibling);
+      else side.appendChild(btn);
+    }
+    btn.classList.remove('hidden');
+    btn.style.setProperty('display','block','important');
+    btn.style.setProperty('visibility','visible','important');
+    btn.style.setProperty('opacity','1','important');
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ensureAdminButton);
+  else ensureAdminButton();
+  window.addEventListener('load',ensureAdminButton);
+  setTimeout(ensureAdminButton,500);
+  setTimeout(ensureAdminButton,1500);
+})();
+</script>
+
+<script>
+/* WEZIR POS — ALL FEATURES MENU HARD-FIX */
+(function(){
+  function installAllFeatures(){
+    var side=document.querySelector('.side');
+    if(!side) return;
+    var btn=document.getElementById('allFeaturesNav');
+    if(!btn){
+      btn=document.createElement('button');
+      btn.id='allFeaturesNav';
+      btn.className='nav';
+      btn.type='button';
+      btn.innerHTML='🧩 <span>All Features</span>';
+      btn.onclick=function(){
+        if(typeof openHub==='function') openHub();
+        else if(typeof show==='function') show('featurehub');
+      };
+      var settings=[].slice.call(side.querySelectorAll('.nav')).find(function(b){
+        return (b.textContent||'').replace(/\s+/g,' ').trim().includes('Settings');
+      });
+      if(settings) side.insertBefore(btn,settings);
+      else side.appendChild(btn);
+    }
+    btn.classList.remove('hidden');
+    btn.style.setProperty('display','block','important');
+    btn.style.setProperty('visibility','visible','important');
+    btn.style.setProperty('opacity','1','important');
+  }
+  function run(){installAllFeatures();}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run);
+  else run();
+  window.addEventListener('load',run);
+  setTimeout(run,500);
+  setTimeout(run,1500);
+  setTimeout(run,3000);
+})();
+</script>
+
+
+<script>
+/* WEZIR POS — All Features click hard-fix */
+(function(){
+  function openAllFeatures(){
+    var page=document.getElementById('featurehubPage');
+    if(!page) return;
+    document.querySelectorAll('#app .page').forEach(function(x){ x.classList.add('hidden'); });
+    document.querySelectorAll('#app .container > div[id$="Page"]').forEach(function(x){ x.classList.add('hidden'); });
+    document.querySelectorAll('#app .page').forEach(function(x){ x.classList.remove('active'); x.style.display='none'; });
+    page.classList.remove('hidden');
+    page.classList.add('active');
+    page.style.display='block';
+    page.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  window.openHub=openAllFeatures;
+  window.openAllFeatures=openAllFeatures;
+
+  function fixButton(){
+    var side=document.querySelector('.side');
+    if(!side) return;
+
+    var btn=document.getElementById('allFeaturesNav');
+    if(!btn){
+      btn=document.createElement('button');
+      btn.id='allFeaturesNav';
+      btn.className='nav';
+      btn.type='button';
+      btn.innerHTML='🧩 <span>All Features</span>';
+      side.appendChild(btn);
+    }
+
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      openAllFeatures();
+    };
+    btn.classList.remove('hidden');
+    btn.style.setProperty('display','block','important');
+    btn.style.setProperty('visibility','visible','important');
+    btn.style.setProperty('opacity','1','important');
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',fixButton);
+  }else{
+    fixButton();
+  }
+  window.addEventListener('load',fixButton);
+  setTimeout(fixButton,500);
+  setTimeout(fixButton,1500);
+})();
+</script>
+
+<script>
+/* WEZIR POS — ALL FEATURES CLICK FIX V3 */
+(function(){
+  function openAllFeaturesNow(){
+    var page=document.getElementById('featurehubPage');
+    if(!page) return;
+
+    /* Hide every normal app page */
+    document.querySelectorAll('#app .page').forEach(function(x){
+      x.classList.remove('active');
+      x.style.display='none';
+    });
+
+    /* Show the feature hub directly */
+    page.classList.add('active');
+    page.style.display='block';
+    page.style.visibility='visible';
+    page.style.opacity='1';
+
+    /* Make sure the hub is visible inside the main content area */
+    var main=page.closest('.main');
+    if(main){ main.style.display='block'; }
+  }
+
+  /* Make it globally callable by the menu button */
+  window.openHub=openAllFeaturesNow;
+  window.openAllFeaturesNow=openAllFeaturesNow;
+
+  function bindButton(){
+    var btn=document.getElementById('allFeaturesNav');
+    if(!btn) return;
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      openAllFeaturesNow();
+      return false;
+    };
+  }
+
+  function run(){
+    bindButton();
+    if(document.getElementById('allFeaturesNav')){
+      document.getElementById('allFeaturesNav').style.cursor='pointer';
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run);
+  else run();
+  window.addEventListener('load',run);
+  setTimeout(run,500);
+  setTimeout(run,1500);
+  setTimeout(run,3000);
+})();
+</script>
+
+
+<script>
+/* WEZIR POS — FINAL ALL FEATURES FIX
+   Opens the feature menu directly as a modal; does not depend on page/show navigation. */
+(function(){
+  const WEZIR_ALL_FEATURES=[["🏠", "Dashboard", "dashboard"], ["📦", "Stock / Inventory", "products"], ["🛒", "POS / Gurgurtaa", "pos"], ["🧾", "Invoice", "invoicehub"], ["🖨️", "Invoice Print", "print"], ["📊", "Sales Reports", "reports"], ["🛍️", "Purchases", "purchases"], ["💰", "Expenses", "expenses"], ["👥", "Customers", "customers"], ["💳", "Customer Credit / Balance", "customercredit"], ["🏭", "Suppliers", "suppliers"], ["💵", "Supplier Balance", "supplierbalance"], ["🔄", "Stock Adjustment", "adjustment"], ["↩️", "Sales Return / Refund", "salesreturn"], ["↩️", "Purchase Return", "purchasereturn"], ["🔔", "Low Stock Alert", "lowstock"], ["🚫", "Out of Stock", "outstock"], ["📅", "Expiry Date", "expiry"], ["🏷️", "Batch / Lot", "batch"], ["👤", "Users & Permissions", "users"], ["💳", "Payment Methods", "payments"], ["⚙️", "Settings", "settings"], ["💾", "Backup / Restore", "backup"], ["☁️", "Cloud Account & Data Separation", "cloud"], ["📈", "Profit / Net Profit", "profit"], ["📊", "Export Report → Excel", "export"], ["🔐", "Forgot Password", "forgot"], ["🔄", "Change Password", "changepassword"], ["📱", "Barcode", "barcode"], ["🧾", "Automatic Invoice Number", "autoinvoice"], ["🆘", "Help / Contact", "help"], ["🌍", "Country + Currency", "currency"], ["🔑", "Email Login", "email"], ["💳", "Subscription / Business Management", "subscription"]];
+
+  function openAllFeaturesFinal(){
+    const old=document.getElementById('wezirAllFeaturesModal');
+    if(old) old.remove();
+
+    const wrap=document.createElement('div');
+    wrap.id='wezirAllFeaturesModal';
+    wrap.className='qfmodal';
+    wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:999999;display:flex;align-items:center;justify-content:center;padding:18px;';
+
+    const cards=WEZIR_ALL_FEATURES.map(function(f){
+      const icon=f[0], name=f[1], key=f[2];
+      return '<button type="button" class="wezir-feature-card" data-key="'+key+'" style="background:#fff!important;color:#111!important;border:1px solid #e4dfcf!important;border-top:3px solid #D4AF37!important;border-radius:14px;padding:16px;text-align:left;cursor:pointer;min-height:105px;">'
+        +'<div style="font-size:27px">'+icon+'</div>'
+        +'<div style="font-weight:700;margin-top:7px">'+name+'</div>'
+        +'<div style="font-size:12px;color:#777;margin-top:4px">Open '+name+'</div>'
+        +'</button>';
+    }).join('');
+
+    wrap.innerHTML=
+      '<div style="background:#fff;width:min(1000px,96vw);max-height:90vh;overflow:auto;border:2px solid #D4AF37;border-radius:18px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.5);">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;">'
+      +'<div><h2 style="margin:0;color:#111;">🧩 WEZIR POS — All Features</h2><p style="margin:5px 0 0;color:#777;">34 business features</p></div>'
+      +'<button type="button" id="wezirCloseFeatures" style="width:auto;background:#111!important;color:#fff!important;padding:9px 14px;">✕ Close</button>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;">'+cards+'</div>'
+      +'</div>';
+
+    document.body.appendChild(wrap);
+    document.getElementById('wezirCloseFeatures').onclick=function(){wrap.remove();};
+
+    wrap.querySelectorAll('.wezir-feature-card').forEach(function(btn){
+      btn.onclick=function(){
+        const key=btn.getAttribute('data-key');
+        wrap.remove();
+        if(typeof window.qfFeature==='function') window.qfFeature(key);
+        else if(['dashboard','products','pos','purchases','expenses','reports','settings'].includes(key) && typeof window.showPage==='function') window.showPage(key);
+        else alert('Feature is not ready: '+key);
+      };
+    });
+  }
+
+  window.openAllFeaturesFinal=openAllFeaturesFinal;
+  window.openHub=openAllFeaturesFinal;
+
+  function bindFinal(){
+    const btn=document.getElementById('allFeaturesNav');
+    if(!btn) return;
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      openAllFeaturesFinal();
+      return false;
+    };
+    btn.setAttribute('type','button');
+    btn.style.cursor='pointer';
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindFinal);
+  else bindFinal();
+  window.addEventListener('load',bindFinal);
+  setTimeout(bindFinal,300);
+  setTimeout(bindFinal,1000);
+  setTimeout(bindFinal,2500);
+})();
+</script>
+
+
+<script>
+/* WEZIR POS — FINAL TRULY FIXED ALL FEATURES
+   Uses document-level click capture, so it works even if older handlers are broken. */
+(function(){
+  const FEATURES = [
+    ["🏠","Dashboard","dashboard"],["📦","Stock / Inventory","products"],
+    ["🛒","POS / Gurgurtaa","pos"],["🧾","Invoice","invoicehub"],
+    ["🖨️","Invoice Print","print"],["📊","Sales Reports","reports"],
+    ["🛍️","Purchases","purchases"],["💰","Expenses","expenses"],
+    ["👥","Customers","customers"],["💳","Customer Credit / Balance","customercredit"],
+    ["🏭","Suppliers","suppliers"],["💵","Supplier Balance","supplierbalance"],
+    ["🔄","Stock Adjustment","adjustment"],["↩️","Sales Return / Refund","salesreturn"],
+    ["↩️","Purchase Return","purchasereturn"],["🔔","Low Stock Alert","lowstock"],
+    ["🚫","Out of Stock","outstock"],["📅","Expiry Date","expiry"],
+    ["🏷️","Batch / Lot","batch"],["👤","Users & Permissions","users"],
+    ["💳","Payment Methods","payments"],["⚙️","Settings","settings"],
+    ["💾","Backup / Restore","backup"],["☁️","Cloud Account & Data Separation","cloud"],
+    ["📈","Profit / Net Profit","profit"],["📊","Export Report → Excel","export"],
+    ["🔐","Forgot Password","forgot"],["🔄","Change Password","changepassword"],
+    ["📱","Barcode","barcode"],["🧾","Automatic Invoice Number","autoinvoice"],
+    ["🆘","Help / Contact","help"],["🌍","Country + Currency","currency"],
+    ["🔑","Email Login","email"],["💳","Subscription / Business Management","subscription"]
+  ];
+
+  function openMenu(){
+    let old=document.getElementById("WEZIR_ALL_FEATURES_FINAL_MENU");
+    if(old) old.remove();
+
+    const overlay=document.createElement("div");
+    overlay.id="WEZIR_ALL_FEATURES_FINAL_MENU";
+    overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:18px;";
+
+    const cards=FEATURES.map(function(f){
+      return '<button type="button" data-wezir-key="'+f[2]+'" style="background:#fff;color:#111;border:1px solid #ddd;border-top:3px solid #d4af37;border-radius:14px;padding:15px;text-align:left;cursor:pointer;min-height:105px;">'
+        +'<div style="font-size:27px">'+f[0]+'</div>'
+        +'<div style="font-weight:700;margin-top:7px">'+f[1]+'</div>'
+        +'<div style="font-size:12px;color:#777;margin-top:4px">Open '+f[1]+'</div>'
+        +'</button>';
+    }).join("");
+
+    overlay.innerHTML=
+      '<div style="background:#fff;width:min(1050px,96vw);max-height:90vh;overflow:auto;border:2px solid #d4af37;border-radius:18px;padding:20px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">'
+      +'<div><h2 style="margin:0;color:#111;">🧩 WEZIR POS — All Features</h2><p style="margin:5px 0;color:#777;">34 business features</p></div>'
+      +'<button type="button" id="WEZIR_FEATURE_CLOSE" style="background:#111;color:#fff;padding:9px 14px;width:auto;">✕ Close</button>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;">'+cards+'</div>'
+      +'</div>';
+
+    document.body.appendChild(overlay);
+    document.getElementById("WEZIR_FEATURE_CLOSE").onclick=function(){overlay.remove();};
+
+    overlay.querySelectorAll("[data-wezir-key]").forEach(function(card){
+      card.onclick=function(){
+        const key=card.getAttribute("data-wezir-key");
+        overlay.remove();
+        /* Advanced modules have their real handlers in qfAdv.
+           Use qfAdv first; otherwise use the normal app feature handler. */
+        const advanced=["customers","customercredit","suppliers","supplierbalance","adjustment","salesreturn","purchasereturn","expiry","batch","users","payments","barcode","export"];
+        if(advanced.includes(key) && typeof window.qfAdv==="function"){
+          Promise.resolve(window.qfAdv(key)).catch(function(err){
+            console.error("Feature error:",err);
+            alert("This feature could not open: "+(err?.message||err));
+          });
+        }else if(typeof window.qfFeature==="function"){
+          Promise.resolve(window.qfFeature(key)).catch(function(err){
+            console.error("Feature error:",err);
+            alert("This feature could not open: "+(err?.message||err));
+          });
+        }else if(["dashboard","products","pos","purchases","expenses","reports","settings"].includes(key) && typeof window.showPage==="function"){
+          window.showPage(key);
+        }else{
+          alert("Feature is not connected yet: "+key);
+        }
+      };
+    });
+  }
+
+  /* Capture phase: stops every older broken All Features handler. */
+  document.addEventListener("click",function(e){
+    const el=e.target && e.target.closest ? e.target.closest("#allFeaturesNav, #allFeaturesNav *") : null;
+    if(!el) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    openMenu();
+  },true);
+
+  window.WEZIR_OPEN_ALL_FEATURES=openMenu;
+})();
+</script>
+
+
+<script>
+/* WEZIR POS — FEATURE ROUTING BRIDGE */
+(function(){
+  function install(){
+    if(typeof window.qfAdv!=="function" || typeof window.qfFeature!=="function") return;
+    if(window.__wezirFeatureRoutingInstalled) return;
+    window.__wezirFeatureRoutingInstalled=true;
+
+    const original=window.qfFeature;
+    const advanced=["customers","customercredit","suppliers","supplierbalance","adjustment","salesreturn","purchasereturn","expiry","batch","users","payments","barcode","export"];
+
+    window.qfFeature=function(key){
+      if(advanced.includes(key)) return window.qfAdv(key);
+      return original(key);
+    };
+  }
+
+  install();
+  setTimeout(install,500);
+  setTimeout(install,1500);
+  setTimeout(install,3000);
+})();
+</script>
+
+
+<script>
+/* WEZIR POS — Help & Admin network repair */
+(function(){
+  window.qfOpenHelpContact=function(){
+    document.querySelectorAll('.qfmodal,#wezirHelpContactModal').forEach(function(x){x.remove();});
+    var m=document.createElement('div');m.id='wezirHelpContactModal';m.className='qfmodal';
+    m.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.68);display:flex;align-items:center;justify-content:center;padding:18px;';
+    m.innerHTML='<div style="background:#fff;color:#111;width:min(650px,96vw);max-height:90vh;overflow:auto;border:2px solid #D4AF37;border-radius:18px;padding:22px;box-shadow:0 18px 60px #0005">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 style="margin:0">🆘 WEZIR POS Help &amp; Contact</h2><button type="button" id="wezirHelpClose" style="width:auto;background:#111;color:#fff;padding:8px 13px">✕</button></div>'+
+      '<p>For help with your account or POS, contact the administrator.</p><p><b>Administrator:</b> Wezir Umar</p>'+
+      '<p><b>Email:</b> <a href="mailto:wezirumar1988@gmail.com?subject=WEZIR%20POS%20Support">wezirumar1988@gmail.com</a></p>'+
+      '<p><b>Phone:</b> <a href="tel:+966536690242">+966 536 690 242</a></p>'+
+      '<p><b>WhatsApp:</b> <a href="https://wa.me/966536690242?text=Hello%20WEZIR%20POS%20Admin%2C%20I%20need%20help." target="_blank" rel="noopener">Chat on WhatsApp</a></p>'+
+      '<label for="wezirSupportMessage"><b>Your message</b></label><textarea id="wezirSupportMessage" rows="4" style="width:100%;box-sizing:border-box;margin:8px 0 12px" placeholder="Describe your problem..."></textarea>'+
+      '<button type="button" id="wezirSendSupport" style="background:#111;color:#fff;border:1px solid #D4AF37;padding:10px 16px;border-radius:9px">Send by Email</button></div>';
+    document.body.appendChild(m);
+    document.getElementById('wezirHelpClose').onclick=function(){m.remove();};
+    m.addEventListener('click',function(e){if(e.target===m)m.remove();});
+    document.getElementById('wezirSendSupport').onclick=function(){
+      var msg=(document.getElementById('wezirSupportMessage').value||'').trim();
+      var u=window.currentUser||{};var business=(u.user_metadata&&u.user_metadata.business_name)||'';
+      var subject=encodeURIComponent('WEZIR POS Support - '+business);
+      var body=encodeURIComponent('Business: '+business+'\nEmail: '+(u.email||'')+'\n\nMessage: '+msg);
+      window.location.href='mailto:wezirumar1988@gmail.com?subject='+subject+'&body='+body;
+    };
+  };
+  var previous=window.qfFeature;
+  window.qfFeature=function(key){if(key==='help')return window.qfOpenHelpContact();if(typeof previous==='function')return previous.apply(this,arguments);};
+})();
+</script>
+
+
+
+
+
+<!-- WEZIR POS in-app notification: replaces browser alerts that display the GitHub hostname. -->
+<style>
+#wpNoticeOverlay{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.58)}
+#wpNoticeOverlay.show{display:flex}
+#wpNoticeBox{width:min(440px,100%);background:#fff;border:2px solid #D4AF37;border-radius:18px;box-shadow:0 18px 60px #0006;overflow:hidden;color:#171717;font-family:Arial,sans-serif}
+#wpNoticeHead{padding:15px 20px;background:#101010;color:#F4D76A;font-size:17px;font-weight:700;border-bottom:2px solid #D4AF37}
+#wpNoticeMessage{padding:22px 20px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;max-height:55vh;overflow:auto}
+#wpNoticeActions{display:flex;justify-content:flex-end;padding:0 20px 18px}
+#wpNoticeOK{min-width:95px;background:#D4AF37!important;color:#111!important;border:1px solid #a98517!important;border-radius:10px;padding:10px 18px;font-weight:700}
+</style>
+<div id="wpNoticeOverlay" role="alertdialog" aria-modal="true" aria-labelledby="wpNoticeHead" aria-describedby="wpNoticeMessage">
+ <div id="wpNoticeBox"><div id="wpNoticeHead">Notice</div><div id="wpNoticeMessage"></div><div id="wpNoticeActions"><button id="wpNoticeOK" type="button">OK</button></div></div>
+</div>
+<script>
+(function(){
+ const translations={
+  en:{'Notice':'Notice','OK':'OK','Invoice number already exists':'This invoice number already exists.','Product, quantity fi cost guuti.':'Enter the product, quantity, and cost.','Please sign in first.':'Please sign in first.','Please sign in.':'Please sign in.','Product hin argamne.':'Product not found.','Product hin argamne':'Product not found','Meeshaan stock hin qabu.':'This product is out of stock.','Baay\'ina sirrii galchi.':'Enter a valid quantity.','Stock gahaa miti.':'Insufficient stock.','Cart keessa item hin jiru.':'The cart is empty.','Sale hin xumuramne:':'Sale could not be completed:','Sale successfully completed!':'Sale completed successfully!','Purchase saved!':'Purchase saved successfully!','Product updated successfully.':'Product updated successfully.','Sale updated successfully.':'Sale updated successfully.','Purchase updated successfully.':'Purchase updated successfully.','Profile updated successfully.':'Profile updated successfully.','Password changed successfully.':'Password changed successfully.','Enter your email first.':'Enter your email first.','Password must be at least 6 characters.':'Password must be at least 6 characters.','Passwords do not match.':'Passwords do not match.','Admin only.':'Administrators only.','Invalid status.':'Invalid status.','Please enter one of:':'Please enter one of:'},
+  om:{'Notice':'Beeksisa','OK':'Tole','Invoice number already exists':'Lakkoofsi invoice kun duraan jira.','Product, quantity fi cost guuti.':'Maaloo maqaa meeshaa, baay’ina fi gatii bittaa guuti.','Please sign in first.':'Maaloo dura seeni.','Please sign in.':'Maaloo seeni.','Product hin argamne.':'Meeshaan hin argamne.','Product hin argamne':'Meeshaan hin argamne','Meeshaan stock hin qabu.':'Meeshaan kun kuusaa keessa hin jiru.','Baay\'ina sirrii galchi.':'Baay’ina sirrii galchi.','Stock gahaa miti.':'Kuusaan gahaan hin jiru.','Cart keessa item hin jiru.':'Meeshaan cart keessa hin jiru.','Sale hin xumuramne:':'Gurgurtaan hin xumuramne:','Sale successfully completed!':'Gurgurtaan milkaa’inaan xumurame!','Purchase saved!':'Bittaan milkaa’inaan olkaa’ame!','Product updated successfully.':'Meeshaan milkaa’inaan haaromfame.','Sale updated successfully.':'Gurgurtaan milkaa’inaan haaromfame.','Purchase updated successfully.':'Bittaan milkaa’inaan haaromfame.','Profile updated successfully.':'Profaayiliin milkaa’inaan haaromfame.','Password changed successfully.':'Jecha darbii milkaa’inaan jijjiirame.','Enter your email first.':'Maaloo dura imeelii kee galchi.','Password must be at least 6 characters.':'Jecha darbii yoo xiqqaate qubee 6 qabaachuu qaba.','Passwords do not match.':'Jechoonni darbii wal hin siman.','Admin only.':'Admin qofaaf hayyamama.','Invalid status.':'Haalli galfame sirrii miti.','Please enter one of:':'Maaloo kan keessaa tokko galchi:'},
+  am:{'Notice':'ማሳሰቢያ','OK':'እሺ','Invoice number already exists':'ይህ የደረሰኝ ቁጥር አስቀድሞ አለ።','Please sign in first.':'እባክዎ መጀመሪያ ይግቡ።','Please sign in.':'እባክዎ ይግቡ።','Product hin argamne.':'እቃው አልተገኘም።','Stock gahaa miti.':'በቂ እቃ የለም።','Cart keessa item hin jiru.':'በጋሪው ውስጥ እቃ የለም።','Sale hin xumuramne:':'ሽያጩ አልተጠናቀቀም፦','Sale successfully completed!':'ሽያጩ በተሳካ ሁኔታ ተጠናቋል።','Purchase saved!':'ግዢው በተሳካ ሁኔታ ተቀምጧል።','Product updated successfully.':'እቃው በተሳካ ሁኔታ ተዘምኗል።','Profile updated successfully.':'መገለጫው በተሳካ ሁኔታ ተዘምኗል።','Password changed successfully.':'የይለፍ ቃሉ ተቀይሯል።','Passwords do not match.':'የይለፍ ቃሎቹ አይዛመዱም።','Admin only.':'ለአስተዳዳሪ ብቻ።'},
+  ar:{'Notice':'تنبيه','OK':'حسنًا','Invoice number already exists':'رقم الفاتورة هذا موجود بالفعل.','Please sign in first.':'يرجى تسجيل الدخول أولاً.','Please sign in.':'يرجى تسجيل الدخول.','Product hin argamne.':'المنتج غير موجود.','Stock gahaa miti.':'المخزون غير كافٍ.','Cart keessa item hin jiru.':'السلة فارغة.','Sale hin xumuramne:':'تعذر إتمام البيع:','Sale successfully completed!':'تم إتمام البيع بنجاح.','Purchase saved!':'تم حفظ الشراء بنجاح.','Product updated successfully.':'تم تحديث المنتج بنجاح.','Profile updated successfully.':'تم تحديث الملف الشخصي بنجاح.','Password changed successfully.':'تم تغيير كلمة المرور بنجاح.','Passwords do not match.':'كلمتا المرور غير متطابقتين.','Admin only.':'للمسؤول فقط.'}
+ };
+ function currentLang(){try{return (typeof getLanguage==='function'?getLanguage():localStorage.getItem('qfs_language'))||'en'}catch(e){return 'en'}}
+ function localize(message){let s=String(message??'');const dict=translations[currentLang()]||translations.en;if(dict[s])return dict[s];
+  // Translate recognizable fragments while preserving dynamic values and technical backend details.
+  const keys=Object.keys(dict).filter(k=>k.length>5).sort((a,b)=>b.length-a.length);
+  for(const k of keys){if(s.includes(k))s=s.split(k).join(dict[k]);}
+  return s;
+ }
+ function show(message){const overlay=document.getElementById('wpNoticeOverlay');if(!overlay){return;}document.getElementById('wpNoticeHead').textContent=(translations[currentLang()]||translations.en).Notice||'Notice';document.getElementById('wpNoticeOK').textContent=(translations[currentLang()]||translations.en).OK||'OK';document.getElementById('wpNoticeMessage').textContent=localize(message);overlay.classList.add('show');document.getElementById('wpNoticeOK').focus();}
+ function close(){document.getElementById('wpNoticeOverlay')?.classList.remove('show');}
+ document.getElementById('wpNoticeOK').addEventListener('click',close);
+ document.getElementById('wpNoticeOverlay').addEventListener('click',e=>{if(e.target.id==='wpNoticeOverlay')close()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('wpNoticeOverlay')?.classList.contains('show'))close()});
+ window.alert=function(message){show(message);};
+})();
+</script>
+
+</body></html>
+
+<script>
+/* WEZIR POS — keep one Settings button and restore Admin Dashboard navigation */
+(function(){
+  function repairSidebar(){
+    var side=document.querySelector('.side');
+    if(!side) return;
+    var navs=Array.from(side.querySelectorAll('button.nav'));
+    var settings=navs.filter(function(b){
+      return (b.textContent||'').replace(/\s+/g,' ').trim().replace(/^[^A-Za-z]+/,'').toLowerCase()==='settings';
+    });
+    settings.slice(1).forEach(function(b){b.remove();});
+    var admin=document.getElementById('adminNav');
+    if(!admin){
+      admin=document.createElement('button');
+      admin.id='adminNav'; admin.type='button'; admin.className='nav';
+      admin.textContent='👑 Admin Dashboard';
+    }
+    admin.classList.remove('hidden');
+    admin.style.setProperty('display','block','important');
+    admin.style.setProperty('visibility','visible','important');
+    admin.style.setProperty('opacity','1','important');
+    admin.onclick=function(){ if(typeof window.showPage==='function') window.showPage('adminDashboard',admin); };
+    var reports=Array.from(side.querySelectorAll('button.nav')).find(function(b){return /reports/i.test(b.textContent||'');});
+    var firstSettings=Array.from(side.querySelectorAll('button.nav')).find(function(b){return (b.textContent||'').replace(/\s+/g,' ').trim().replace(/^[^A-Za-z]+/,'').toLowerCase()==='settings';});
+    if(reports && reports.nextSibling!==admin) side.insertBefore(admin,reports.nextSibling);
+    else if(!reports && firstSettings) side.insertBefore(admin,firstSettings);
+    else if(!admin.parentNode) side.appendChild(admin);
+  }
+  function start(){repairSidebar(); var side=document.querySelector('.side'); if(side && !side.__wezirAdminObserver){
+    side.__wezirAdminObserver=new MutationObserver(repairSidebar);
+    side.__wezirAdminObserver.observe(side,{childList:true,subtree:true});
+  }}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+  window.addEventListener('load',start); setTimeout(start,300); setTimeout(start,1000); setTimeout(start,2500);
+})();
+</script>
+
+<script>
+/* WEZIR POS STAFF ACCESS: resolve the business role from Supabase and restrict the interface. */
+(function(){
+  'use strict';
+  const restrictedPages=new Set(['dashboard','purchases','products','expenses','reports','adminDashboard','settings','featurehubPage','cashierManagement']);
+  let resolvedRole='checking';
+  function current(){
+    try { if(typeof currentUser!=='undefined' && currentUser) return currentUser; } catch(e) {}
+    return window.currentUser||null;
+  }
+  function isStaff(){
+    if(resolvedRole==='staff') return true;
+    if(resolvedRole==='owner') return false;
+    const u=current();
+    const meta=String(u?.app_metadata?.role||u?.app_metadata?.user_role||'').trim().toLowerCase();
+    return ['cashier','employee','staff'].includes(meta);
+  }
+  function apply(){
+    const staff=isStaff();
+    document.querySelectorAll('.side button.nav').forEach(b=>{
+      const label=(b.textContent||'').toLowerCase();
+      const allowed=/\bpos\b|sales|🛒|🧾/.test(label);
+      if(staff){b.style.setProperty('display',allowed?'block':'none','important');b.setAttribute('aria-hidden',allowed?'false':'true');}
+      else {b.style.removeProperty('display');b.removeAttribute('aria-hidden');}
+    });
+    if(staff){
+      const active=document.querySelector('.page.active');
+      if(!active||restrictedPages.has(active.id)){
+        document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+        document.getElementById('pos')?.classList.add('active');
+        document.querySelectorAll('.side button.nav').forEach(b=>b.classList.toggle('active',/\bpos\b|🛒/.test((b.textContent||'').toLowerCase())));
+      }
+      const admin=document.getElementById('adminNav');if(admin)admin.style.setProperty('display','none','important');
+    }
+  }
+  async function resolveRole(user){
+    resolvedRole='checking';
+    apply();
+    if(!user){resolvedRole='owner';apply();return;}
+    const meta=String(user?.app_metadata?.role||user?.app_metadata?.user_role||'').trim().toLowerCase();
+    try{
+      const client=(typeof supabaseClient!=='undefined'&&supabaseClient)?supabaseClient:window.__wpSupabaseClient||window.supabaseClient;
+      if(client?.rpc){
+        const {data,error}=await client.rpc('get_my_business_role');
+        if(!error){
+          const value=Array.isArray(data)?(data[0]?.role??data[0]):(data?.role??data);
+          const r=String(value||'').trim().toLowerCase();
+          if(r){resolvedRole=['cashier','employee','staff'].includes(r)?'staff':'owner';apply();return;}
+        }
+      }
+    }catch(e){console.warn('Could not resolve WEZIR POS business role:',e);}
+    // Fail closed for known staff metadata; otherwise retain owner access if role lookup is unavailable.
+    resolvedRole=['cashier','employee','staff'].includes(meta)?'staff':'owner';
+    apply();
+  }
+  const originalShow=window.showPage;
+  if(typeof originalShow==='function')window.showPage=function(id,btn){
+    if(isStaff()&&restrictedPages.has(String(id))){alert('Employee account: POS and Sales only.');return;}
+    const result=originalShow.apply(this,arguments);apply();return result;
+  };
+  const blocked={addPurchase:'Purchases',editProduct:'Stock editing',saveProductEdit:'Stock editing',deleteProduct:'Stock deletion',addExpense:'Expenses',clearAllData:'Cloud data deletion',editSale:'Sales editing',saveSaleEdit:'Sales editing',deleteSale:'Sales deletion',qfAdjust:'Stock adjustment',qfReturn:'Returns'};
+  Object.keys(blocked).forEach(name=>{
+    const fn=window[name];
+    if(typeof fn==='function')window[name]=function(){if(isStaff()){alert('Employee account: '+blocked[name]+' is not allowed.');return;}return fn.apply(this,arguments);};
+  });
+  function refresh(){apply();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh);else refresh();
+  window.addEventListener('load',refresh);
+  const observer=new MutationObserver(()=>{if(isStaff())apply();});
+  window.addEventListener('load',()=>{if(document.body)observer.observe(document.body,{childList:true,subtree:true});});
+  window.addEventListener('wezir-auth-ready',refresh);
+  try{
+    const client=(typeof supabaseClient!=='undefined'&&supabaseClient)?supabaseClient:window.__wpSupabaseClient||window.supabaseClient;
+    if(client?.auth){
+      client.auth.onAuthStateChange((event,session)=>{setTimeout(()=>resolveRole(session?.user||null),0);});
+      client.auth.getSession().then(({data})=>resolveRole(data?.session?.user||current())).catch(()=>resolveRole(current()));
+    }else setTimeout(()=>resolveRole(current()),0);
+  }catch(e){resolveRole(current());}
+})();
+</script>
+
+<script>
+/* WEZIR POS — owner cashier creation via the deployed Supabase Edge Function */
+async function createWezirCashier(){
+  const button=document.getElementById("createCashierButton");
+  const message=document.getElementById("cashierMessage");
+  const fullName=(document.getElementById("cashierFullName")?.value||"").trim();
+  const email=(document.getElementById("cashierEmail")?.value||"").trim().toLowerCase();
+  const password=document.getElementById("cashierPassword")?.value||"";
+  const say=(text,kind="notice")=>{
+    if(message){message.className=kind;message.textContent=text;}
+  };
+  if(!currentUser){say("Please sign in first.","error");return;}
+  if(!fullName){say("Please enter the cashier's full name.","error");return;}
+  if(!email||!email.includes("@")){say("Please enter a valid cashier email.","error");return;}
+  if(password.length<8){say("Password must be at least 8 characters.","error");return;}
+  const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+  if(sessionError||!session?.access_token){say("Your session is missing. Please sign in again.","error");return;}
+  if(button){button.disabled=true;button.textContent="Creating...";}
+  say("Creating cashier account...","notice");
+  try{
+    const response=await fetch(SUPABASE_URL+"/functions/v1/smoothcreate-cashier-responder",{
+      method:"POST",
+      headers:{
+        "Authorization":"Bearer "+session.access_token,
+        "apikey":SUPABASE_PUBLISHABLE_KEY,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({full_name:fullName,email,password})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||!result.success)throw new Error(result.error||("Request failed ("+response.status+")."));
+    say("Cashier account created successfully. The cashier can now sign in using the email and password you set.","success");
+    document.getElementById("cashierFullName").value="";
+    document.getElementById("cashierEmail").value="";
+    document.getElementById("cashierPassword").value="";
+  }catch(error){
+    say(error?.message||String(error),"error");
+  }finally{
+    if(button){button.disabled=false;button.textContent="＋ Create Cashier";}
+  }
+}
+</script>
+
