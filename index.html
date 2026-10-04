@@ -1707,3 +1707,229 @@ async function createWezirCashier(){
 }
 </script>
 
+
+<script>
+/* WIZO POS — PROFESSIONAL SALES RETURN / REFUND FIX
+   Keeps original sales as an audit trail, restores stock, records refund details,
+   prevents returning more than was sold, and updates Dashboard/Reports. */
+(function(){
+  function escR(v){
+    return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function numR(v){const n=Number(v);return Number.isFinite(n)?n:0;}
+  function moneyR(v){try{return money(numR(v));}catch(e){return numR(v).toFixed(2);}}
+
+  async function getReturns(){
+    if(!window.currentUser||!window.supabaseClient)return [];
+    const {data,error}=await supabaseClient.from('qf_records')
+      .select('*').eq('user_id',currentUser.id).eq('module','returns')
+      .order('created_at',{ascending:true});
+    if(error) throw error;
+    return data||[];
+  }
+
+  function saleLines(invoice){
+    return (data.sales||[]).filter(s=>String(s.invoice_no||'')===String(invoice));
+  }
+
+  async function openProfessionalReturn(type){
+    if(!currentUser)return alert('Please sign in first.');
+    if(type!=='Sale Return'){
+      /* Keep Purchase Return on the existing working module for now. */
+      if(typeof window.__wizoOldQfAdv==='function')return window.__wizoOldQfAdv('purchasereturn');
+      return;
+    }
+    document.querySelector('.qfmodal')?.remove();
+    const m=document.createElement('div');
+    m.className='qfmodal';
+    m.innerHTML=`
+      <div class="qfbox" style="max-width:760px;width:96%;max-height:90vh;overflow:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+          <h2 style="margin:0">↩️ Sales Return / Refund</h2>
+          <button class="btn-secondary" onclick="document.querySelector('.qfmodal')?.remove()">✕ Close</button>
+        </div>
+        <p style="margin:8px 0 16px;color:#666">Enter the original invoice first. The system will verify the sold quantity before returning it.</p>
+        <div class="row">
+          <input id="wzRetInv" placeholder="Invoice No. (e.g. INV-0001)">
+          <button id="wzFindInvoice" type="button">Find Invoice</button>
+        </div>
+        <div id="wzReturnInvoiceInfo" style="margin-top:12px"></div>
+        <div id="wzReturnForm" style="display:none;margin-top:14px">
+          <div class="row">
+            <select id="wzRetProduct"></select>
+            <input id="wzRetQty" type="number" min="0.01" step="0.01" placeholder="Return quantity">
+          </div>
+          <div class="row">
+            <select id="wzRefundMethod">
+              <option value="Cash">Cash Refund</option>
+              <option value="Card">Card Refund</option>
+              <option value="Transfer">Transfer Refund</option>
+              <option value="Customer Credit">Customer Credit</option>
+            </select>
+            <input id="wzRetReason" placeholder="Reason for return">
+          </div>
+          <div id="wzRefundPreview" style="margin:12px 0;padding:12px;border-radius:8px;background:#f5f5f5"></div>
+          <button id="wzSaveReturn" type="button">↩️ Confirm Return & Refund</button>
+        </div>
+        <div id="wzReturnHistory" style="margin-top:18px"></div>
+      </div>`;
+    document.body.appendChild(m);
+
+    const info=document.getElementById('wzReturnInvoiceInfo');
+    const form=document.getElementById('wzReturnForm');
+    const prodSel=document.getElementById('wzRetProduct');
+    const qtyEl=document.getElementById('wzRetQty');
+    const preview=document.getElementById('wzRefundPreview');
+
+    async function findInvoice(){
+      const inv=document.getElementById('wzRetInv').value.trim();
+      form.style.display='none';
+      info.innerHTML='';
+      if(!inv)return alert('Invoice number galchi.');
+      const lines=saleLines(inv);
+      if(!lines.length){info.innerHTML='<p style="color:#b00020">Invoice hin argamne.</p>';return;}
+      let returns=[];
+      try{returns=await getReturns();}catch(e){info.innerHTML='<p style="color:#b00020">Return history hin dubbifamne: '+escR(e.message)+'</p>';return;}
+      const returned={};
+      returns.forEach(r=>{
+        const d=r.data||{};
+        if(d.type!=='Sale Return'||String(d.invoice||'')!==String(inv))return;
+        const key=String(d.product_id||d.product||'').toLowerCase();
+        returned[key]=(returned[key]||0)+numR(d.qty);
+      });
+      const options=lines.map((s,i)=>{
+        const key=String(s.product_id||s.product_name||'').toLowerCase();
+        const already=returned[key]||0;
+        const sold=numR(s.qty);
+        const remaining=Math.max(0,sold-already);
+        return {s,i,already,sold,remaining,key};
+      }).filter(x=>x.remaining>0);
+      const first=lines[0];
+      const total=lines.reduce((a,s)=>a+numR(s.total),0);
+      const customer=first.customer||'Walk-in Customer';
+      info.innerHTML=`<div style="padding:12px;border:1px solid #ddd;border-radius:8px">
+        <b>Invoice:</b> ${escR(inv)} &nbsp; | &nbsp; <b>Customer:</b> ${escR(customer)}<br>
+        <b>Original Total:</b> ${moneyR(total)} &nbsp; | &nbsp; <b>Items:</b> ${lines.length}
+      </div>`;
+      if(!options.length){info.innerHTML+=`<p style="color:#b00020">Invoice kana keessaa item hundi duraan deebifameera.</p>`;return;}
+      prodSel.innerHTML=options.map((x,j)=>`<option value="${j}">${escR(x.s.product_name)} — Sold: ${x.sold} — Remaining: ${x.remaining}</option>`).join('');
+      form.style.display='block';
+      form._options=options;
+      qtyEl.value='';
+      function updatePreview(){
+        const x=options[Number(prodSel.value)||0];
+        const q=numR(qtyEl.value);
+        if(!x){preview.innerHTML='';return;}
+        if(q<=0){preview.innerHTML=`<b>Maximum return:</b> ${x.remaining}`;return;}
+        if(q>x.remaining){preview.innerHTML=`<span style="color:#b00020"><b>Return quantity too high.</b> Maximum: ${x.remaining}</span>`;return;}
+        const price=numR(x.s.selling_price);
+        const costPer=x.s.cost&&x.s.qty?numR(x.s.cost)/numR(x.s.qty):0;
+        const refund=q*price;
+        const cost=q*costPer;
+        preview.innerHTML=`<b>Refund:</b> ${moneyR(refund)} &nbsp; | &nbsp; <b>Cost reversed:</b> ${moneyR(cost)} &nbsp; | &nbsp; <b>Profit reversed:</b> ${moneyR(refund-cost)}`;
+      }
+      prodSel.onchange=updatePreview;
+      qtyEl.oninput=updatePreview;
+      updatePreview();
+      document.getElementById('wzSaveReturn').onclick=()=>saveReturn(options,inv);
+      renderHistory(inv,returns);
+    }
+
+    async function renderHistory(inv,returns){
+      const rows=(returns||[]).filter(r=>r.data?.type==='Sale Return'&&String(r.data?.invoice||'')===String(inv));
+      const box=document.getElementById('wzReturnHistory');
+      if(!rows.length){box.innerHTML='<p style="color:#666">No previous returns for this invoice.</p>';return;}
+      box.innerHTML='<h3>Return History</h3><table><tr><th>Product</th><th>Qty</th><th>Refund</th><th>Method</th><th>Date</th></tr>'+rows.map(r=>{const d=r.data||{};return `<tr><td>${escR(d.product)}</td><td>${numR(d.qty)}</td><td>${moneyR(d.refund_amount)}</td><td>${escR(d.refund_method||'')}</td><td>${escR(d.date||'')}</td></tr>`}).join('')+'</table>';
+    }
+
+    async function saveReturn(options,inv){
+      const x=options[Number(prodSel.value)||0];
+      const qty=numR(qtyEl.value);
+      const reason=document.getElementById('wzRetReason').value.trim();
+      const method=document.getElementById('wzRefundMethod').value;
+      if(!x)return alert('Product filadhu.');
+      if(qty<=0)return alert('Return quantity sirrii galchi.');
+      if(qty>x.remaining)return alert('Quantity deebifamu baay\'ee dha. Maximum: '+x.remaining);
+      const price=numR(x.s.selling_price);
+      const originalCostPerUnit=x.s.qty?numR(x.s.cost)/numR(x.s.qty):0;
+      const refundAmount=qty*price;
+      const costAmount=qty*originalCostPerUnit;
+      const profitAmount=refundAmount-costAmount;
+      if(!confirm('Invoice '+inv+' irraa '+qty+' '+x.s.product_name+' deebisuu fi '+moneyR(refundAmount)+' refund gochuu mirkaneessitaa?'))return;
+      const {data:ps,error:pe}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id);
+      if(pe)throw pe;
+      const product=(ps||[]).find(p=>String(p.name||'').trim().toLowerCase()===String(x.s.product_name||'').trim().toLowerCase());
+      if(!product)return alert('Product stock keessa hin argamne: '+x.s.product_name);
+      const newStock=numR(product.stock)+qty;
+      const {error:ue}=await supabaseClient.from('products').update({stock:newStock}).eq('id',product.id).eq('user_id',currentUser.id);
+      if(ue)throw ue;
+      try{
+        const payload={
+          type:'Sale Return',invoice:inv,product:x.s.product_name,product_id:product.id,qty,
+          original_qty:x.s.qty,remaining_before:x.remaining,selling_price:price,
+          refund_amount:refundAmount,cost_amount:costAmount,profit_reversed:profitAmount,
+          refund_method:method,customer:x.s.customer||'',payment_method:x.s.payment_method||'',
+          reason,date:new Date().toISOString()
+        };
+        const row={user_id:currentUser.id,module:'returns',record_key:crypto.randomUUID(),data:payload};
+        const {error:se}=await supabaseClient.from('qf_records').insert(row);
+        if(se)throw se;
+      }catch(e){
+        /* Roll stock back if return record could not be saved. */
+        await supabaseClient.from('products').update({stock:numR(product.stock)}).eq('id',product.id).eq('user_id',currentUser.id);
+        throw e;
+      }
+      if(typeof loadCloudData==='function')await loadCloudData();
+      alert('Sales Return fi Refund milkaa\'inaan galmaa\'e!\nRefund: '+moneyR(refundAmount)+'\nStock: +'+qty);
+      document.querySelector('.qfmodal')?.remove();
+      if(typeof window.__wizoRefreshReturnDashboard==='function')window.__wizoRefreshReturnDashboard();
+    }
+
+    document.getElementById('wzFindInvoice').onclick=findInvoice;
+    document.getElementById('wzRetInv').addEventListener('keydown',e=>{if(e.key==='Enter')findInvoice();});
+  }
+
+  /* Make the All Features -> Sales Return card use the professional flow,
+     without changing any other feature. */
+  window.__wizoOldQfAdv=window.qfAdv;
+  if(typeof window.qfAdv==='function'){
+    window.qfAdv=function(key){
+      if(key==='salesreturn')return openProfessionalReturn('Sale Return');
+      return window.__wizoOldQfAdv.apply(this,arguments);
+    };
+  }
+
+  async function refreshReturnDashboard(){
+    if(!window.currentUser||!window.supabaseClient)return;
+    try{
+      const returns=await getReturns();
+      const saleReturns=returns.filter(r=>r.data?.type==='Sale Return').map(r=>r.data||{});
+      const refund=saleReturns.reduce((a,r)=>a+numR(r.refund_amount),0);
+      const costReturned=saleReturns.reduce((a,r)=>a+numR(r.cost_amount),0);
+      const grossSales=(data.sales||[]).reduce((a,s)=>a+numR(s.total),0);
+      const cogs=(data.sales||[]).reduce((a,s)=>a+numR(s.cost),0);
+      const expenses=(data.expenses||[]).reduce((a,e)=>a+numR(e.amount),0);
+      const purchases=(data.purchases||[]).reduce((a,p)=>a+numR(p.total_cost),0);
+      const netSales=grossSales-refund;
+      const netCogs=cogs-costReturned;
+      const netProfit=netSales-netCogs-expenses;
+      const invCount=new Set((data.sales||[]).map(s=>s.invoice_no)).size;
+      const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+      set('dSales',moneyR(netSales));
+      set('dProfit',moneyR(netProfit));
+      const box=document.getElementById('reportBox');
+      if(box)box.innerHTML=`<h3>Business Report</h3><p>Gross Sales: <b>${moneyR(grossSales)}</b></p><p>Sales Returns / Refunds: <b>-${moneyR(refund)}</b></p><p>Net Sales: <b>${moneyR(netSales)}</b></p><p>Total Purchases: <b>${moneyR(purchases)}</b></p><p>Cost of Goods Sold: <b>${moneyR(cogs)}</b></p><p>Returned Cost: <b>-${moneyR(costReturned)}</b></p><p>Net Cost of Goods Sold: <b>${moneyR(netCogs)}</b></p><p>Total Expenses: <b>${moneyR(expenses)}</b></p><hr><h2>Net Profit: ${moneyR(netProfit)}</h2><p>Current Stock Value: <b>${moneyR((data.products||[]).reduce((a,p)=>a+numR(p.stock)*numR(p.cost),0))}</b></p><p>Invoices: <b>${invCount}</b> &nbsp; | &nbsp; Returns: <b>${saleReturns.length}</b></p>`;
+      window.__wizoReturnStats={refund,costReturned,netSales,netCogs,netProfit,count:saleReturns.length};
+    }catch(e){console.warn('Return dashboard update failed:',e);}
+  }
+  window.__wizoRefreshReturnDashboard=refreshReturnDashboard;
+
+  /* Refresh return-adjusted totals whenever the existing cloud data loader runs. */
+  const oldLoad=window.loadCloudData;
+  if(typeof oldLoad==='function'){
+    window.loadCloudData=async function(){await oldLoad.apply(this,arguments);await refreshReturnDashboard();};
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(refreshReturnDashboard,800));
+  else setTimeout(refreshReturnDashboard,800);
+})();
+</script>
