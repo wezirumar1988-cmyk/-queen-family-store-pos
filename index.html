@@ -330,11 +330,21 @@ function translateUI(){
 function applyLanguage(){
   const lang=getLanguage();
   const t=I18N[lang]||I18N.en;
-  const nav=document.querySelectorAll(".nav");
-  const labels=["Dashboard","Purchases","Stock","POS","Sales","Expenses","Reports","Settings"];
-  nav.forEach((el,i)=>{if(i<labels.length)el.textContent=(el.textContent.match(/^\S+/)?.[0]||["📊","📥","📦","🛒","🧾","💰","📈","⚙️"][i])+" "+(t[labels[i]]||labels[i]);});
+  const navMap={
+    dashboard:["📊","Dashboard"],purchases:["📥","Purchases"],products:["📦","Stock"],pos:["🛒","POS"],sales:["🧾","Sales"],expenses:["💰","Expenses"],reports:["📈","Reports"],settings:["⚙️","Settings"],cashierNav:["👤","Cashier"],adminNav:["👑","Admin Dashboard"],allFeaturesNav:["🧩","All Features"]
+  };
+  document.querySelectorAll(".side .nav").forEach(el=>{
+    const id=el.id||"";
+    const pageMatch=(el.getAttribute("onclick")||"").match(/showPage\('([^']+)'/);
+    const key=id||pageMatch?.[1]||"";
+    const item=navMap[key];
+    if(!item)return;
+    const icon=item[0],label=item[1];
+    el.textContent=icon+" "+(t[label]||label);
+  });
   translateUI();
   document.querySelectorAll('[data-currency-display]').forEach(el=>el.textContent=money(Number(el.dataset.amount||0)));
+  if(typeof setupAdminNav==='function') setupAdminNav();
 }
 function updateBusinessDisplay(){
 const brand=document.getElementById("businessBrand");
@@ -429,7 +439,14 @@ function isAdmin(){
 function setupAdminNav(){
   const nav=document.getElementById("adminNav");
   if(!nav)return;
-  nav.classList.remove("hidden");
+  const adminOk=isAdmin();
+  nav.classList.toggle("hidden",!adminOk);
+  nav.style.setProperty("display",adminOk?"block":"none","important");
+  nav.style.setProperty("visibility",adminOk?"visible":"hidden","important");
+  nav.style.setProperty("opacity",adminOk?"1":"0","important");
+  if(!adminOk && document.getElementById("adminDashboard")?.classList.contains("active")){
+    showPage("dashboard",document.querySelector('.nav[onclick*="dashboard"]'));
+  }
 }
 async function adminSetSubscription(userId){
   if(!isAdmin())return alert("Admin only.");
@@ -501,7 +518,24 @@ async function loadAdminUsers(){
   }
 }
 function formatAdminDate(value){if(!value)return "—";const d=new Date(value);if(Number.isNaN(d.getTime()))return escapeHtml(value);return escapeHtml(d.toLocaleString());}
-function showPage(id,btn){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));const page=document.getElementById(id);if(!page)return;page.classList.add("active");document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));if(btn)btn.classList.add("active");if(id==="adminDashboard")loadAdminUsers();renderAll();}
+function showPage(id,btn){
+  if(id==="adminDashboard" && !(typeof isAdmin==='function' && isAdmin())){
+    const dashBtn=document.querySelector('.nav[onclick*="dashboard"]');
+    document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+    document.getElementById("dashboard")?.classList.add("active");
+    document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));
+    dashBtn?.classList.add("active");
+    return;
+  }
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  const page=document.getElementById(id);
+  if(!page)return;
+  page.classList.add("active");
+  document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+  if(id==="adminDashboard")loadAdminUsers();
+  renderAll();
+}
 async function addPurchase(){if(!currentUser)return alert("Please sign in first.");const name=document.getElementById("buyProduct").value.trim(),qty=Number(document.getElementById("buyQty").value),cost=Number(document.getElementById("buyCost").value),transport=Number(document.getElementById("buyTransport").value)||0,loading=Number(document.getElementById("buyLoading").value)||0,supplier=document.getElementById("buySupplier").value.trim(),profitPercent=Number(document.getElementById("buyProfitPercent").value)||0,date=document.getElementById("buyDate").value||today();let selling=Number(document.getElementById("buySellingPrice").value)||0;if(!name||qty<=0||cost<0)return alert("Product, quantity fi cost guuti.");const landed=cost+(transport+loading)/qty;if(selling<=0)selling=landed*(1+profitPercent/100);const existing=data.products.find(p=>p.name.toLowerCase()===name.toLowerCase());if(existing){const oldQty=Number(existing.stock||0),oldCost=Number(existing.cost||0),avg=(oldQty*oldCost+qty*landed)/(oldQty+qty);const {error}=await supabaseClient.from("products").update({stock:oldQty+qty,cost:avg,selling_price:selling,profit_percent:profitPercent}).eq("id",existing.id).eq("user_id",currentUser.id);if(error)return alert(error.message)}else{const {error}=await supabaseClient.from("products").insert({user_id:currentUser.id,name,sku:"",unit:"kg",stock:qty,cost:landed,selling_price:selling,profit_percent:profitPercent});if(error)return alert(error.message)}const {error}=await supabaseClient.from("purchases").insert({user_id:currentUser.id,product_name:name,qty,purchase_cost:cost,transport,loading,total_cost:qty*cost+transport+loading,supplier,purchase_date:date});if(error)return alert(error.message);alert("Purchase saved!\nLanded Cost: "+money(landed)+" / unit\nSelling Price: "+money(selling)+" / unit");["buyProduct","buyQty","buyCost","buyTransport","buyLoading","buySupplier","buySellingPrice"].forEach(id=>document.getElementById(id).value="");document.getElementById("buyProfitPercent").value=10;await loadCloudData()}
 function editProduct(id){
  const p=data.products.find(x=>String(x.id)===String(id)); if(!p)return alert("Product hin argamne.");
@@ -1310,10 +1344,11 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
       if(reports && reports.parentNode) reports.parentNode.insertBefore(btn,reports.nextSibling);
       else side.appendChild(btn);
     }
-    btn.classList.remove('hidden');
-    btn.style.setProperty('display','block','important');
-    btn.style.setProperty('visibility','visible','important');
-    btn.style.setProperty('opacity','1','important');
+    const adminOk=(typeof isAdmin==='function') && isAdmin();
+    btn.classList.toggle('hidden',!adminOk);
+    btn.style.setProperty('display',adminOk?'block':'none','important');
+    btn.style.setProperty('visibility',adminOk?'visible':'hidden','important');
+    btn.style.setProperty('opacity',adminOk?'1':'0','important');
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ensureAdminButton);
   else ensureAdminButton();
