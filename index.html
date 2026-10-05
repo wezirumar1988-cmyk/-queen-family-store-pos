@@ -1471,9 +1471,8 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
    One click handler only. All existing feature functions remain untouched. */
 (function(){
   const FEATURES=[
-    ['🏠','Dashboard','dashboard'],['📦','Stock / Inventory','products'],['🛒','POS / Gurgurtaa','pos'],['🧾','Invoice','invoicehub'],
-    ['🖨️','Invoice Print','print'],['📊','Sales Reports','reports'],['🛍️','Purchases','purchases'],['💰','Expenses','expenses'],
-    ['👥','Customers','customers'],['💳','Customer Credit / Balance','customercredit'],['🏭','Suppliers','suppliers'],['💵','Supplier Balance','supplierbalance'],
+    ['🛍️','Purchases','purchases'],['💰','Expenses','expenses'],
+    ['💳','Customer Credit / Balance','customercredit'],['🏭','Suppliers','suppliers'],['💵','Supplier Balance','supplierbalance'],
     ['🔄','Stock Adjustment','adjustment'],['↩️','Sales Return / Refund','salesreturn'],['↩️','Purchase Return','purchasereturn'],['🔔','Low Stock Alert','lowstock'],
     ['🚫','Out of Stock','outstock'],['📅','Expiry Date','expiry'],['🏷️','Batch / Lot','batch'],['👤','Users & Permissions','users'],
     ['💳','Payment Methods','payments'],['⚙️','Settings','settings'],['💾','Backup / Restore','backup'],['☁️','Cloud Account & Data Separation','cloud'],
@@ -1579,6 +1578,213 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
 })();
 </script>
 
+
+<script>
+/* WIZO POS — PROFESSIONAL PURCHASE RETURN + DIRECT PRODUCT DELETE */
+(function(){
+  function escP(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function numP(v){const n=Number(v);return Number.isFinite(n)?n:0;}
+  function moneyP(v){return typeof money==='function'?money(numP(v)):numP(v).toFixed(2);}
+  function closeP(){document.querySelector('.qfmodal')?.remove();}
+
+  async function openPurchaseReturn(){
+    if(!window.currentUser)return alert('Please sign in first.');
+    closeP();
+    const m=document.createElement('div');
+    m.className='qfmodal';
+    m.innerHTML=`
+      <div class="qfbox" style="max-width:820px;width:96%;max-height:90vh;overflow:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <h2 style="margin:0">↩️ Purchase Return</h2>
+          <button type="button" class="btn-secondary" id="wzPurClose">✕ Close</button>
+        </div>
+        <p style="color:#666;margin:8px 0 16px">
+          Purchase keessaa meeshaa filadhu. Quantity deebifamu sirna keessatti mirkanaa'a;
+          stock irraa ni hir'ata.
+        </p>
+        <label><b>Purchase / Product</b></label>
+        <select id="wzPurRef"></select>
+        <div id="wzPurInfo" style="margin-top:12px"></div>
+        <div id="wzPurForm" style="display:none;margin-top:14px">
+          <div class="row">
+            <input id="wzPurQty" type="number" min="0.01" step="0.01" placeholder="Return quantity">
+            <select id="wzPurMethod">
+              <option value="Supplier Credit">Supplier Credit</option>
+              <option value="Cash">Cash Refund</option>
+              <option value="Transfer">Transfer Refund</option>
+            </select>
+          </div>
+          <input id="wzPurReason" placeholder="Reason for purchase return">
+          <div id="wzPurPreview" style="margin:12px 0;padding:12px;border-radius:8px;background:#f5f5f5"></div>
+          <button id="wzPurSave" type="button">↩️ Confirm Purchase Return</button>
+        </div>
+        <div id="wzPurHistory" style="margin-top:18px"></div>
+      </div>`;
+    document.body.appendChild(m);
+
+    const sel=document.getElementById('wzPurRef');
+    const info=document.getElementById('wzPurInfo');
+    const form=document.getElementById('wzPurForm');
+    const qtyEl=document.getElementById('wzPurQty');
+    const preview=document.getElementById('wzPurPreview');
+
+    const purchases=Array.isArray(window.data?.purchases)?window.data.purchases:[];
+    let returns=[];
+    try{
+      const r=await supabaseClient.from('qf_records').select('*')
+        .eq('user_id',currentUser.id).eq('module','returns').order('created_at',{ascending:true});
+      if(r.error)throw r.error;
+      returns=r.data||[];
+    }catch(e){
+      return alert('Purchase Return history dubbisuun hin danda\'amne: '+e.message);
+    }
+
+    const used={};
+    returns.forEach(r=>{
+      const d=r.data||{};
+      if(d.type!=='Purchase Return')return;
+      const key=String(d.purchase_id||d.purchase_ref||'');
+      used[key]=(used[key]||0)+numP(d.qty);
+    });
+
+    const options=purchases.map((x,i)=>{
+      const ref=String(x.id||x.purchase_id||i);
+      const qty=numP(x.qty);
+      const returned=used[ref]||0;
+      return {x,i,ref,qty,returned,remaining:Math.max(0,qty-returned)};
+    }).filter(o=>o.remaining>0);
+
+    if(!options.length){
+      sel.innerHTML='<option>No refundable purchases found</option>';
+      info.innerHTML='<p style="color:#666">Purchase return gochuuf purchase seenaa keessatti galmee hafee hin jiru.</p>';
+      return;
+    }
+
+    sel.innerHTML=options.map((o,j)=>{
+      const x=o.x;
+      const date=x.purchase_date||x.date||'';
+      const supplier=x.supplier||'';
+      return `<option value="${j}">${escP(x.product_name||'Product')} — Qty: ${o.remaining} — ${escP(date)}${supplier?' — '+escP(supplier):''}</option>`;
+    }).join('');
+
+    function refresh(){
+      const o=options[Number(sel.value)||0];
+      if(!o)return;
+      const x=o.x;
+      const costPer=o.qty?numP(x.total_cost)/o.qty:numP(x.purchase_cost);
+      const q=numP(qtyEl.value);
+      info.innerHTML=`<div style="padding:12px;border:1px solid #ddd;border-radius:8px">
+        <b>Product:</b> ${escP(x.product_name||'')} &nbsp; | &nbsp;
+        <b>Purchase Qty:</b> ${o.qty} &nbsp; | &nbsp;
+        <b>Already Returned:</b> ${o.returned} &nbsp; | &nbsp;
+        <b>Remaining:</b> ${o.remaining}
+      </div>`;
+      form.style.display='block';
+      if(q<=0){preview.innerHTML='<b>Maximum return:</b> '+o.remaining;return;}
+      if(q>o.remaining){
+        preview.innerHTML='<span style="color:#b00020"><b>Quantity too high.</b> Maximum: '+o.remaining+'</span>';
+        return;
+      }
+      preview.innerHTML='<b>Supplier refund / credit:</b> '+moneyP(q*costPer);
+    }
+
+    sel.onchange=()=>{qtyEl.value='';refresh();};
+    qtyEl.oninput=refresh;
+    document.getElementById('wzPurClose').onclick=closeP;
+    document.getElementById('wzPurSave').onclick=async()=>{
+      const o=options[Number(sel.value)||0];
+      const q=numP(qtyEl.value);
+      const reason=document.getElementById('wzPurReason').value.trim();
+      const method=document.getElementById('wzPurMethod').value;
+      if(!o)return;
+      if(q<=0)return alert('Quantity sirrii galchi.');
+      if(q>o.remaining)return alert('Quantity deebifamu baay\'ee dha. Maximum: '+o.remaining);
+      if(!confirm('Purchase return kana mirkaneessitaa? Stock irraa '+q+' ni hir\'ata.'))return;
+
+      try{
+        const x=o.x;
+        const {data:ps,error:pe}=await supabaseClient.from('products').select('*').eq('user_id',currentUser.id);
+        if(pe)throw pe;
+        const product=(ps||[]).find(p=>String(p.name||'').trim().toLowerCase()===String(x.product_name||'').trim().toLowerCase());
+        if(!product)throw new Error('Product stock keessa hin argamne: '+x.product_name);
+        const newStock=numP(product.stock)-q;
+        if(newStock<0)throw new Error('Stock gahaa miti. Available: '+numP(product.stock));
+
+        const costPer=o.qty?numP(x.total_cost)/o.qty:numP(x.purchase_cost);
+        const refund=q*costPer;
+        const ref=String(x.id||x.purchase_id||o.i);
+
+        const {error:ue}=await supabaseClient.from('products').update({stock:newStock})
+          .eq('id',product.id).eq('user_id',currentUser.id);
+        if(ue)throw ue;
+
+        const payload={
+          type:'Purchase Return',
+          purchase_id:ref,
+          purchase_ref:ref,
+          product:x.product_name,
+          product_id:product.id,
+          qty:q,
+          original_qty:o.qty,
+          remaining_before:o.remaining,
+          refund_amount:refund,
+          refund_method:method,
+          supplier:x.supplier||'',
+          reason,
+          date:new Date().toISOString()
+        };
+        const row={user_id:currentUser.id,module:'returns',record_key:crypto.randomUUID(),data:payload};
+        const {error:se}=await supabaseClient.from('qf_records').insert(row);
+        if(se){
+          await supabaseClient.from('products').update({stock:numP(product.stock)})
+            .eq('id',product.id).eq('user_id',currentUser.id);
+          throw se;
+        }
+
+        if(typeof loadCloudData==='function')await loadCloudData();
+        alert('Purchase Return milkaa\'inaan galmaa\'e!\\nStock: -'+q+'\\nRefund/Credit: '+moneyP(refund));
+        closeP();
+      }catch(e){
+        alert('Purchase Return error: '+(e.message||String(e)));
+      }
+    };
+    refresh();
+  }
+
+  const oldAdv=window.qfAdv;
+  window.qfAdv=function(key){
+    if(key==='purchasereturn')return openPurchaseReturn();
+    return oldAdv?oldAdv.apply(this,arguments):null;
+  };
+
+  /* Ensure Stock > More/Delete uses the same owner-only delete function. */
+  const oldRenderProducts=window.renderProducts;
+  if(typeof oldRenderProducts==='function'){
+    window.renderProducts=function(){
+      const r=oldRenderProducts.apply(this,arguments);
+      const table=document.getElementById('productTable');
+      if(table){
+        table.querySelectorAll('tr').forEach((tr,i)=>{
+          if(i===0)return;
+          const p=(window.data?.products||[])[i-1];
+          if(!p)return;
+          const cell=tr.lastElementChild;
+          if(cell && !cell.querySelector('[data-direct-product-delete]')){
+            const b=document.createElement('button');
+            b.className='small-btn';
+            b.setAttribute('data-direct-product-delete','1');
+            b.style.cssText='background:#8f1111!important;color:#fff!important;border:1px solid #8f1111!important;margin-left:4px';
+            b.textContent='🗑️ Delete';
+            b.onclick=()=>window.deleteProduct(String(p.id));
+            cell.appendChild(b);
+          }
+        });
+      }
+      return r;
+    };
+  }
+})();
+</script>
 </body></html>
 
 
