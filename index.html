@@ -1785,6 +1785,140 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{currentUser=session?.us
   }
 })();
 </script>
+
+
+<!-- WIZO POS: robust Supabase password-recovery callback -->
+<script>
+(function () {
+  'use strict';
+  let recoveryFormShown = false;
+  let recoveryCheckStarted = false;
+
+  function authClient() {
+    try {
+      if (typeof supabaseClient !== 'undefined' && supabaseClient) return supabaseClient;
+    } catch (_) {}
+    return window.__wpSupabaseClient || window.supabaseClient || null;
+  }
+
+  function showRecoveryForm() {
+    if (recoveryFormShown) return;
+    recoveryFormShown = true;
+    const login = document.getElementById('loginScreen');
+    const app = document.getElementById('app');
+    if (login) login.style.display = 'none';
+    // The modal host is outside the app shell, so the recovery form remains visible.
+    if (typeof window.openPasswordModal === 'function') {
+      window.openPasswordModal(true);
+      return;
+    }
+    const host = document.getElementById('modalHost');
+    if (!host) return;
+    host.innerHTML = '<div class="modal"><div class="modal-box"><h2>Set New Password</h2>' +
+      '<label>New Password</label><input id="newPassword" type="password" autocomplete="new-password" placeholder="At least 6 characters">' +
+      '<label>Confirm Password</label><input id="newPassword2" type="password" autocomplete="new-password" placeholder="Repeat password">' +
+      '<p id="recoveryError" class="error"></p><div class="modal-actions"><button type="button" onclick="saveNewPassword()">Update Password</button></div></div></div>';
+  }
+
+  async function handleRecoveryReturn() {
+    if (recoveryCheckStarted) return;
+    recoveryCheckStarted = true;
+    const client = authClient();
+    if (!client?.auth) return;
+
+    const url = new URL(window.location.href);
+    const hash = new URLSearchParams(url.hash.replace(/^#/, ''));
+    const isRecoveryReturn = url.searchParams.get('type') === 'recovery' ||
+      hash.get('type') === 'recovery' ||
+      url.searchParams.has('code') ||
+      (hash.has('access_token') && hash.get('type') === 'recovery');
+
+    if (!isRecoveryReturn) return;
+
+    try {
+      let result = await client.auth.getSession();
+      let session = result?.data?.session || null;
+      const code = url.searchParams.get('code');
+      // PKCE callback: exchange the one-time code if the SDK has not already done so.
+      if (!session && code && typeof client.auth.exchangeCodeForSession === 'function') {
+        const exchanged = await client.auth.exchangeCodeForSession(code);
+        if (exchanged.error) throw exchanged.error;
+        session = exchanged.data?.session || null;
+      }
+      // Give the SDK a moment to process an implicit-flow URL fragment.
+      if (!session) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        result = await client.auth.getSession();
+        session = result?.data?.session || null;
+      }
+      if (!session) throw new Error('Password reset link is invalid or expired. Please request a new link.');
+      showRecoveryForm();
+    } catch (error) {
+      console.error('WIZO POS password recovery:', error);
+      const err = document.getElementById('loginError');
+      if (err) err.textContent = error?.message || 'Could not open password reset. Please request a new link.';
+      const login = document.getElementById('loginScreen');
+      if (login) login.style.display = 'flex';
+    }
+  }
+
+  // Listen for Supabase's dedicated recovery event. Use a timeout to avoid doing
+  // additional Supabase calls inside the auth-state callback itself.
+  const client = authClient();
+  if (client?.auth) {
+    client.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        setTimeout(showRecoveryForm, 0);
+      }
+    });
+  }
+
+  // Override the existing save handler so a successful reset returns to Login.
+  window.saveNewPassword = async function () {
+    const client = authClient();
+    const p = document.getElementById('newPassword')?.value || '';
+    const p2 = document.getElementById('newPassword2')?.value || '';
+    const err = document.getElementById('recoveryError');
+    if (err) err.textContent = '';
+    if (p.length < 6) { if (err) err.textContent = 'Password must be at least 6 characters.'; else alert('Password must be at least 6 characters.'); return; }
+    if (p !== p2) { if (err) err.textContent = 'Passwords do not match.'; else alert('Passwords do not match.'); return; }
+    if (!client?.auth) { if (err) err.textContent = 'Authentication service is unavailable. Refresh and try again.'; return; }
+    try {
+      const { error } = await client.auth.updateUser({ password: p });
+      if (error) throw error;
+      // End the recovery session so the user signs in with the new password.
+      await client.auth.signOut();
+      const host = document.getElementById('modalHost');
+      if (host) host.innerHTML = '';
+      recoveryFormShown = false;
+      const app = document.getElementById('app');
+      const login = document.getElementById('loginScreen');
+      if (app) app.style.display = 'none';
+      if (login) login.style.display = 'flex';
+      const loginError = document.getElementById('loginError');
+      if (loginError) loginError.textContent = 'Password updated successfully. Please sign in with your new password.';
+      const passwordInput = document.getElementById('loginPassword');
+      if (passwordInput) passwordInput.value = '';
+      // Remove recovery tokens/code from the address bar after successful use.
+      window.history.replaceState({}, document.title, window.location.origin + window.location.pathname);
+      alert('Password updated successfully. Please sign in with your new password.');
+    } catch (error) {
+      console.error('WIZO POS update password:', error);
+      if (err) err.textContent = error?.message || 'Password update failed. Please try again.';
+      else alert(error?.message || 'Password update failed. Please try again.');
+    }
+  };
+
+  // Run after page initialization; Supabase may already have consumed the callback.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(handleRecoveryReturn, 0), { once: true });
+  } else {
+    setTimeout(handleRecoveryReturn, 0);
+  }
+  window.addEventListener('load', () => setTimeout(handleRecoveryReturn, 150));
+})();
+</script>
+
 </body></html>
 
 
